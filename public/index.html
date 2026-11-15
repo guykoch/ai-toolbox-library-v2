@@ -518,13 +518,7 @@
         </div>
       </section>
 
-      <section aria-labelledby="map-h" style="margin-top:28px">
-        <div class="sec-head"><h2 id="map-h">Browse by shelf</h2><span class="hint">Tap a shelf to filter</span></div>
-        <div class="catchips" id="catchips"></div>
-        <p class="shelf-note">Items can sit on two shelves &mdash; e.g. fal&rsquo;s MCP server counts on both Image and Video.</p>
-      </section>
-
-      <div class="controls" id="library">
+      <div class="controls" id="library" style="margin-top:28px">
         <div class="search-row">
           <div class="search-box">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.8-3.8"/></svg>
@@ -547,7 +541,13 @@
         </div>
       </div>
 
-      <div class="results-meta">
+      <section aria-labelledby="map-h" style="margin-top:18px">
+        <div class="sec-head"><h2 id="map-h">Browse by shelf</h2><span class="hint">Tap a shelf to filter</span></div>
+        <div class="catchips" id="catchips"></div>
+        <p class="shelf-note">Items can sit on two shelves &mdash; e.g. fal&rsquo;s MCP server counts on both Image and Video.</p>
+      </section>
+
+      <div class="results-meta" id="results">
         <span class="count" id="result-count"></span>
         <span class="active" id="active-desc"></span>
         <span class="expand-tools">
@@ -832,7 +832,10 @@
         document.getElementById('archive-h').textContent = 'Archive (' + arch.length + ')';
       }
       function scrollToLibrary() {
-        document.getElementById('library').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Land just below the sticky search bar, with the result count in view.
+        const bar = document.getElementById('library').offsetHeight;
+        const y = document.getElementById('results').getBoundingClientRect().top + window.scrollY - bar - 8;
+        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
       }
       function resetFilters() {
         state.q = ''; state.cat = 'all'; state.osOnly = false; state.videoOnly = false; state.cluster = -1; state.month = ''; state.expanded.clear(); state.highlight = -1;
