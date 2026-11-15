@@ -338,11 +338,16 @@
       .archive-grid .card .meta span + span { color: var(--priv-ink); }
       .lock { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 20px; }
       .lock[hidden] { display: none; }
-      .theme-btn { position: fixed; top: 12px; right: 12px; z-index: 80; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; min-height: 34px; box-shadow: var(--shadow); }
+      .top-actions { position: fixed; top: 12px; right: 12px; z-index: 80; display: flex; gap: 8px; }
+      .theme-btn { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; min-height: 34px; box-shadow: var(--shadow); }
       .theme-btn:hover { border-color: var(--accent); color: var(--ink); }
       .theme-btn svg { flex: none; }
       /* On phones the switch sits at the top of the page and scrolls away with it. */
-      @media (max-width: 600px) { .theme-btn { position: absolute; box-shadow: none; } }
+      @media (max-width: 600px) { .top-actions { position: absolute; } .theme-btn { box-shadow: none; } header.hero { padding-top: 58px; } }
+      .theme-btn[disabled] { opacity: .6; cursor: progress; }
+      .theme-btn.spinning svg { animation: spin .8s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { .theme-btn.spinning svg { animation: none; } }
       /* ---------- "What would you like to do?" ---------- */
       .askbox { background: var(--surface); border: 1.5px solid var(--ink); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); margin-top: 24px; }
       .askbox h2 { font-size: 20px; font-weight: 800; margin: 0 0 4px; letter-spacing: -0.01em; }
@@ -409,7 +414,10 @@
     <script src="config.js"></script>
   </head>
   <body>
-    <button class="theme-btn" id="theme-btn" type="button" aria-label="Switch light or dark mode"></button>
+    <div class="top-actions">
+      <button class="theme-btn" id="refresh-btn" type="button" aria-label="Refresh the library" title="Get the latest from your library"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>Refresh</button>
+      <button class="theme-btn" id="theme-btn" type="button" aria-label="Switch light or dark mode"></button>
+    </div>
     <div class="lock" id="lock" hidden>
       <form id="lock-form">
         <h2>AI Toolbox Library</h2>
@@ -813,6 +821,15 @@
         const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
         applyTheme(next);
         if (ACCESS_KEY) call('mutation', 'items:setTheme', { theme: next }).catch(() => {});
+      });
+
+      // ---------- refresh: pull the latest cards, prompts and progress (keeps your filters) ----------
+      document.getElementById('refresh-btn').addEventListener('click', async e => {
+        const b = e.currentTarget;
+        if (!ACCESS_KEY || !document.getElementById('lock').hidden) { location.reload(); return; }
+        b.disabled = true; b.classList.add('spinning');
+        try { await load(); } catch (x) { location.reload(); }
+        finally { b.disabled = false; b.classList.remove('spinning'); }
       });
 
       // ---------- loading ----------
