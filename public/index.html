@@ -360,8 +360,22 @@
       .theme-btn:hover { border-color: var(--accent); color: var(--ink); }
       .theme-btn svg { flex: none; }
       /* On phones the switch sits at the top of the page and scrolls away with it. */
-      @media (max-width: 600px) { .top-actions { position: absolute; } .theme-btn { box-shadow: none; } header.hero { padding-top: 58px; } }
+      @media (max-width: 600px) { .top-actions { position: absolute; } .credit-pop { position: absolute; } .theme-btn { box-shadow: none; } header.hero { padding-top: 58px; } }
       .theme-btn[disabled] { opacity: .6; cursor: progress; }
+      .credit-pop { position: fixed; top: 54px; right: 12px; z-index: 85; width: min(320px, calc(100vw - 24px)); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 16px 40px -16px rgba(0,0,0,.45); padding: 14px 16px; font-size: 14px; }
+      .credit-pop[hidden] { display: none; }
+      .credit-pop .cp-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+      .credit-pop .cp-head b { font-size: 15px; }
+      .credit-pop .cp-close { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 6px; }
+      .credit-pop .cp-status { display: flex; gap: 10px; align-items: flex-start; }
+      .credit-pop .cp-dot { flex: none; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; background: var(--surface-2); color: var(--muted); }
+      .credit-pop .cp-dot.ok { background: var(--accent); color: #fff; }
+      .credit-pop .cp-dot.bad { background: #b42318; color: #fff; }
+      .credit-pop .cp-dot.warn { background: var(--priv-ink); color: var(--priv-bg); }
+      .credit-pop .cp-title { font-weight: 700; margin: 2px 0 2px; }
+      .credit-pop .cp-detail { color: var(--ink-2); margin: 0; line-height: 1.45; }
+      .credit-pop .cp-time { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
+      .credit-pop .cp-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
       .theme-btn.spinning svg { animation: spin .8s linear infinite; }
       @keyframes spin { to { transform: rotate(360deg); } }
       @media (prefers-reduced-motion: reduce) { .theme-btn.spinning svg { animation: none; } }
@@ -433,7 +447,16 @@
   <body>
     <div class="top-actions">
       <button class="theme-btn" id="refresh-btn" type="button" aria-label="Reload the page" title="Reload the page from scratch"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>Refresh</button>
+      <button class="theme-btn" id="credit-btn" type="button" aria-label="Check Gemini credit" aria-expanded="false" aria-controls="credit-pop"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></svg>Credit</button>
       <button class="theme-btn" id="theme-btn" type="button" aria-label="Switch light or dark mode"></button>
+    </div>
+    <div class="credit-pop" id="credit-pop" hidden role="dialog" aria-labelledby="cp-h">
+      <div class="cp-head"><b id="cp-h">Gemini credit</b><button class="cp-close" id="cp-close" type="button" aria-label="Close">&times;</button></div>
+      <div class="cp-status"><span class="cp-dot" id="cp-dot" aria-hidden="true">&hellip;</span><div><p class="cp-title" id="cp-title">Checking&hellip;</p><p class="cp-detail" id="cp-detail"></p><p class="cp-time" id="cp-time"></p></div></div>
+      <div class="cp-actions">
+        <a class="primary-btn" style="text-decoration:none;display:inline-flex;align-items:center;min-height:36px;padding:6px 14px;font-size:13.5px" href="https://aistudio.google.com/billing" target="_blank" rel="noopener">Open billing page &#8599;</a>
+        <button class="mini-btn" id="cp-again" type="button">Check again</button>
+      </div>
     </div>
     <div class="lock" id="lock" hidden>
       <form id="lock-form">
@@ -857,6 +880,42 @@
         el.title = d.toString();
         el.hidden = false;
       })();
+
+      // ---------- Gemini credit: is it working? (Google has no API for the exact balance) ----------
+      const creditPop = document.getElementById('credit-pop');
+      const creditBtn = document.getElementById('credit-btn');
+      async function checkCredit() {
+        const dot = document.getElementById('cp-dot');
+        dot.className = 'cp-dot'; dot.textContent = '\u2026';
+        document.getElementById('cp-title').textContent = 'Checking\u2026';
+        document.getElementById('cp-detail').textContent = 'Sending a tiny test request to Gemini (costs a tiny fraction of a cent).';
+        document.getElementById('cp-time').textContent = '';
+        document.getElementById('cp-again').disabled = true;
+        try {
+          if (!ACCESS_KEY) throw new Error('Unlock the library first.');
+          const r = await call('action', 'credit:check', {});
+          const look = { ok: ['ok', '\u2713', 'Working \u2014 you have credit'], no_credit: ['bad', '!', 'Out of credit'], key: ['bad', '!', 'API key problem'],
+            missing: ['bad', '!', 'No Gemini key set'], busy: ['warn', '\u23F3', 'Busy right now'], error: ['warn', '?', 'Couldn\u2019t check'] }[r.status] || ['warn', '?', 'Couldn\u2019t check'];
+          dot.className = 'cp-dot ' + look[0]; dot.textContent = look[1];
+          document.getElementById('cp-title').textContent = look[2];
+          document.getElementById('cp-detail').textContent = r.detail + (r.status === 'ok' ? ' The exact amount left is on the billing page.' : '');
+          document.getElementById('cp-time').textContent = 'Checked ' + new Date(r.checkedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        } catch (e) {
+          dot.className = 'cp-dot warn'; dot.textContent = '?';
+          document.getElementById('cp-title').textContent = 'Couldn\u2019t check';
+          document.getElementById('cp-detail').textContent = e.message;
+        } finally { document.getElementById('cp-again').disabled = false; }
+      }
+      function closeCredit() { creditPop.hidden = true; creditBtn.setAttribute('aria-expanded', 'false'); }
+      creditBtn.addEventListener('click', () => {
+        if (!creditPop.hidden) { closeCredit(); return; }
+        creditPop.hidden = false; creditBtn.setAttribute('aria-expanded', 'true');
+        checkCredit();
+      });
+      document.getElementById('cp-close').addEventListener('click', closeCredit);
+      document.getElementById('cp-again').addEventListener('click', checkCredit);
+      document.addEventListener('click', e => { if (!creditPop.hidden && !creditPop.contains(e.target) && !creditBtn.contains(e.target)) closeCredit(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && !creditPop.hidden) closeCredit(); });
 
       // ---------- refresh: a full, clean reload of the page ----------
       // Fresh copy from the server (skips the browser cache), back at the top, with search, filters,
