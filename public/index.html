@@ -3,7 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="dark light" />
+    <script>
+      // Theme: your saved choice (synced through your library), otherwise dark on every device.
+      (function () { var t = 'dark'; try { t = localStorage.getItem('aicm-theme') || 'dark'; } catch (e) {} document.documentElement.setAttribute('data-theme', t); })();
+    </script>
     <link rel="icon" href="data:," />
     <title>AI Content Map</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -30,27 +34,27 @@
         --shadow: 0 1px 2px rgba(20, 30, 22, .05), 0 8px 24px -18px rgba(20, 30, 22, .35);
         --radius: 14px;
       }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #101312;
-          --surface: #181c1a;
-          --surface-2: #212623;
-          --ink: #edf0ed;
-          --ink-2: #c3cbc4;
-          --muted: #93a096;
-          --line: #2c332e;
-          --accent: #43bd8d;
-          --accent-ink: #6fd3ab;
-          --accent-soft: #1c2f27;
-          --os-bg: #177a57;
-          --os-fg: #eafff5;
-          --priv-bg: #3a2f14;
-          --priv-ink: #f0cd7e;
-          --priv-line: #5d4c1e;
-          --chip-bg: #181c1a;
-          --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 26px -18px rgba(0,0,0,.8);
-        }
+      :root[data-theme="dark"] {
+        --bg: #101312;
+        --surface: #181c1a;
+        --surface-2: #212623;
+        --ink: #edf0ed;
+        --ink-2: #c3cbc4;
+        --muted: #93a096;
+        --line: #2c332e;
+        --accent: #43bd8d;
+        --accent-ink: #6fd3ab;
+        --accent-soft: #1c2f27;
+        --os-bg: #177a57;
+        --os-fg: #eafff5;
+        --priv-bg: #3a2f14;
+        --priv-ink: #f0cd7e;
+        --priv-line: #5d4c1e;
+        --chip-bg: #181c1a;
+        --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 26px -18px rgba(0,0,0,.8);
+        color-scheme: dark;
       }
+      :root[data-theme="light"] { color-scheme: light; }
       * { box-sizing: border-box; }
       [hidden] { display: none !important; }
       html { scroll-behavior: smooth; }
@@ -266,7 +270,7 @@
       .pop-track { flex: 1; height: 8px; background: var(--surface-2); border-radius: 5px; overflow: hidden; }
       .pop-fill { display: block; height: 100%; background: var(--accent); border-radius: 5px; }
       .pop-fill.hot { background: #c2410c; }
-      @media (prefers-color-scheme: dark) { .pop-fill.hot { background: #fb923c; } }
+      :root[data-theme="dark"] .pop-fill.hot { background: #fb923c; }
       .pop-num { font-family: "IBM Plex Mono", monospace; font-size: 15px; font-weight: 600; line-height: 1; }
       .pop-num small { font-size: 11px; color: var(--muted); font-weight: 400; }
       .pop-tier { font-size: 12px; color: var(--muted); flex: none; }
@@ -314,11 +318,11 @@
         cursor: pointer; border: 0; background: var(--accent); color: #fff; border-radius: 999px; padding: 8px 20px;
         font-size: 14.5px; font-weight: 700; min-height: 40px;
       }
-      @media (prefers-color-scheme: dark) { .primary-btn { color: #0b1a14; } }
+      :root[data-theme="dark"] .primary-btn { color: #0b1a14; }
       .primary-btn[disabled] { opacity: .55; cursor: progress; }
       .add-status { font-size: 14px; color: var(--ink-2); }
       .add-status.err { color: #b42318; }
-      @media (prefers-color-scheme: dark) { .add-status.err { color: #ff8a7a; } }
+      :root[data-theme="dark"] .add-status.err { color: #ff8a7a; }
       .card.just-added { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft), var(--shadow); }
       .card .foot { justify-content: space-between; }
       .card .manage { display: inline-flex; gap: 4px; flex: none; }
@@ -328,12 +332,15 @@
       }
       .manage-btn:hover { border-color: var(--line); color: var(--ink); }
       .manage-btn.danger:hover, .manage-btn.confirm { color: #b42318; border-color: #e7b3ab; }
-      @media (prefers-color-scheme: dark) { .manage-btn.danger:hover, .manage-btn.confirm { color: #ff8a7a; border-color: #6b3029; } }
+      :root[data-theme="dark"] .manage-btn.danger:hover, :root[data-theme="dark"] .manage-btn.confirm { color: #ff8a7a; border-color: #6b3029; }
       .card .foot .right { display: inline-flex; align-items: center; gap: 6px; }
       .archive-grid .card { opacity: .88; }
       .archive-grid .card .meta span + span { color: var(--priv-ink); }
       .lock { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 20px; }
       .lock[hidden] { display: none; }
+      .theme-btn { position: fixed; top: 12px; right: 12px; z-index: 80; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; min-height: 34px; box-shadow: var(--shadow); }
+      .theme-btn:hover { border-color: var(--accent); color: var(--ink); }
+      .theme-btn svg { flex: none; }
       /* ---------- "What would you like to do?" ---------- */
       .askbox { background: var(--surface); border: 1.5px solid var(--ink); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); margin-top: 24px; }
       .askbox h2 { font-size: 20px; font-weight: 800; margin: 0 0 4px; letter-spacing: -0.01em; }
@@ -371,9 +378,11 @@
       .jobbar .jb-track { flex: 1 1 140px; height: 8px; background: var(--surface-2); border-radius: 5px; overflow: hidden; min-width: 120px; }
       .jobbar .jb-fill { display: block; height: 100%; background: var(--accent); border-radius: 5px; transition: width .4s ease; }
       .jobbar .jb-err { flex-basis: 100%; color: #b42318; font-size: 13px; }
-      @media (prefers-color-scheme: dark) { .jobbar .jb-err { color: #ff8a7a; } }
+      :root[data-theme="dark"] .jobbar .jb-err { color: #ff8a7a; }
       .card.highlight { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow); }
       .card .btn-row { display: flex; flex-wrap: wrap; gap: 6px; }
+      .card .btn-row .expand-btn { padding: 5px 10px; font-size: 13px; gap: 5px; }
+      @media (max-width: 600px) { .ask-row textarea, .addbox textarea { min-height: 72px; } .card .btn-row { gap: 5px; } .card .btn-row .expand-btn { padding: 5px 8px; font-size: 12.5px; gap: 4px; } }
       /* ---------- install-prompt pop-up ---------- */
       .modal { position: fixed; inset: 0; z-index: 90; background: rgba(10, 14, 12, .55); display: flex; align-items: center; justify-content: center; padding: 16px; }
       .modal[hidden] { display: none; }
@@ -398,6 +407,7 @@
     <script src="config.js"></script>
   </head>
   <body>
+    <button class="theme-btn" id="theme-btn" type="button" aria-label="Switch light or dark mode"></button>
     <div class="lock" id="lock" hidden>
       <form id="lock-form">
         <h2>AI Content Map</h2>
@@ -715,7 +725,7 @@
             '<button type="button" class="manage-btn danger" data-act="delete" data-id="' + it.id + '">Delete</button>'
           : '<button type="button" class="manage-btn" data-act="archive" data-id="' + it.id + '">Archive</button>' +
             '<button type="button" class="manage-btn danger" data-act="delete" data-id="' + it.id + '">Delete</button>';
-        const foot = '<div class="foot"><span class="manage">' + manage + '</span><span class="right">' + docsHTML + '<a class="open-link" href="' + esc(it.url) + '" target="_blank" rel="noopener">Open <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></a></span></div>';
+        const foot = '<div class="foot"><span class="manage">' + manage + '</span><span class="right">' + docsHTML + '</span></div>';
         const did = (inArchive ? 'adetail-' : 'detail-') + it.id;
         const detail = '<div class="detail" id="' + did + '"' + (open ? '' : ' hidden') + '>' +
           (moreBadges ? '<div class="badges">' + moreBadges + '</div>' : '') +
@@ -732,7 +742,8 @@
           poprow +
           '<div class="badges">' + badges + '</div>' +
           '<div class="btn-row"><button type="button" class="expand-btn" data-expand="' + it.id + '" aria-expanded="' + open + '" aria-controls="' + did + '">' + (open ? 'Show less' : 'Read more') + '<svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>' +
-          '<button type="button" class="expand-btn" data-install="' + it.id + '">Install prompt' + (state.prompts.has(it.id) ? ' <span aria-label="ready" title="Ready — opens instantly" style="color:var(--accent)">●</span>' : '') + '</button></div>' +
+          '<button type="button" class="expand-btn" data-install="' + it.id + '">Install prompt' + (state.prompts.has(it.id) ? ' <span aria-label="ready" title="Ready — opens instantly" style="color:var(--accent)">●</span>' : '') + '</button>' +
+          '<a class="expand-btn" style="text-decoration:none" href="' + esc(it.url) + '" target="_blank" rel="noopener">Open <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></a></div>' +
           detail +
           (inArchive ? foot : '') +
           '</article>';
@@ -783,6 +794,25 @@
         document.getElementById('q').value = '';
       }
 
+      // ---------- light / dark mode (same choice on every device) ----------
+      const SUN = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>';
+      const MOON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>';
+      function applyTheme(t) {
+        t = t === 'light' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+        try { localStorage.setItem('aicm-theme', t); } catch (e) {}
+        const b = document.getElementById('theme-btn');
+        // The button shows what you switch TO.
+        b.innerHTML = t === 'dark' ? SUN + 'Light' : MOON + 'Dark';
+        b.setAttribute('aria-label', t === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+      }
+      applyTheme(document.documentElement.getAttribute('data-theme'));
+      document.getElementById('theme-btn').addEventListener('click', () => {
+        const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        applyTheme(next);
+        if (ACCESS_KEY) call('mutation', 'items:setTheme', { theme: next }).catch(() => {});
+      });
+
       // ---------- loading ----------
       async function load() {
         let res = await call('query', 'items:list', {});
@@ -804,6 +834,7 @@
         items = res.active;
         archived = res.archived;
         state.prompts = new Set(res.promptIds || []);
+        if (res.meta.theme && res.meta.theme !== document.documentElement.getAttribute('data-theme')) applyTheme(res.meta.theme);
         JOB = res.job || {};
         DATA.clusters = res.meta.clusters || [];
         DATA.attachments = res.meta.attachments || [];

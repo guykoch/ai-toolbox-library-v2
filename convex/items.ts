@@ -283,3 +283,14 @@ export const applyPrepared = mutation({
     return { switched, prompts };
   },
 });
+
+// Light/dark choice, shared by all your devices.
+export const setTheme = mutation({
+  args: { key: v.string(), theme: v.union(v.literal("light"), v.literal("dark")) },
+  handler: async (ctx, { key, theme }) => {
+    checkKey(key);
+    const row = await ctx.db.query("meta").withIndex("by_key", (q) => q.eq("key", "theme")).first();
+    if (row) await ctx.db.patch(row._id, { value: theme });
+    else await ctx.db.insert("meta", { key: "theme", value: theme });
+  },
+});
