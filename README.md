@@ -1,4 +1,4 @@
-# AI Content Map — deploy guide
+# AI Toolbox Library — deploy guide
 
 Your library, now live on the web, with these features:
 - **"What would you like to do?"**: type a goal in plain words (e.g. "I want to generate a video"). You get the best tools **from your library**, ranked, with reasons. Ask follow-ups like a chat. If nothing fits, it says so.
@@ -49,7 +49,7 @@ The first time you open the site, your 208 existing items are imported automatic
 If you use git instead:
 ```bash
 cd ai-toolbox-library
-git init && git add . && git commit -m "AI Content Map"
+git init && git add . && git commit -m "AI Toolbox Library"
 git remote add origin https://github.com/<you>/ai-toolbox-library.git
 git push -u origin main
 ```

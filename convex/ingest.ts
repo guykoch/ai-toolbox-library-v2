@@ -21,7 +21,7 @@ function dateParts(isoToday: string) {
   return { iso: isoToday, date: `${d} ${MONTHS[m - 1]} ${y}`, month: m };
 }
 
-const FORMAT_SPEC = `You file links into a personal "AI Content Map" library. Return ONE card as a JSON object, nothing else.
+const FORMAT_SPEC = `You file links into a personal "AI Toolbox Library" library. Return ONE card as a JSON object, nothing else.
 
 Fields (match the examples exactly in style and length):
 - "title": the tool/post's real name. For GitHub repos use "owner/repo: <repo description>". For a social post about a tool, a short name for what it is (e.g. "TranslateGemma", "Five Claude Code tips"). Keep the original language of the title if the page title is Hebrew.
