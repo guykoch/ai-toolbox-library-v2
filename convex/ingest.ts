@@ -21,6 +21,9 @@ function dateParts(isoToday: string) {
   return { iso: isoToday, date: `${d} ${MONTHS[m - 1]} ${y}`, month: m };
 }
 
+// Screenshots per add (the page enforces the same limit).
+const MAX_SHOTS = 20;
+
 const FORMAT_SPEC = `You file links into a personal "AI Toolbox Library" library. Return ONE card as a JSON object, nothing else.
 
 Fields (match the examples exactly in style and length):
@@ -75,7 +78,7 @@ export const addFromText = action({
   handler: async (ctx, { key, text, today, images }): Promise<{ status: "added" | "again"; item: any; wasArchived?: boolean }> => {
     checkKey(key);
     const input = text.trim();
-    const pics = (images || []).filter((im) => /^image\/(png|jpeg|webp|gif)$/.test(im.mime)).slice(0, 4);
+    const pics = (images || []).filter((im) => /^image\/(png|jpeg|webp|gif)$/.test(im.mime)).slice(0, MAX_SHOTS);
     if (!input && !pics.length) throw new ConvexError("Paste a link, a tool name, some context or a screenshot first.");
     if (!/^\d{4}-\d{2}-\d{2}$/.test(today)) throw new ConvexError("Bad date.");
     const day = dateParts(today);

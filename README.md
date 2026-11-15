@@ -126,7 +126,7 @@ The app ships with install prompts for all 208 existing tools, plus research tha
   - **A tool name or a description** is looked up on the web to find the official link.
   - **Tracking parameters** like utm and fbclid are removed.
 - **Facebook posts**: Facebook hides posts from servers, so a bare link can't be read. Use one of these instead:
-  - **Screenshot:** paste it (Ctrl/Cmd+V), drag it in, or click **Add screenshot**. Up to 4 images; the AI reads them.
+  - **Screenshot:** paste it (Ctrl/Cmd+V), drag it in, or click **Add screenshot**. Up to 20 images; the AI reads them all.
   - **Text:** paste the post's text along with the link.
   - If a link can't be read and there's nothing else to go on, nothing is saved. You're asked for the text or a screenshot instead.
 - **Archive** hides a card. Open **Archive** below the library to **Bring back** or **Delete** it.
