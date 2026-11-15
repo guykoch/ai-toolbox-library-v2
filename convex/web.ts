@@ -21,6 +21,11 @@ export function cleanUrl(raw: string): string {
 }
 
 export function norm(u: string): string {
+  // GitHub links count as the same repo whatever comes after owner/repo (…/tree/main, …/blob/…, .git).
+  const gh = String(u || "").match(/github\.com\/([\w.-]+)\/([\w.-]+)/i);
+  if (gh && !["orgs", "topics", "search", "marketplace", "features", "apps", "settings"].includes(gh[1].toLowerCase())) {
+    return ("github.com/" + gh[1] + "/" + gh[2].replace(/\.git$/, "")).toLowerCase();
+  }
   return cleanUrl(u).replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/+$/, "").toLowerCase();
 }
 

@@ -320,7 +320,24 @@
       }
       :root[data-theme="dark"] .primary-btn { color: #0b1a14; }
       .primary-btn[disabled] { opacity: .55; cursor: progress; }
+      .deployed { margin: 4px 0 0; font-size: 12px; color: var(--muted); opacity: .8; }
       .add-status { font-size: 14px; color: var(--ink-2); }
+      .add-result { display: grid; grid-template-columns: 30px 1fr auto; gap: 2px 12px; align-items: start; margin-top: 12px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); }
+      .add-result[hidden] { display: none; }
+      .add-result .ar-icon { grid-row: span 3; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; }
+      .add-result .ar-head { font-weight: 700; font-size: 15px; margin: 2px 0 0; }
+      .add-result .ar-body { grid-column: 2; font-size: 14px; color: var(--ink-2); margin: 0; line-height: 1.45; }
+      .add-result .ar-actions { grid-column: 2; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+      .add-result .ar-actions:empty { display: none; }
+      .add-result .ar-close { grid-row: 1; grid-column: 3; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 4px 6px; min-height: 28px; }
+      .add-result.ok { border-color: var(--accent); background: var(--accent-soft); }
+      .add-result.ok .ar-icon { background: var(--accent); color: #fff; }
+      .add-result.again { border-color: var(--priv-line); background: var(--priv-bg); }
+      .add-result.again .ar-icon { background: var(--priv-ink); color: var(--priv-bg); }
+      .add-result.fail { border-color: #e7b3ab; background: #fdf0ee; }
+      .add-result.fail .ar-icon { background: #b42318; color: #fff; }
+      :root[data-theme="dark"] .add-result.fail { border-color: #6b3029; background: #2a1715; }
+      :root[data-theme="dark"] .add-result.fail .ar-icon { background: #ff8a7a; color: #2a1715; }
       .add-status.err { color: #b42318; }
       :root[data-theme="dark"] .add-status.err { color: #ff8a7a; }
       .card.just-added { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft), var(--shadow); }
@@ -446,6 +463,7 @@
       <header class="hero">
         <h1>AI Toolbox Library</h1>
         <p class="statline" id="statline"></p>
+        <p class="deployed" id="deployed" hidden></p>
       </header>
 
       <section class="askbox" aria-labelledby="ask-h">
@@ -473,6 +491,13 @@
           <button class="primary-btn" id="add-btn" type="button">Add to library</button>
           <label class="mini-btn" style="display:inline-flex;align-items:center;cursor:pointer">Add screenshot<input type="file" id="shot-input" accept="image/*" multiple hidden /></label>
           <span class="add-status" id="add-status" role="status" aria-live="polite"></span>
+        </div>
+        <div class="add-result" id="add-result" hidden role="status" aria-live="polite">
+          <span class="ar-icon" id="ar-icon" aria-hidden="true"></span>
+          <p class="ar-head" id="ar-head"></p>
+          <button class="ar-close" id="ar-close" type="button" aria-label="Dismiss">&times;</button>
+          <p class="ar-body" id="ar-body"></p>
+          <div class="ar-actions" id="ar-actions"></div>
         </div>
       </section>
 
@@ -823,6 +848,16 @@
         if (ACCESS_KEY) call('mutation', 'items:setTheme', { theme: next }).catch(() => {});
       });
 
+      // ---------- "Last deployed" (stamped by the Vercel build, shown in your local time) ----------
+      (function () {
+        const d = window.DEPLOYED_AT ? new Date(window.DEPLOYED_AT) : null;
+        if (!d || isNaN(d)) return;
+        const el = document.getElementById('deployed');
+        el.textContent = 'Last deployed ' + d.toLocaleString('en-US', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+        el.title = d.toString();
+        el.hidden = false;
+      })();
+
       // ---------- refresh: pull the latest cards, prompts and progress (keeps your filters) ----------
       document.getElementById('refresh-btn').addEventListener('click', async e => {
         const b = e.currentTarget;
@@ -980,25 +1015,68 @@
       addText.addEventListener('drop', e => { if (e.dataTransfer && e.dataTransfer.files.length) { e.preventDefault(); addShots(e.dataTransfer.files); } addText.classList.remove('dragover'); });
 
 
+      // ---- the result of each add, in plain words ----
+      const addResult = document.getElementById('add-result');
+      function showResult(kind, head, body, actions) {
+        addResult.className = 'add-result ' + kind;
+        document.getElementById('ar-icon').textContent = kind === 'ok' ? '\u2713' : kind === 'again' ? '\u21BA' : '!';
+        document.getElementById('ar-head').textContent = head;
+        document.getElementById('ar-body').innerHTML = body;
+        document.getElementById('ar-actions').innerHTML = actions || '';
+        addResult.hidden = false;
+      }
+      document.getElementById('ar-close').addEventListener('click', () => { addResult.hidden = true; });
+      function friendlyError(msg) {
+        const m = String(msg || '');
+        if (/couldn.t read that post|Facebook hides/i.test(m)) return 'Facebook doesn\u2019t let the app read posts directly. Copy the post\u2019s text (or take a screenshot), paste it here with the link, and try again.';
+        if (/find a link/i.test(m)) return 'I couldn\u2019t work out which tool this is. Add the tool\u2019s name, its website, or a bit more detail, and try again.';
+        if (/quota|billing|exceeded|credit/i.test(m)) return 'Your Gemini credit ran out, so the AI couldn\u2019t look this up. Top up your Gemini balance (aistudio.google.com \u2192 Billing) and try again.';
+        if (/API_KEY|API key|not set in the Convex/i.test(m)) return 'The AI key isn\u2019t set up correctly in Convex (Settings \u2192 Environment Variables). Fix it and try again.';
+        if (/Paste a link|screenshot first/i.test(m)) return 'The box is empty \u2014 paste a link, a tool name, some text or a screenshot.';
+        if (/Failed to fetch|NetworkError|HTTP 5/i.test(m)) return 'The connection dropped before it finished. Check your internet and try again.';
+        return 'Something went wrong: ' + esc(m) + '. Try again in a moment.';
+      }
+      function goToCard(id) {
+        resetFilters(); state.highlight = id; state.expanded.add(id); render();
+        const el = document.getElementById('card-' + id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      document.getElementById('ar-actions').addEventListener('click', e => {
+        const s = e.target.closest('[data-show]'); if (s) { goToCard(Number(s.dataset.show)); return; }
+        const i = e.target.closest('[data-install]'); if (i) openInstall(Number(i.dataset.install), false);
+      });
+
       async function addFromText() {
         const text = addText.value.trim();
-        if (!text && !shots.length) { addStatus.className = 'add-status err'; addStatus.textContent = 'Paste a link, a tool name or some context first.'; return; }
+        addResult.hidden = true;
+        if (!text && !shots.length) { showResult('fail', 'Nothing to add yet', friendlyError('Paste a link')); return; }
         addBtn.disabled = true; addStatus.className = 'add-status';
-        addStatus.textContent = 'Opening the link and identifying it… (usually 10–40 seconds)';
+        addStatus.textContent = 'Working on it \u2014 opening the link and identifying the tool\u2026 (usually 10\u201340 seconds)';
         try {
           const res = await call('action', 'ingest:addFromText', { text: text, today: todayISO(), images: shots.map(s => ({ mime: s.mime, data: s.data })) });
           addText.value = ''; shots = []; renderShots();
+          addStatus.textContent = '';
           resetFilters();
           state.justAdded = res.item.id;
           state.expanded.add(res.item.id);
           await load();
-          addStatus.textContent = res.status === 'again'
-            ? 'Already in your library — marked “saved again”' + (res.wasArchived ? ' and brought back from the archive' : '') + ': ' + res.item.title
-            : 'Added: ' + res.item.title;
-          scrollToLibrary();
+          const it = res.item;
+          const shelf = (CATS[it.cat] || CATS.other).label;
+          const actions = '<button type="button" class="mini-btn" data-show="' + it.id + '">Show it in the library</button>' +
+            '<button type="button" class="mini-btn" data-install="' + it.id + '">Install prompt</button>' +
+            '<a class="mini-btn" style="text-decoration:none;display:inline-flex;align-items:center" href="' + esc(it.url) + '" target="_blank" rel="noopener">Open</a>';
+          if (res.status === 'again') {
+            showResult('again', 'Already in your library',
+              '<b dir="auto">' + esc(it.title) + '</b> was first saved on ' + esc(it.date) + ', so no duplicate was added. It\u2019s now marked \u201CSaved again\u201D' +
+              (res.wasArchived ? ' and was brought back from the archive.' : '.'), actions);
+          } else {
+            showResult('ok', 'Tool added',
+              '<b dir="auto">' + esc(it.title) + '</b> is now on the <b>' + esc(shelf) + '</b> shelf' + (it.os === true ? ' (open source)' : '') + '. ' +
+              'Its install prompt is being written and will be ready in about a minute.', actions);
+          }
         } catch (e) {
-          addStatus.className = 'add-status err';
-          addStatus.textContent = e.message;
+          addStatus.textContent = '';
+          showResult('fail', 'Couldn\u2019t be added', friendlyError(e.message) + ' Your text is still in the box.');
         } finally {
           addBtn.disabled = false;
         }

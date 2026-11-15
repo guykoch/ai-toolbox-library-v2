@@ -87,7 +87,7 @@ export const addFromText = action({
     // Prefer a card whose own link matches; fall back to a card that only mentions it.
     const findDup = (u: string) =>
       rows.find((r) => r.data.url && norm(r.data.url) === norm(u)) ||
-      rows.find((r) => [r.data.mentioned, r.data.docs].filter(Boolean).some((x: string) => norm(x) === norm(u)));
+      rows.find((r) => [r.data.mentioned, r.data.docs, r.data.savedFrom].filter(Boolean).some((x: string) => norm(x) === norm(u)));
     for (const u of urls) {
       const dup = findDup(u);
       if (dup) {
@@ -127,7 +127,8 @@ export const addFromText = action({
     const str = (x: any) => (typeof x === "string" ? x.trim() : "");
     const url = cleanUrl(str(raw.url) || fetched[0]?.finalUrl || urls[0] || "");
     if (!/^https?:\/\//.test(url)) throw new ConvexError("Couldn't find a link for this. Paste the link itself, or add more detail.");
-    const dupAfter = findDup(url);
+    const innerLink = str(raw.mentioned);
+    const dupAfter = findDup(url) || (/github\.com\//i.test(innerLink) ? rows.find((r) => r.data.url && norm(r.data.url) === norm(innerLink)) : undefined);
     if (dupAfter) {
       const res = await ctx.runMutation(internal.items.markSavedAgain, { id: dupAfter.data.id, date: day.date });
       return { status: "again", item: res.item, wasArchived: res.wasArchived };
