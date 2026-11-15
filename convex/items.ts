@@ -2,8 +2,9 @@ import { query, mutation, internalMutation, internalQuery } from "./_generated/s
 import { v, ConvexError } from "convex/values";
 import { checkKey } from "./auth";
 import { SEED_ITEMS, SEED_META } from "./seedData";
+import { PREPARED, PREPARED_VERSION } from "./preparedData";
 
-const SOCIAL = ["Facebook", "linkedin.com"];
+const SOCIAL = ["Facebook", "LinkedIn", "linkedin.com"];
 
 // ---------- read ----------
 export const list = query({
@@ -30,7 +31,9 @@ export const list = query({
     const archived = rows
       .filter((r) => r.status === "archived")
       .map((r) => ({ ...r.data, archivedAt: r.archivedAt ?? "" }));
-    return { active, archived, meta, promptIds, job, seeded: rows.length > 0 || metaRows.length > 0 };
+    const preparedPending = PREPARED.length > 0 && meta.prepared !== PREPARED_VERSION;
+    delete meta.prepared;
+    return { active, archived, meta, promptIds, job, preparedPending, preparedCount: PREPARED.length, seeded: rows.length > 0 || metaRows.length > 0 };
   },
 });
 
@@ -219,5 +222,64 @@ export const setJob = internalMutation({
     const row = await ctx.db.query("meta").withIndex("by_key", (q) => q.eq("key", "pipeline")).first();
     if (row) await ctx.db.patch(row._id, { value: { ...row.value, ...patch } });
     else await ctx.db.insert("meta", { key: "pipeline", value: patch });
+  },
+});
+
+// ---------- built-in research + install prompts (prepared ahead of time, no AI credits) ----------
+const SOCIAL_HOST_RE = /facebook\.com|fb\.watch|linkedin\.com/i;
+const normUrl = (u: string) => String(u || "").replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[?#].*$/, "").replace(/\/+$/, "").toLowerCase();
+
+export const applyPrepared = mutation({
+  args: { key: v.string(), from: v.number(), to: v.number(), today: v.string() },
+  handler: async (ctx, { key, from, to, today }) => {
+    checkKey(key);
+    // Stop the paid background job — this replaces its work.
+    const job = await ctx.db.query("meta").withIndex("by_key", (q) => q.eq("key", "pipeline")).first();
+    if (job && job.value?.running) await ctx.db.patch(job._id, { value: { ...job.value, running: false } });
+
+    const rows = await ctx.db.query("items").collect();
+    const byId = new Map(rows.map((r) => [r.itemId, r]));
+    const urlOwner = new Map<string, number>();
+    for (const r of rows) if (r.data?.url) urlOwner.set(normUrl(r.data.url), r.itemId);
+    const prompted = new Set((await ctx.db.query("prompts").collect()).map((p) => p.itemId));
+    let switched = 0, prompts = 0;
+
+    for (const p of PREPARED.slice(from, to)) {
+      const row = byId.get(p.id);
+      if (!row) continue;
+      const e = p.enrich;
+      if (e && !row.data?.savedFrom && SOCIAL_HOST_RE.test(String(row.data?.url || ""))) {
+        if (e.decision === "tool" && e.url) {
+          const owner = urlOwner.get(normUrl(e.url));
+          if (owner === undefined || owner === p.id) {
+            const next: any = { ...row.data, savedFrom: row.data.url, url: e.url, host: e.host, title: e.title || row.data.title, summary: e.summary || row.data.summary };
+            if (e.type) next.type = e.type;
+            if (e.os === true || e.os === false || e.os === "unknown") next.os = e.os;
+            if (e.docs && normUrl(e.docs) !== normUrl(e.url)) next.docs = e.docs;
+            if (e.install && e.install.length && !(row.data.install && row.data.install.length)) next.install = e.install;
+            if (next.mentioned && normUrl(next.mentioned) === normUrl(e.url)) next.mentioned = "";
+            if (e.whyExtra) next.why = [...(row.data.why || []).filter((w: string) => !/GitHub stars and/.test(w)), e.whyExtra];
+            await ctx.db.patch(row._id, { data: next, enrichedAt: today, enrichNote: e.note || "" });
+            urlOwner.set(normUrl(e.url), p.id);
+            switched++;
+          } else {
+            await ctx.db.patch(row._id, { enrichedAt: today, enrichNote: `kept post: tool already has its own card (#${owner})` });
+          }
+        } else if (!row.enrichedAt) {
+          await ctx.db.patch(row._id, { enrichedAt: today, enrichNote: "kept post: " + (e.note || "") });
+        }
+      }
+      if (p.prompt && !prompted.has(p.id)) {
+        await ctx.db.insert("prompts", { itemId: p.id, text: p.prompt, sources: p.sources || [], model: "Claude (prepared in advance)", createdAt: PREPARED_VERSION });
+        prompted.add(p.id);
+        prompts++;
+      }
+    }
+    if (to >= PREPARED.length) {
+      const m = await ctx.db.query("meta").withIndex("by_key", (q) => q.eq("key", "prepared")).first();
+      if (m) await ctx.db.patch(m._id, { value: PREPARED_VERSION });
+      else await ctx.db.insert("meta", { key: "prepared", value: PREPARED_VERSION });
+    }
+    return { switched, prompts };
   },
 });

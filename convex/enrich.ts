@@ -9,7 +9,7 @@ import { cleanUrl, norm, hostLabel, gatherUrl, fetchWithTimeout } from "./web";
 // news), or the tool can't be found with confidence, the card is left as is.
 // ---------------------------------------------------------------------------
 
-export const SOCIAL_HOSTS = ["Facebook", "linkedin.com"];
+export const SOCIAL_HOSTS = ["Facebook", "LinkedIn", "linkedin.com"];
 export const isSocial = (data: any) => SOCIAL_HOSTS.includes(data?.host) && !data?.savedFrom;
 
 const TYPES = ["guide", "tool", "video", "course", "post", "news", "open-source-repo", "other"];

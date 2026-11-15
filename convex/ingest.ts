@@ -120,7 +120,7 @@ export const addFromText = action({
       : (await callGemini({ model: MODELS.addGemini(), system: FORMAT_SPEC, turns: [{ role: "user", text: userMsg, images: pics }], search: true, thinking: "medium", maxTokens: 4096 })).text;
     const raw = parseJson(answer);
     if (raw.unreadable === true) {
-      throw new ConvexError("I couldn't read that post — Facebook hides posts from servers. Open the post and click your \"Send to library\" bookmark, or paste the post's text or a screenshot here.");
+      throw new ConvexError("I couldn't read that post — Facebook hides posts from servers. Paste the post's text or a screenshot here along with the link.");
     }
 
     // 4. Validate and normalise every field so the card matches the others exactly.

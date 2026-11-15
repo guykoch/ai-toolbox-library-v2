@@ -366,8 +366,6 @@
       .shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
       .shot button { position: absolute; top: 3px; right: 3px; width: 24px; height: 24px; min-height: 24px; border-radius: 50%; border: 0; background: rgba(0,0,0,.65); color: #fff; cursor: pointer; font-size: 14px; line-height: 1; padding: 0; }
       .addbox textarea.dragover { border-color: var(--accent); background: var(--accent-soft); }
-      .bm-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 13.5px; color: var(--muted); }
-      .bookmarklet { display: inline-flex; align-items: center; gap: 6px; border: 1.5px dashed var(--accent); color: var(--accent-ink); background: var(--accent-soft); border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 13.5px; text-decoration: none; cursor: grab; }
       .jobbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-top: 14px; font-size: 13.5px; color: var(--ink-2); }
       .jobbar[hidden] { display: none; }
       .jobbar .jb-track { flex: 1 1 140px; height: 8px; background: var(--surface-2); border-radius: 5px; overflow: hidden; min-width: 120px; }
@@ -427,7 +425,6 @@
     <div class="wrap">
       <header class="hero">
         <h1>AI Content Map</h1>
-        <p class="lede">Every link you saved in your WhatsApp group <b>&ldquo;AI Content&rdquo;</b>, identified and shelved by what it does &mdash; 205 from your chat export (Jan&ndash;Nov 2026), plus eight added on 13 Nov 2026 and six more on 14 Nov 2026<span id="lede-added"></span>.</p>
         <p class="statline" id="statline"></p>
       </header>
 
@@ -450,17 +447,12 @@
       <section class="addbox" aria-labelledby="add-h">
         <h2 id="add-h">Add to the library</h2>
         <p class="sub">Paste anything &mdash; a Facebook post, a GitHub repo, a YouTube video, any link, a tool name, or a few words of context. It&rsquo;s identified and shelved in the same format as everything else.</p>
-        <textarea id="add-text" dir="auto" placeholder="e.g. https://github.com/owner/repo  &middot;  a Facebook post link + its text  &middot;  &ldquo;Granola meeting notes app&rdquo;  &middot;  or paste a screenshot (Ctrl/Cmd+V)"></textarea>
+        <textarea id="add-text" dir="auto" placeholder="e.g. https://github.com/owner/repo  &middot;  a Facebook post&rsquo;s text + link  &middot;  &ldquo;Granola meeting notes app&rdquo;  &middot;  or paste a screenshot (Ctrl/Cmd+V)"></textarea>
         <div class="shots" id="shots"></div>
         <div class="row">
           <button class="primary-btn" id="add-btn" type="button">Add to library</button>
           <label class="mini-btn" style="display:inline-flex;align-items:center;cursor:pointer">Add screenshot<input type="file" id="shot-input" accept="image/*" multiple hidden /></label>
           <span class="add-status" id="add-status" role="status" aria-live="polite"></span>
-        </div>
-        <div class="bm-row">
-          <span><b style="color:var(--ink-2)">Facebook posts:</b> drag this button to your bookmarks bar, then click it while viewing any post &rarr;</span>
-          <a class="bookmarklet" id="bookmarklet" href="#" title="Drag me to your bookmarks bar">&#128278; Send to library</a>
-          <span>It sends the post&rsquo;s text from your own logged-in browser. Select part of a page first to send just that part.</span>
         </div>
       </section>
 
@@ -537,11 +529,7 @@
         <div class="months" id="months"></div>
       </section>
 
-      <section aria-label="Attachments and unidentified links">
-        <details class="fold">
-          <summary id="att-sum">Photos &amp; the PDF from the group</summary>
-          <ul class="plain-list" id="attachments"></ul>
-        </details>
+      <section aria-label="Unidentified links">
         <details class="fold">
           <summary id="unres-sum">Could not be identified</summary>
           <p class="sec-sub" style="margin:10px 0 4px">These links couldn&rsquo;t be opened or resolved, so no title is guessed for them &mdash; each is kept exactly as saved. Paste one into the box above to try again.</p>
@@ -638,8 +626,6 @@
 
       // ---------- page furniture that depends on the data ----------
       function renderChrome() {
-        const added = items.filter(i => i.id > 207).length;
-        document.getElementById('lede-added').textContent = added ? ', plus ' + added + ' added here since' : '';
         const osN = items.filter(i => i.os === true).length;
         document.getElementById('statline').innerHTML =
           '<b>' + (items.length + DATA.unresolved.length) + '</b> links saved &middot; <b>' + items.length + '</b> identified &middot; <b>' + osN +
@@ -673,10 +659,6 @@
           '<span class="m-track"><span class="m-bar" style="display:block;width:' + Math.round(m.count / maxMonth * 100) + '%"></span></span>' +
           '<span class="m-n">' + m.count + '</span></button>').join('');
 
-        document.getElementById('att-sum').textContent = 'Photos & the PDF from the group (' + DATA.attachments.length + ')';
-        document.getElementById('attachments').innerHTML = DATA.attachments.map(a =>
-          '<li><div class="pl-top"><span>' + esc(a.date) + '</span><span class="pl-kind">' + (a.kind === 'pdf' ? 'PDF' : 'Photo') + '</span></div>' +
-          '<p dir="auto">' + esc(a.summary) + '</p></li>').join('');
         document.getElementById('unres-sum').textContent = 'Could not be identified (' + DATA.unresolved.length + ')';
         document.getElementById('unresolved').innerHTML = DATA.unresolved.map(u =>
           '<li><div class="pl-top"><span>' + esc(u.date) + '</span><span>' + esc(u.host) + '</span></div>' +
@@ -809,6 +791,16 @@
           await call('mutation', 'items:seedIfEmpty', {});
           res = await call('query', 'items:list', {});
         }
+        if (res.preparedPending) {
+          // Built-in research + install prompts ship with the app; load them once (no AI credits used).
+          const total = res.preparedCount, step = 25;
+          for (let from = 0; from < total; from += step) {
+            document.getElementById('loading').hidden = false;
+            document.getElementById('loading').textContent = 'Loading ready-made install prompts and tool links\u2026 ' + Math.min(from + step, total) + '/' + total;
+            await call('mutation', 'items:applyPrepared', { from: from, to: from + step, today: (function () { const d = new Date(); return d.getDate() + ' ' + MONTH_LABELS[d.getMonth()] + ' ' + d.getFullYear(); })() });
+          }
+          res = await call('query', 'items:list', {});
+        }
         items = res.active;
         archived = res.archived;
         state.prompts = new Set(res.promptIds || []);
@@ -885,8 +877,6 @@
         try {
           await load();
           document.getElementById('lock').hidden = true;
-          maybeAutoStart();
-          takeHashAdd();
         } catch (e) {
           if (e.isKey) { try { localStorage.removeItem(KEY_STORE); } catch (x) {} showLock(e.message); }
           else { document.getElementById('lock').hidden = true; document.getElementById('loading').textContent = 'Couldn’t load the library: ' + e.message; }
@@ -939,24 +929,6 @@
       addText.addEventListener('dragleave', () => addText.classList.remove('dragover'));
       addText.addEventListener('drop', e => { if (e.dataTransfer && e.dataTransfer.files.length) { e.preventDefault(); addShots(e.dataTransfer.files); } addText.classList.remove('dragover'); });
 
-      // ---- "Send to library" bookmark: grabs the post text in your own browser and opens this page with it ----
-      (function () {
-        const code = "(function(){var s=String(getSelection()).trim(),t=s;if(!t){var q=['[data-ad-comet-preview=\"message\"]','[data-ad-preview=\"message\"]','div[role=\"dialog\"] [role=\"complementary\"]','[role=\"complementary\"]','div[role=\"dialog\"] [role=\"article\"]','[role=\"article\"]','article','main'];for(var i=0;i<q.length;i++){var e=document.querySelector(q[i]);if(e&&e.innerText&&e.innerText.trim().length>20){t=e.innerText.trim();break}}}if(!t)t=document.body.innerText;var d={url:location.href,title:document.title,text:t.slice(0,8000)};window.open('" + location.origin + "/#add='+encodeURIComponent(JSON.stringify(d)),'_blank')})()";
-        const a = document.getElementById('bookmarklet');
-        a.href = 'javascript:' + encodeURIComponent(code);
-        a.addEventListener('click', e => { e.preventDefault(); addStatus.className = 'add-status'; addStatus.textContent = 'Drag that button to your bookmarks bar — then click it on a Facebook post.'; });
-      })();
-      function takeHashAdd() {
-        if (!location.hash.startsWith('#add=')) return false;
-        let d = null;
-        try { d = JSON.parse(decodeURIComponent(location.hash.slice(5))); } catch (e) {}
-        history.replaceState(null, '', location.pathname + location.search);
-        if (!d) return false;
-        addText.value = [d.url, d.title && !/^facebook$/i.test(d.title.trim()) ? 'Page title: ' + d.title : '', d.text ? 'Post text:\n' + d.text : ''].filter(Boolean).join('\n\n');
-        document.querySelector('.addbox').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        addFromText();
-        return true;
-      }
 
       async function addFromText() {
         const text = addText.value.trim();

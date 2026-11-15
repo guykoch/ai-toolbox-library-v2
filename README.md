@@ -97,15 +97,14 @@ Each Vercel build pushes the backend code to Convex first, then publishes the pa
 
 ---
 
-## The background job (first visit)
+## Ready-made install prompts and tool links (first visit)
 
-The first time you open the site after deploying, the job starts by itself. A progress bar under "Add to the library" shows how far it has got.
-- **It runs on Convex**, so you can close the browser and it keeps going.
-- **Time:** roughly 1–2 hours for ~140 post links and ~208 install prompts.
-- **Cost:** about **$8–15 of Gemini credit, one time**. Make sure your prepaid balance covers it.
-- **Pause / Resume** buttons are on the progress bar.
-- **If Gemini runs out of credit, or the key is wrong**, the job stops by itself and shows the problem. Fix it, then press **Resume**.
-- **An item that fails twice is skipped.** Pressing Resume gives it another try.
+The app ships with install prompts for all 208 existing tools, plus research that switched 71 Facebook/LinkedIn post links to the tool's own page. These were prepared by Claude ahead of time, so they use **no Gemini credit**.
+- On the first visit after deploying, they load automatically. You'll briefly see "Loading ready-made install prompts…". Every Install prompt button then shows a green dot ● and opens instantly.
+- About 70 cards still link to the post, because the post itself is the content (tips, news, lists) or the tool couldn't be identified for sure. For any of these, paste the post's text or a screenshot into the Add box to add the tool properly.
+- **New tools** you add use Gemini, a few cents each, and get their install prompt written automatically.
+- **Regenerate** in the pop-up rewrites a prompt with fresh Gemini research, if you ever want that.
+- If an older version already started the paid background job, loading this data stops it.
 
 ## Using it
 
@@ -127,7 +126,6 @@ The first time you open the site after deploying, the job starts by itself. A pr
   - **A tool name or a description** is looked up on the web to find the official link.
   - **Tracking parameters** like utm and fbclid are removed.
 - **Facebook posts**: Facebook hides posts from servers, so a bare link can't be read. Use one of these instead:
-  - **"Send to library" bookmark (easiest):** drag the button at the bottom of the Add box to your bookmarks bar. On any Facebook post, click it. It takes the post's text from your own logged-in browser and adds it to your library. Select part of the page first to send just that part.
   - **Screenshot:** paste it (Ctrl/Cmd+V), drag it in, or click **Add screenshot**. Up to 4 images; the AI reads them.
   - **Text:** paste the post's text along with the link.
   - If a link can't be read and there's nothing else to go on, nothing is saved. You're asked for the text or a screenshot instead.
@@ -149,7 +147,8 @@ convex/ingest.ts     "Add to library": gathers context, asks Claude (or Gemini),
 convex/advisor.ts    "What would you like to do?": ranked picks from your library only
 convex/install.ts    "Install prompt": researches with Google Search, saves the result
 convex/llm.ts        Gemini + Claude connections, and which model does what
-convex/pipeline.ts   background job: research post links + pre-write install prompts
+convex/preparedData.ts  ready-made install prompts + tool links (prepared by Claude)
+convex/pipeline.ts   optional paid background job (only runs if you press Resume)
 convex/enrich.ts     turns a post link into the tool's own page
 convex/web.ts        reads links and GitHub repos, cleans URLs
 convex/seedData.ts   your original 208 items + collections/attachments
