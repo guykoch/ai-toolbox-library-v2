@@ -432,7 +432,7 @@
   </head>
   <body>
     <div class="top-actions">
-      <button class="theme-btn" id="refresh-btn" type="button" aria-label="Refresh the library" title="Get the latest from your library"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>Refresh</button>
+      <button class="theme-btn" id="refresh-btn" type="button" aria-label="Reload the page" title="Reload the page from scratch"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>Refresh</button>
       <button class="theme-btn" id="theme-btn" type="button" aria-label="Switch light or dark mode"></button>
     </div>
     <div class="lock" id="lock" hidden>
@@ -858,14 +858,16 @@
         el.hidden = false;
       })();
 
-      // ---------- refresh: pull the latest cards, prompts and progress (keeps your filters) ----------
-      document.getElementById('refresh-btn').addEventListener('click', async e => {
+      // ---------- refresh: a full, clean reload of the page ----------
+      // Fresh copy from the server (skips the browser cache), back at the top, with search, filters,
+      // open cards, the advisor chat and the add box all cleared. Your access key and light/dark choice stay.
+      document.getElementById('refresh-btn').addEventListener('click', e => {
         const b = e.currentTarget;
-        if (!ACCESS_KEY || !document.getElementById('lock').hidden) { location.reload(); return; }
         b.disabled = true; b.classList.add('spinning');
-        try { await load(); } catch (x) { location.reload(); }
-        finally { b.disabled = false; b.classList.remove('spinning'); }
+        location.replace(location.pathname + '?fresh=' + Date.now());
       });
+      if (/[?&]fresh=/.test(location.search)) history.replaceState(null, '', location.pathname);
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
       // ---------- loading ----------
       async function load() {
