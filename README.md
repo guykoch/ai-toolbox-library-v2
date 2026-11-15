@@ -5,6 +5,12 @@ Your library, now live on the web, with these features:
 - **Install prompt** on every card: it researches how to fully set up that tool and opens a pop-up with a complete prompt to paste into any AI agent. The pop-up has **Copy** and **Exit** buttons, plus **Regenerate**. The prompt is saved, so it opens instantly next time.
 - **Add to the library**: paste a link, a tool name or any context, and it's saved as a card in the same format as the others.
 - **Archive** or **Delete** any card. In the **Archive** section you can **Bring back** or **Delete** each item.
+- **Cards stay compact**: you see the title, a short summary, the hype score, the shelf, the open-source mark, **Read more** and **Install prompt**. Everything else opens with **Read more**.
+- **A background job prepares the whole library, once**:
+  1. Cards that point to a Facebook or LinkedIn post are researched, and switched to the **tool's own page** with a fresh title and summary. The post stays under **Read more → Saved from**. If the post itself is the content (tips, news) or the tool can't be found confidently, the card keeps the post.
+  2. An **install prompt** is written for every card in advance. A green dot on the button means it's ready.
+
+  New items you add get their install prompt automatically.
 
 How it fits together:
 - **Vercel** hosts the page (`public/index.html`).
@@ -91,6 +97,16 @@ Each Vercel build pushes the backend code to Convex first, then publishes the pa
 
 ---
 
+## The background job (first visit)
+
+The first time you open the site after deploying, the job starts by itself. A progress bar under "Add to the library" shows how far it has got.
+- **It runs on Convex**, so you can close the browser and it keeps going.
+- **Time:** roughly 1–2 hours for ~140 post links and ~208 install prompts.
+- **Cost:** about **$8–15 of Gemini credit, one time**. Make sure your prepaid balance covers it.
+- **Pause / Resume** buttons are on the progress bar.
+- **If Gemini runs out of credit, or the key is wrong**, the job stops by itself and shows the problem. Fix it, then press **Resume**.
+- **An item that fails twice is skipped.** Pressing Resume gives it another try.
+
 ## Using it
 
 - **Ask** ("What would you like to do?"): press Enter to send, or Shift+Enter for a new line. Typos, Hebrew and short phrases are all fine.
@@ -110,7 +126,11 @@ Each Vercel build pushes the backend code to Convex first, then publishes the pa
   - **GitHub repos** also get live star and fork counts, and are marked open source if they have a licence.
   - **A tool name or a description** is looked up on the web to find the official link.
   - **Tracking parameters** like utm and fbclid are removed.
-- **Facebook tip**: posts in private groups can't be read by a server. Paste the post's **text along with the link** so the card is accurate.
+- **Facebook posts**: Facebook hides posts from servers, so a bare link can't be read. Use one of these instead:
+  - **"Send to library" bookmark (easiest):** drag the button at the bottom of the Add box to your bookmarks bar. On any Facebook post, click it. It takes the post's text from your own logged-in browser and adds it to your library. Select part of the page first to send just that part.
+  - **Screenshot:** paste it (Ctrl/Cmd+V), drag it in, or click **Add screenshot**. Up to 4 images; the AI reads them.
+  - **Text:** paste the post's text along with the link.
+  - If a link can't be read and there's nothing else to go on, nothing is saved. You're asked for the text or a screenshot instead.
 - **Archive** hides a card. Open **Archive** below the library to **Bring back** or **Delete** it.
 - **Delete** asks once ("Delete for good?"). Click again to confirm. This is permanent.
 
@@ -129,6 +149,8 @@ convex/ingest.ts     "Add to library": gathers context, asks Claude (or Gemini),
 convex/advisor.ts    "What would you like to do?": ranked picks from your library only
 convex/install.ts    "Install prompt": researches with Google Search, saves the result
 convex/llm.ts        Gemini + Claude connections, and which model does what
+convex/pipeline.ts   background job: research post links + pre-write install prompts
+convex/enrich.ts     turns a post link into the tool's own page
 convex/web.ts        reads links and GitHub repos, cleans URLs
 convex/seedData.ts   your original 208 items + collections/attachments
 convex/auth.ts       access-key check

@@ -36,34 +36,42 @@ STEP 2 — WRITE THE PROMPT. Output ONLY the prompt text (plain Markdown, no pre
 
 Be precise and current: use commands exactly as the official docs give them today. If a fact can't be confirmed, say so in the prompt and tell the agent how to check. Never fabricate URLs, package names or flags.`;
 
+type PromptResult = { text: string; sources: { title: string; url: string }[]; model: string; createdAt: string };
+
+// Shared by the "Install prompt" button and the background job.
+export async function buildAndSavePrompt(ctx: any, id: number, today: string, thinking: "medium" | "high" = "high"): Promise<PromptResult> {
+  const item: any = await ctx.runQuery(internal.items.getItem, { id });
+  if (!item) throw new ConvexError("That item no longer exists.");
+
+  // Read the real pages first: the tool's link, anything it points to, and the post it was saved from.
+  const links = [item.url, item.mentioned, item.docs, item.savedFrom].filter((u: string) => u && /^https?:\/\//.test(u)).slice(0, 3);
+  const fetched = await Promise.all(links.map(gatherUrl));
+  const context = fetched.map((f) => f.notes).join("\n---\n").slice(0, 14000);
+
+  const card = {
+    title: item.title, summary: item.summary, kind: item.type, shelf: item.cat, openSource: item.os,
+    url: item.url, alsoLinked: item.mentioned || "", docs: item.docs || "", savedFromPost: item.savedFrom || "",
+    knownInstallCommands: item.install || [], installAlt: item.installAlt || [], installNote: item.installNote || "",
+  };
+  const user =
+    `Today is ${today}. Research this saved library item and write the install prompt.\n\nLIBRARY CARD:\n${JSON.stringify(card, null, 1)}\n\n` +
+    (context ? `WHAT I FOUND AT ITS LINKS (may be partial — e.g. Facebook often blocks reading; verify with search):\n${context}\n` : "");
+
+  const model = MODELS.install();
+  const res = await callGemini({ model, system: SYSTEM, turns: [{ role: "user", text: user }], search: true, thinking, maxTokens: 16000 });
+  let text = res.text.replace(/^```(?:markdown|md)?\s*\n([\s\S]*?)\n```\s*$/m, "$1").trim();
+  if (res.sources.length) {
+    text += "\n\n## Sources checked while writing this\n" + res.sources.slice(0, 8).map((s) => `- ${s.title || "source"}: ${s.url}`).join("\n");
+  }
+  const saved = { itemId: id, text, sources: res.sources.slice(0, 8), model, createdAt: today };
+  await ctx.runMutation(internal.items.savePrompt, saved);
+  return { text, sources: saved.sources, model, createdAt: today };
+}
+
 export const generatePrompt = action({
   args: { key: v.string(), id: v.number(), today: v.string() },
-  handler: async (ctx, { key, id, today }): Promise<{ text: string; sources: { title: string; url: string }[]; model: string; createdAt: string }> => {
+  handler: async (ctx, { key, id, today }): Promise<PromptResult> => {
     checkKey(key);
-    const item: any = await ctx.runQuery(internal.items.getItem, { id });
-    if (!item) throw new ConvexError("That item no longer exists.");
-
-    // Read the real pages first: the main link and the link the post points to.
-    const links = [item.url, item.mentioned, item.docs].filter((u: string) => u && /^https?:\/\//.test(u)).slice(0, 3);
-    const fetched = await Promise.all(links.map(gatherUrl));
-    const context = fetched.map((f) => f.notes).join("\n---\n").slice(0, 14000);
-
-    const card = {
-      title: item.title, summary: item.summary, kind: item.type, shelf: item.cat, openSource: item.os,
-      url: item.url, alsoLinked: item.mentioned || "", docs: item.docs || "", knownInstallCommands: item.install || [], installAlt: item.installAlt || [], installNote: item.installNote || "",
-    };
-    const user =
-      `Today is ${today}. Research this saved library item and write the install prompt.\n\nLIBRARY CARD:\n${JSON.stringify(card, null, 1)}\n\n` +
-      (context ? `WHAT I FOUND AT ITS LINKS (may be partial — e.g. Facebook often blocks reading; verify with search):\n${context}\n` : "");
-
-    const model = MODELS.install();
-    const res = await callGemini({ model, system: SYSTEM, turns: [{ role: "user", text: user }], search: true, thinking: "high", maxTokens: 16000 });
-    let text = res.text.replace(/^```(?:markdown|md)?\s*\n([\s\S]*?)\n```\s*$/m, "$1").trim();
-    if (res.sources.length) {
-      text += "\n\n## Sources checked while writing this\n" + res.sources.slice(0, 8).map((s) => `- ${s.title || "source"}: ${s.url}`).join("\n");
-    }
-    const saved = { itemId: id, text, sources: res.sources.slice(0, 8), model, createdAt: today };
-    await ctx.runMutation(internal.items.savePrompt, saved);
-    return { text, sources: saved.sources, model, createdAt: today };
+    return buildAndSavePrompt(ctx, id, today, "high");
   },
 });

@@ -3,6 +3,8 @@ import { v, ConvexError } from "convex/values";
 import { checkKey } from "./auth";
 import { SEED_ITEMS, SEED_META } from "./seedData";
 
+const SOCIAL = ["Facebook", "linkedin.com"];
+
 // ---------- read ----------
 export const list = query({
   args: { key: v.string() },
@@ -12,11 +14,23 @@ export const list = query({
     const metaRows = await ctx.db.query("meta").collect();
     const meta: Record<string, any> = {};
     for (const m of metaRows) meta[m.key] = m.value;
-    const active = rows.filter((r) => r.status === "active").map((r) => r.data);
+    const activeRows = rows.filter((r) => r.status === "active");
+    const active = activeRows.map((r) => r.data);
+    const promptIds = (await ctx.db.query("prompts").collect()).map((p) => p.itemId);
+    const promptSet = new Set(promptIds);
+    const job = {
+      ...(meta.pipeline || {}),
+      total: activeRows.length,
+      promptsDone: activeRows.filter((r) => promptSet.has(r.itemId)).length,
+      researchTotal: activeRows.filter((r) => SOCIAL.includes(r.data?.host) || r.data?.savedFrom || r.enrichedAt).length,
+      researchDone: activeRows.filter((r) => r.enrichedAt || r.data?.savedFrom).length,
+      toolLinksFound: activeRows.filter((r) => r.data?.savedFrom).length,
+    };
+    delete meta.pipeline;
     const archived = rows
       .filter((r) => r.status === "archived")
       .map((r) => ({ ...r.data, archivedAt: r.archivedAt ?? "" }));
-    return { active, archived, meta, seeded: rows.length > 0 || metaRows.length > 0 };
+    return { active, archived, meta, promptIds, job, seeded: rows.length > 0 || metaRows.length > 0 };
   },
 });
 
@@ -143,5 +157,67 @@ export const activeForAdvisor = internalQuery({
   handler: async (ctx) => {
     const rows = await ctx.db.query("items").withIndex("by_status", (q) => q.eq("status", "active")).collect();
     return rows.map((r) => r.data);
+  },
+});
+
+// ---------- background job helpers ----------
+export const replaceData = internalMutation({
+  args: { id: v.number(), data: v.any() },
+  handler: async (ctx, { id, data }) => {
+    const row = await getRow(ctx, id);
+    await ctx.db.patch(row._id, { data: { ...data, id } });
+  },
+});
+
+export const markEnriched = internalMutation({
+  args: { id: v.number(), date: v.string(), note: v.string() },
+  handler: async (ctx, { id, date, note }) => {
+    const row = await getRow(ctx, id);
+    await ctx.db.patch(row._id, { enrichedAt: date, enrichNote: note });
+  },
+});
+
+export const bumpAttempts = internalMutation({
+  args: { id: v.number() },
+  handler: async (ctx, { id }) => {
+    const row = await ctx.db.query("items").withIndex("by_itemId", (q) => q.eq("itemId", id)).first();
+    if (row) await ctx.db.patch(row._id, { attempts: (row.attempts ?? 0) + 1 });
+  },
+});
+
+// Next items that still need research and/or an install prompt (highest hype first).
+export const nextWork = internalQuery({
+  args: { limit: v.number() },
+  handler: async (ctx, { limit }) => {
+    const rows = await ctx.db.query("items").withIndex("by_status", (q) => q.eq("status", "active")).collect();
+    const done = new Set((await ctx.db.query("prompts").collect()).map((p) => p.itemId));
+    return rows
+      .filter((r) => (r.attempts ?? 0) < 2)
+      .map((r) => ({
+        id: r.itemId,
+        pop: Number(r.data?.pop) || 0,
+        needsResearch: SOCIAL.includes(r.data?.host) && !r.data?.savedFrom && !r.enrichedAt,
+        needsPrompt: !done.has(r.itemId),
+      }))
+      .filter((w) => w.needsResearch || w.needsPrompt)
+      .sort((a, b) => b.pop - a.pop)
+      .slice(0, limit);
+  },
+});
+
+export const getJob = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const row = await ctx.db.query("meta").withIndex("by_key", (q) => q.eq("key", "pipeline")).first();
+    return row ? row.value : null;
+  },
+});
+
+export const setJob = internalMutation({
+  args: { patch: v.any() },
+  handler: async (ctx, { patch }) => {
+    const row = await ctx.db.query("meta").withIndex("by_key", (q) => q.eq("key", "pipeline")).first();
+    if (row) await ctx.db.patch(row._id, { value: { ...row.value, ...patch } });
+    else await ctx.db.insert("meta", { key: "pipeline", value: patch });
   },
 });

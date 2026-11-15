@@ -12,7 +12,8 @@ export const MODELS = {
   addGemini: () => process.env.GEMINI_MODEL_ADD || "gemini-3.8-flash",
 };
 
-export type GeminiTurn = { role: "user" | "model"; text: string };
+export type ImageIn = { mime: string; data: string }; // base64, no data: prefix
+export type GeminiTurn = { role: "user" | "model"; text: string; images?: ImageIn[] };
 export type GeminiResult = { text: string; sources: { title: string; url: string }[] };
 
 export async function callGemini(opts: {
@@ -31,7 +32,7 @@ export async function callGemini(opts: {
   if (opts.thinking) generationConfig.thinkingConfig = { thinkingLevel: opts.thinking };
   const body: any = {
     systemInstruction: { parts: [{ text: opts.system }] },
-    contents: opts.turns.map((t) => ({ role: t.role, parts: [{ text: t.text }] })),
+    contents: opts.turns.map((t) => ({ role: t.role, parts: [...(t.images || []).map((im) => ({ inline_data: { mime_type: im.mime, data: im.data } })), { text: t.text }] })),
     generationConfig,
   };
   if (opts.search) body.tools = [{ google_search: {} }];
@@ -75,14 +76,14 @@ export async function callGemini(opts: {
   return { text, sources };
 }
 
-export async function callClaude(system: string, user: string, withSearch: boolean): Promise<string> {
+export async function callClaude(system: string, user: string, withSearch: boolean, images: ImageIn[] = []): Promise<string> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) throw new ConvexError("ANTHROPIC_API_KEY is not set in the Convex dashboard (Settings → Environment Variables).");
   const body: any = {
     model: MODELS.addClaude(),
     max_tokens: 2000,
     system,
-    messages: [{ role: "user", content: user }],
+    messages: [{ role: "user", content: [...images.map((im) => ({ type: "image", source: { type: "base64", media_type: im.mime, data: im.data } })), { type: "text", text: user }] }],
   };
   if (withSearch) body.tools = [{ type: "web_search_20250305", name: "web_search", max_uses: 4 }];
   const r = await fetchWithTimeout(
@@ -93,7 +94,7 @@ export async function callClaude(system: string, user: string, withSearch: boole
   const j: any = await r.json();
   if (!r.ok) {
     const msg = j?.error?.message || JSON.stringify(j).slice(0, 300);
-    if (withSearch && /tool|web_search/i.test(msg)) return callClaude(system, user, false);
+    if (withSearch && /tool|web_search/i.test(msg)) return callClaude(system, user, false, images);
     throw new ConvexError("Claude API error: " + msg);
   }
   return (j.content || []).filter((b: any) => b.type === "text").map((b: any) => b.text).join("\n");

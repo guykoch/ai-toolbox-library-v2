@@ -52,6 +52,7 @@
         }
       }
       * { box-sizing: border-box; }
+      [hidden] { display: none !important; }
       html { scroll-behavior: smooth; }
       @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
       body {
@@ -359,6 +360,20 @@
       .pick .p-trade { font-size: 13px; color: var(--muted); margin: 0; }
       .pick .p-actions { grid-column: 2; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
       .thinking { font-size: 14px; color: var(--muted); }
+      .shots { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+      .shots:empty { display: none; }
+      .shot { position: relative; width: 84px; height: 84px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); background: var(--surface-2); }
+      .shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .shot button { position: absolute; top: 3px; right: 3px; width: 24px; height: 24px; min-height: 24px; border-radius: 50%; border: 0; background: rgba(0,0,0,.65); color: #fff; cursor: pointer; font-size: 14px; line-height: 1; padding: 0; }
+      .addbox textarea.dragover { border-color: var(--accent); background: var(--accent-soft); }
+      .bm-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 13.5px; color: var(--muted); }
+      .bookmarklet { display: inline-flex; align-items: center; gap: 6px; border: 1.5px dashed var(--accent); color: var(--accent-ink); background: var(--accent-soft); border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 13.5px; text-decoration: none; cursor: grab; }
+      .jobbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-top: 14px; font-size: 13.5px; color: var(--ink-2); }
+      .jobbar[hidden] { display: none; }
+      .jobbar .jb-track { flex: 1 1 140px; height: 8px; background: var(--surface-2); border-radius: 5px; overflow: hidden; min-width: 120px; }
+      .jobbar .jb-fill { display: block; height: 100%; background: var(--accent); border-radius: 5px; transition: width .4s ease; }
+      .jobbar .jb-err { flex-basis: 100%; color: #b42318; font-size: 13px; }
+      @media (prefers-color-scheme: dark) { .jobbar .jb-err { color: #ff8a7a; } }
       .card.highlight { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow); }
       .card .btn-row { display: flex; flex-wrap: wrap; gap: 6px; }
       /* ---------- install-prompt pop-up ---------- */
@@ -435,12 +450,26 @@
       <section class="addbox" aria-labelledby="add-h">
         <h2 id="add-h">Add to the library</h2>
         <p class="sub">Paste anything &mdash; a Facebook post, a GitHub repo, a YouTube video, any link, a tool name, or a few words of context. It&rsquo;s identified and shelved in the same format as everything else.</p>
-        <textarea id="add-text" dir="auto" placeholder="e.g. https://github.com/owner/repo  &middot;  a Facebook post link  &middot;  &ldquo;Granola meeting notes app&rdquo;"></textarea>
+        <textarea id="add-text" dir="auto" placeholder="e.g. https://github.com/owner/repo  &middot;  a Facebook post link + its text  &middot;  &ldquo;Granola meeting notes app&rdquo;  &middot;  or paste a screenshot (Ctrl/Cmd+V)"></textarea>
+        <div class="shots" id="shots"></div>
         <div class="row">
           <button class="primary-btn" id="add-btn" type="button">Add to library</button>
+          <label class="mini-btn" style="display:inline-flex;align-items:center;cursor:pointer">Add screenshot<input type="file" id="shot-input" accept="image/*" multiple hidden /></label>
           <span class="add-status" id="add-status" role="status" aria-live="polite"></span>
         </div>
+        <div class="bm-row">
+          <span><b style="color:var(--ink-2)">Facebook posts:</b> drag this button to your bookmarks bar, then click it while viewing any post &rarr;</span>
+          <a class="bookmarklet" id="bookmarklet" href="#" title="Drag me to your bookmarks bar">&#128278; Send to library</a>
+          <span>It sends the post&rsquo;s text from your own logged-in browser. Select part of a page first to send just that part.</span>
+        </div>
       </section>
+
+      <div class="jobbar" id="jobbar" hidden aria-live="polite">
+        <span id="jb-text"></span>
+        <span class="jb-track"><span class="jb-fill" id="jb-fill" style="width:0%"></span></span>
+        <button class="mini-btn" id="jb-btn" type="button"></button>
+        <span class="jb-err" id="jb-err" hidden></span>
+      </div>
 
       <section aria-labelledby="map-h" style="margin-top:28px">
         <div class="sec-head"><h2 id="map-h">Browse by shelf</h2><span class="hint">Tap a shelf to filter</span></div>
@@ -575,7 +604,7 @@
       const CAT_ORDER = ['coding-agents','agent-skills','courses-guides','productivity','app-building','video','image','audio','ai-models','news-analysis','translation','other'];
       const MONTH_LABELS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-      const state = { q: '', cat: 'all', osOnly: false, videoOnly: false, cluster: -1, month: '', sort: 'pop', expanded: new Set(), justAdded: -1, highlight: -1 };
+      const state = { q: '', cat: 'all', osOnly: false, videoOnly: false, cluster: -1, month: '', sort: 'pop', expanded: new Set(), justAdded: -1, highlight: -1, prompts: new Set() };
       let items = [];
       let archived = [];
       const DATA = { clusters: [], attachments: [], unresolved: [], months: [] };
@@ -670,10 +699,12 @@
       function cardHTML(it, inArchive) {
         const m = CATS[it.cat] || CATS.other;
         const open = state.expanded.has(it.id);
+        // Always visible: shelf + open-source mark. Everything else waits behind "Read more".
         let badges = '<span class="badge cat"><span class="dot" style="background:' + m.color + '"></span>' + m.label + '</span>';
         if (it.os === true) badges += '<span class="badge os"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>Open source</span>';
-        if (it.priv) badges += '<span class="badge priv">Private — do not share</span>';
-        if (it.again) badges += '<span class="badge">Saved again ' + esc(it.again) + '</span>';
+        let moreBadges = '';
+        if (it.priv) moreBadges += '<span class="badge priv">Private — do not share</span>';
+        if (it.again) moreBadges += '<span class="badge">Saved again ' + esc(it.again) + '</span>';
         const poprow = '<div class="poprow" role="img" aria-label="Hype score ' + it.pop + ' out of 100 — ' + tierFor(it.pop) + '">' +
           '<span class="pop-label">Hype</span>' +
           '<span class="pop-track"><span class="pop-fill' + (it.pop >= 85 ? ' hot' : '') + '" style="width:' + it.pop + '%"></span></span>' +
@@ -683,6 +714,7 @@
           '<dt>Shelf</dt><dd>' + m.label + (it.extra && it.extra.length ? ' (also under ' + it.extra.map(c => (CATS[c] ? CATS[c].label : c)).join(', ') + ')' : '') + '</dd>' +
           '<dt>Format</dt><dd>' + (TYPE_LABELS[it.type] || esc(it.type)) + '</dd>' +
           '<dt>Link opens</dt><dd>' + esc(it.host) + '</dd>';
+        if (it.savedFrom) facts += '<dt>Saved from</dt><dd><a href="' + esc(it.savedFrom) + '" target="_blank" rel="noopener">' + esc(/facebook|fb\.watch/i.test(it.savedFrom) ? 'Facebook post' : /linkedin/i.test(it.savedFrom) ? 'LinkedIn post' : (hostOf(it.savedFrom) || 'post')) + '</a></dd>';
         if (it.author) facts += '<dt>Shared by</dt><dd dir="auto">' + esc(it.author) + '</dd>';
         facts += '<dt>Post language</dt><dd>' + (LANG_LABELS[it.lang] || esc(it.lang)) + '</dd>' +
           '<dt>Open source</dt><dd>' + (it.os === true ? 'Yes' : (it.os === 'unknown' ? 'Not confirmed' : 'No')) + '</dd>';
@@ -696,28 +728,31 @@
             (it.installNote ? '<span class="i-note">' + esc(it.installNote) + '</span>' : '') +
             '</div>';
         }
-        const did = (inArchive ? 'adetail-' : 'detail-') + it.id;
-        const detail = '<div class="detail" id="' + did + '"' + (open ? '' : ' hidden') + '>' +
-          '<div><p class="d-label">Before you click</p><dl class="facts">' + facts + '</dl></div>' +
-          '<div><p class="d-label">Why a hype score of ' + it.pop + '</p><ul class="why-list">' +
-          (it.why || []).map(w => '<li>' + esc(w) + '</li>').join('') + '</ul></div>' +
-          '</div>';
         const manage = inArchive
           ? '<button type="button" class="manage-btn" data-act="restore" data-id="' + it.id + '">Bring back</button>' +
             '<button type="button" class="manage-btn danger" data-act="delete" data-id="' + it.id + '">Delete</button>'
           : '<button type="button" class="manage-btn" data-act="archive" data-id="' + it.id + '">Archive</button>' +
             '<button type="button" class="manage-btn danger" data-act="delete" data-id="' + it.id + '">Delete</button>';
+        const foot = '<div class="foot"><span class="manage">' + manage + '</span><span class="right">' + docsHTML + '<a class="open-link" href="' + esc(it.url) + '" target="_blank" rel="noopener">Open <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></a></span></div>';
+        const did = (inArchive ? 'adetail-' : 'detail-') + it.id;
+        const detail = '<div class="detail" id="' + did + '"' + (open ? '' : ' hidden') + '>' +
+          (moreBadges ? '<div class="badges">' + moreBadges + '</div>' : '') +
+          installHTML +
+          '<div><p class="d-label">Before you click</p><dl class="facts">' + facts + '</dl></div>' +
+          '<div><p class="d-label">Why a hype score of ' + it.pop + '</p><ul class="why-list">' +
+          (it.why || []).map(w => '<li>' + esc(w) + '</li>').join('') + '</ul></div>' +
+          (inArchive ? '' : foot) +
+          '</div>';
         return '<article class="card' + (it.id === state.justAdded && !inArchive ? ' just-added' : '') + (it.id === state.highlight && !inArchive ? ' highlight' : '') + '" id="' + (inArchive ? 'acard-' : 'card-') + it.id + '" data-id="' + it.id + '">' +
           '<div class="meta"><span>' + esc(it.date) + '</span>' + (inArchive && it.archivedAt ? '<span>Archived ' + esc(it.archivedAt) + '</span>' : (it.id === state.justAdded ? '<span>Just added</span>' : '')) + '</div>' +
           '<h3 dir="auto">' + esc(it.title) + '</h3>' +
           '<p class="summary' + (open ? ' full' : '') + '" dir="auto" data-short="' + esc(shortSummary(it.summary)) + '" data-full="' + esc(it.summary) + '">' + esc(open ? it.summary : shortSummary(it.summary)) + '</p>' +
           poprow +
-          installHTML +
           '<div class="badges">' + badges + '</div>' +
           '<div class="btn-row"><button type="button" class="expand-btn" data-expand="' + it.id + '" aria-expanded="' + open + '" aria-controls="' + did + '">' + (open ? 'Show less' : 'Read more') + '<svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>' +
-          '<button type="button" class="expand-btn" data-install="' + it.id + '">Install prompt</button></div>' +
+          '<button type="button" class="expand-btn" data-install="' + it.id + '">Install prompt' + (state.prompts.has(it.id) ? ' <span aria-label="ready" title="Ready — opens instantly" style="color:var(--accent)">●</span>' : '') + '</button></div>' +
           detail +
-          '<div class="foot"><span class="manage">' + manage + '</span><span class="right">' + docsHTML + '<a class="open-link" href="' + esc(it.url) + '" target="_blank" rel="noopener">Open <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></a></span></div>' +
+          (inArchive ? foot : '') +
           '</article>';
       }
       function activeDesc() {
@@ -776,12 +811,69 @@
         }
         items = res.active;
         archived = res.archived;
+        state.prompts = new Set(res.promptIds || []);
+        JOB = res.job || {};
         DATA.clusters = res.meta.clusters || [];
         DATA.attachments = res.meta.attachments || [];
         DATA.unresolved = res.meta.unresolved || [];
         document.getElementById('loading').hidden = true;
         renderChrome();
         render();
+        renderJob();
+      }
+
+      // ---------- background job: research post links + pre-write install prompts ----------
+      let JOB = {};
+      let jobPoll = null;
+      let autoStarted = false;
+      function renderJob() {
+        const bar = document.getElementById('jobbar');
+        const total = (JOB.researchTotal || 0) + (JOB.total || 0);
+        const done = (JOB.researchDone || 0) + (JOB.promptsDone || 0);
+        const allDone = JOB.promptsDone >= JOB.total && JOB.researchDone >= JOB.researchTotal;
+        bar.hidden = !JOB.runId && !JOB.running;
+        if (allDone && !JOB.running && !JOB.lastError) bar.hidden = true;
+        const pct = total ? Math.round(done / total * 100) : 0;
+        document.getElementById('jb-fill').style.width = pct + '%';
+        document.getElementById('jb-text').innerHTML =
+          (JOB.running ? '<b>Preparing your library</b> in the background' : (allDone ? '<b>Library prepared</b>' : '<b>Paused</b>')) +
+          ' &middot; post links researched <b>' + (JOB.researchDone || 0) + '/' + (JOB.researchTotal || 0) + '</b>' +
+          (JOB.toolLinksFound ? ' (' + JOB.toolLinksFound + ' now open the tool itself)' : '') +
+          ' &middot; install prompts ready <b>' + (JOB.promptsDone || 0) + '/' + (JOB.total || 0) + '</b>';
+        const btn = document.getElementById('jb-btn');
+        btn.textContent = JOB.running ? 'Pause' : 'Resume';
+        btn.hidden = allDone && !JOB.running;
+        const err = document.getElementById('jb-err');
+        err.hidden = !JOB.lastError;
+        err.textContent = JOB.lastError ? 'Last problem: ' + JOB.lastError + (JOB.running ? '' : ' — fix it, then press Resume.') : '';
+        clearInterval(jobPoll);
+        if (JOB.running) jobPoll = setInterval(refreshQuietly, 20000);
+      }
+      async function refreshQuietly() {
+        if (!modal.hidden || document.activeElement === addText || document.activeElement === askText) return;
+        try {
+          const res = await call('query', 'items:list', {});
+          const changed = res.active.length !== items.length || (res.promptIds || []).length !== state.prompts.size || JSON.stringify(res.job) !== JSON.stringify(JOB);
+          items = res.active; archived = res.archived; state.prompts = new Set(res.promptIds || []); JOB = res.job || {};
+          if (changed) { renderChrome(); render(); }
+          renderJob();
+        } catch (e) {}
+      }
+      async function startJob() {
+        await call('mutation', 'pipeline:start', { today: (function () { const d = new Date(); return d.getDate() + ' ' + MONTH_LABELS[d.getMonth()] + ' ' + d.getFullYear(); })() });
+        await refreshQuietly();
+      }
+      document.getElementById('jb-btn').addEventListener('click', async e => {
+        e.target.disabled = true;
+        try { if (JOB.running) await call('mutation', 'pipeline:pause', {}); else await startJob(); await refreshQuietly(); }
+        catch (x) { document.getElementById('jb-err').hidden = false; document.getElementById('jb-err').textContent = x.message; }
+        finally { e.target.disabled = false; }
+      });
+      // First visit after deploying: start preparing everything automatically (once).
+      async function maybeAutoStart() {
+        if (autoStarted || JOB.runId || JOB.running) return;
+        autoStarted = true;
+        try { await startJob(); } catch (e) {}
       }
       function showLock(msg) {
         document.getElementById('lock').hidden = false;
@@ -793,6 +885,8 @@
         try {
           await load();
           document.getElementById('lock').hidden = true;
+          maybeAutoStart();
+          takeHashAdd();
         } catch (e) {
           if (e.isKey) { try { localStorage.removeItem(KEY_STORE); } catch (x) {} showLock(e.message); }
           else { document.getElementById('lock').hidden = true; document.getElementById('loading').textContent = 'Couldn’t load the library: ' + e.message; }
@@ -810,14 +904,68 @@
       const addBtn = document.getElementById('add-btn');
       const addText = document.getElementById('add-text');
       const addStatus = document.getElementById('add-status');
+      // ---- screenshots: paste, drop or pick; shrunk in the browser before sending ----
+      let shots = [];   // [{mime, data, url}]
+      const shotsEl = document.getElementById('shots');
+      function renderShots() {
+        shotsEl.innerHTML = shots.map((s, i) => '<span class="shot"><img src="' + s.url + '" alt="Screenshot ' + (i + 1) + '"><button type="button" data-rm="' + i + '" aria-label="Remove screenshot">&times;</button></span>').join('');
+      }
+      function shrink(file) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            const max = 1600, k = Math.min(1, max / Math.max(img.width, img.height));
+            const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+            const url = c.toDataURL('image/jpeg', 0.85);
+            URL.revokeObjectURL(img.src);
+            resolve({ mime: 'image/jpeg', data: url.split(',')[1], url: url });
+          };
+          img.onerror = reject;
+          img.src = URL.createObjectURL(file);
+        });
+      }
+      async function addShots(files) {
+        for (const f of Array.from(files || [])) {
+          if (!/^image\//.test(f.type) || shots.length >= 4) continue;
+          try { shots.push(await shrink(f)); } catch (e) {}
+        }
+        renderShots();
+      }
+      shotsEl.addEventListener('click', e => { const b = e.target.closest('[data-rm]'); if (b) { shots.splice(Number(b.dataset.rm), 1); renderShots(); } });
+      document.getElementById('shot-input').addEventListener('change', e => { addShots(e.target.files); e.target.value = ''; });
+      addText.addEventListener('paste', e => { const files = Array.from(e.clipboardData ? e.clipboardData.files : []); if (files.length) { e.preventDefault(); addShots(files); } });
+      addText.addEventListener('dragover', e => { e.preventDefault(); addText.classList.add('dragover'); });
+      addText.addEventListener('dragleave', () => addText.classList.remove('dragover'));
+      addText.addEventListener('drop', e => { if (e.dataTransfer && e.dataTransfer.files.length) { e.preventDefault(); addShots(e.dataTransfer.files); } addText.classList.remove('dragover'); });
+
+      // ---- "Send to library" bookmark: grabs the post text in your own browser and opens this page with it ----
+      (function () {
+        const code = "(function(){var s=String(getSelection()).trim(),t=s;if(!t){var q=['[data-ad-comet-preview=\"message\"]','[data-ad-preview=\"message\"]','div[role=\"dialog\"] [role=\"complementary\"]','[role=\"complementary\"]','div[role=\"dialog\"] [role=\"article\"]','[role=\"article\"]','article','main'];for(var i=0;i<q.length;i++){var e=document.querySelector(q[i]);if(e&&e.innerText&&e.innerText.trim().length>20){t=e.innerText.trim();break}}}if(!t)t=document.body.innerText;var d={url:location.href,title:document.title,text:t.slice(0,8000)};window.open('" + location.origin + "/#add='+encodeURIComponent(JSON.stringify(d)),'_blank')})()";
+        const a = document.getElementById('bookmarklet');
+        a.href = 'javascript:' + encodeURIComponent(code);
+        a.addEventListener('click', e => { e.preventDefault(); addStatus.className = 'add-status'; addStatus.textContent = 'Drag that button to your bookmarks bar — then click it on a Facebook post.'; });
+      })();
+      function takeHashAdd() {
+        if (!location.hash.startsWith('#add=')) return false;
+        let d = null;
+        try { d = JSON.parse(decodeURIComponent(location.hash.slice(5))); } catch (e) {}
+        history.replaceState(null, '', location.pathname + location.search);
+        if (!d) return false;
+        addText.value = [d.url, d.title && !/^facebook$/i.test(d.title.trim()) ? 'Page title: ' + d.title : '', d.text ? 'Post text:\n' + d.text : ''].filter(Boolean).join('\n\n');
+        document.querySelector('.addbox').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        addFromText();
+        return true;
+      }
+
       async function addFromText() {
         const text = addText.value.trim();
-        if (!text) { addStatus.className = 'add-status err'; addStatus.textContent = 'Paste a link, a tool name or some context first.'; return; }
+        if (!text && !shots.length) { addStatus.className = 'add-status err'; addStatus.textContent = 'Paste a link, a tool name or some context first.'; return; }
         addBtn.disabled = true; addStatus.className = 'add-status';
         addStatus.textContent = 'Opening the link and identifying it… (usually 10–40 seconds)';
         try {
-          const res = await call('action', 'ingest:addFromText', { text: text, today: todayISO() });
-          addText.value = '';
+          const res = await call('action', 'ingest:addFromText', { text: text, today: todayISO(), images: shots.map(s => ({ mime: s.mime, data: s.data })) });
+          addText.value = ''; shots = []; renderShots();
           resetFilters();
           state.justAdded = res.item.id;
           state.expanded.add(res.item.id);
@@ -959,7 +1107,7 @@
           modalRegen.hidden = false; modalRegen.textContent = 'Try again';
         }
       }
-      function closeModal() { modal.hidden = true; modalItem = -1; modalRegen.textContent = 'Regenerate'; if (lastFocus) lastFocus.focus(); }
+      function closeModal() { if (modalText && modalItem >= 0 && !state.prompts.has(modalItem)) { state.prompts.add(modalItem); render(); } modal.hidden = true; modalItem = -1; modalRegen.textContent = 'Regenerate'; if (lastFocus) lastFocus.focus(); }
       document.getElementById('modal-exit').addEventListener('click', closeModal);
       modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
       document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });

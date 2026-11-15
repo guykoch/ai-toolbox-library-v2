@@ -9,6 +9,11 @@ export default defineSchema({
     status: v.union(v.literal("active"), v.literal("archived")),
     archivedAt: v.optional(v.string()),
     data: v.any(),
+    // Background research of post links (Facebook/LinkedIn) into the tool's own page.
+    enrichedAt: v.optional(v.string()),
+    enrichNote: v.optional(v.string()),
+    // Failed background attempts for this item (it is skipped after 2).
+    attempts: v.optional(v.number()),
   })
     .index("by_itemId", ["itemId"])
     .index("by_status", ["status"]),

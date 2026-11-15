@@ -32,13 +32,17 @@ Fields (match the examples exactly in style and length):
 - "os": true if it is open source (public code repo / open licence), false if clearly not, "unknown" if you can't tell.
 - "lang": language of the post/page the link opens: "he", "en" or "unknown".
 - "author": the person who wrote/shared the social post (Facebook/LinkedIn/X) or "" for websites, repos and YouTube.
-- "url": the best link to open. Keep the link the user gave (tracking stripped) unless it is a share/redirect link that resolved to a cleaner URL. For a bare tool name, the official site or repo.
+- "title"/"summary" describe the TOOL itself when "url" is the tool's page.
+- "url": the TOOL's own page (official site, GitHub repo, store page, course page) — not the social post. If the user pasted a Facebook/LinkedIn/X post about a specific tool, find that tool's official page with search and use it. Only if the post itself is the content (tips, opinion, news, a prompt in the post) or the tool can't be identified confidently, use the post link. For a bare tool name, the official site or repo. Never guess URLs.
 - "mentioned": a second important link referenced inside a post (e.g. the GitHub repo a Facebook post points to), else "".
 - "docs": official docs link if clearly separate and useful, else "".
 - "install": array of exact install commands if the source gives them (e.g. "npx skills add owner/repo"), else [].
 - "pop": hype score 1-100 (90+ huge buzz, 70-89 widely talked about, 55-69 solid following, 40-54 niche but known, 25-39 small/local, under 25 very niche). Weigh: official source (Anthropic, Google, OpenAI, Microsoft, Vercel...), open-source repo stars, scale named in the post, how established the product is.
 - "why": 1-4 short reasons for the score, in the same phrasing style as the examples, e.g. "About Claude — one of the most-talked-about AI platforms of 2026", "Official Google source — first-party, not a third-party tip", "It's a code repo, so GitHub stars and forks drive its buzz", "Open source — anyone can inspect, fork and reuse it", "Scale named in the post: 316 skills", "Lovable is an established, widely used name in this space", "Little wider buzz found — mostly a niche or local find". Do NOT include star counts; they are added automatically.
 - "priv": true only if the user's text says the content is private / not to be shared, else false.
+
+Screenshots may be attached: read them (they are usually the post itself — text, images, links shown in it).
+If there is NOT enough information to tell what this is (e.g. only a social-media link that couldn't be read, no text, no screenshot, and search can't find it), return exactly {"unreadable": true} instead of guessing.
 
 If the input is only a name or description, use web search to identify the real tool and its official link. Never invent facts; if unsure, say less.`;
 
@@ -62,11 +66,17 @@ function fmt(n: number) {
 }
 
 export const addFromText = action({
-  args: { key: v.string(), text: v.string(), today: v.string() },
-  handler: async (ctx, { key, text, today }): Promise<{ status: "added" | "again"; item: any; wasArchived?: boolean }> => {
+  args: {
+    key: v.string(),
+    text: v.string(),
+    today: v.string(),
+    images: v.optional(v.array(v.object({ mime: v.string(), data: v.string() }))),
+  },
+  handler: async (ctx, { key, text, today, images }): Promise<{ status: "added" | "again"; item: any; wasArchived?: boolean }> => {
     checkKey(key);
     const input = text.trim();
-    if (!input) throw new ConvexError("Paste a link, a tool name or some context first.");
+    const pics = (images || []).filter((im) => /^image\/(png|jpeg|webp|gif)$/.test(im.mime)).slice(0, 4);
+    if (!input && !pics.length) throw new ConvexError("Paste a link, a tool name, some context or a screenshot first.");
     if (!/^\d{4}-\d{2}-\d{2}$/.test(today)) throw new ConvexError("Bad date.");
     const day = dateParts(today);
 
@@ -100,14 +110,18 @@ export const addFromText = action({
     const examples = pickExamples(rows.map((r) => r.data));
     const userMsg =
       `Today is ${day.date}.\n\nEXAMPLE CARDS FROM THE LIBRARY (copy their style):\n${JSON.stringify(examples, null, 1)}\n\n` +
-      `WHAT THE USER PASTED:\n"""\n${input.slice(0, 6000)}\n"""\n\n` +
+      `WHAT THE USER PASTED:\n"""\n${input.slice(0, 9000) || "(nothing typed — see the attached screenshot)"}\n"""\n\n` +
+      (pics.length ? `${pics.length} SCREENSHOT(S) ATTACHED — read them.\n\n` : "") +
       (fetched.length ? `WHAT I FOUND AT THE LINKS:\n${fetched.map((f) => f.notes).join("\n---\n")}\n\n` : "") +
       `Return only the JSON card.`;
     // Claude writes the card if you gave it a key; otherwise Gemini does (one key runs everything).
     const answer = process.env.ANTHROPIC_API_KEY
-      ? await callClaude(FORMAT_SPEC, userMsg, true)
-      : (await callGemini({ model: MODELS.addGemini(), system: FORMAT_SPEC, turns: [{ role: "user", text: userMsg }], search: true, thinking: "medium", maxTokens: 4096 })).text;
+      ? await callClaude(FORMAT_SPEC, userMsg, true, pics)
+      : (await callGemini({ model: MODELS.addGemini(), system: FORMAT_SPEC, turns: [{ role: "user", text: userMsg, images: pics }], search: true, thinking: "medium", maxTokens: 4096 })).text;
     const raw = parseJson(answer);
+    if (raw.unreadable === true) {
+      throw new ConvexError("I couldn't read that post — Facebook hides posts from servers. Open the post and click your \"Send to library\" bookmark, or paste the post's text or a screenshot here.");
+    }
 
     // 4. Validate and normalise every field so the card matches the others exactly.
     const str = (x: any) => (typeof x === "string" ? x.trim() : "");
@@ -146,12 +160,17 @@ export const addFromText = action({
       pop: Math.max(1, Math.min(100, Math.round(Number(raw.pop) || 40))),
       why,
     };
+    // Keep the social post the tool came from, when the card now links to the tool itself.
+    const social = urls.find((u) => /facebook\.com|fb\.watch|linkedin\.com|(^|\/\/)(www\.)?(x|twitter)\.com/i.test(u));
+    if (social && norm(social) !== norm(url) && !/facebook\.com|fb\.watch|linkedin\.com/i.test(url)) item.savedFrom = cleanUrl(social);
     const docs = str(raw.docs);
     if (docs && /^https?:\/\//.test(docs) && norm(docs) !== norm(url)) item.docs = cleanUrl(docs);
     const install = (Array.isArray(raw.install) ? raw.install : []).map(str).filter(Boolean);
     if (install.length) item.install = install;
 
     const saved = await ctx.runMutation(internal.items.insertItem, { data: item });
+    // Write its install prompt in the background, so it's ready when you open it.
+    await ctx.scheduler.runAfter(0, internal.pipeline.promptForNew, { id: saved.id, today: day.date });
     return { status: "added", item: saved };
   },
 });
