@@ -2,7 +2,7 @@ import { query, mutation, internalMutation, internalQuery } from "./_generated/s
 import { v, ConvexError } from "convex/values";
 import { checkKey } from "./auth";
 import { SEED_ITEMS, SEED_META } from "./seedData";
-import { PREPARED, PREPARED_VERSION } from "./preparedData";
+import { PREPARED, PREPARED_VERSION, PREPARED_NEW } from "./preparedData";
 
 const SOCIAL = ["Facebook", "LinkedIn", "linkedin.com"];
 
@@ -227,6 +227,11 @@ export const setJob = internalMutation({
 
 // ---------- built-in research + install prompts (prepared ahead of time, no AI credits) ----------
 const SOCIAL_HOST_RE = /facebook\.com|fb\.watch|linkedin\.com/i;
+// GitHub links count as the same tool whatever the extra path (…/tree/main, …/blob/…).
+const sameTool = (u: string) => {
+  const gh = String(u || "").match(/github\.com\/([\w.-]+)\/([\w.-]+)/i);
+  return gh ? ("github.com/" + gh[1] + "/" + gh[2].replace(/\.git$/, "")).toLowerCase() : normUrl(u);
+};
 const normUrl = (u: string) => String(u || "").replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[?#].*$/, "").replace(/\/+$/, "").toLowerCase();
 
 export const applyPrepared = mutation({
@@ -276,6 +281,17 @@ export const applyPrepared = mutation({
       }
     }
     if (to >= PREPARED.length) {
+      // Add new ready-made tools, unless the library already has them (any link form).
+      const known = new Set<string>();
+      for (const r of rows) for (const u of [r.data?.url, r.data?.mentioned, r.data?.docs, r.data?.savedFrom]) if (u) known.add(sameTool(u));
+      let nextId = Math.max(207, ...rows.map((r) => r.itemId)) + 1;
+      for (const n of PREPARED_NEW) {
+        if (known.has(sameTool(n.card.url))) continue;
+        const id = nextId++;
+        await ctx.db.insert("items", { itemId: id, status: "active", data: { ...n.card, id } });
+        if (!prompted.has(id)) await ctx.db.insert("prompts", { itemId: id, text: n.prompt, sources: [], model: "Claude (prepared in advance)", createdAt: n.card.date });
+        known.add(sameTool(n.card.url));
+      }
       const m = await ctx.db.query("meta").withIndex("by_key", (q) => q.eq("key", "prepared")).first();
       if (m) await ctx.db.patch(m._id, { value: PREPARED_VERSION });
       else await ctx.db.insert("meta", { key: "prepared", value: PREPARED_VERSION });
