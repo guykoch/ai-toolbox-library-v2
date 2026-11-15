@@ -411,12 +411,6 @@
       .shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
       .shot button { position: absolute; top: 3px; right: 3px; width: 24px; height: 24px; min-height: 24px; border-radius: 50%; border: 0; background: rgba(0,0,0,.65); color: #fff; cursor: pointer; font-size: 14px; line-height: 1; padding: 0; }
       .addbox textarea.dragover { border-color: var(--accent); background: var(--accent-soft); }
-      .jobbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-top: 14px; font-size: 13.5px; color: var(--ink-2); }
-      .jobbar[hidden] { display: none; }
-      .jobbar .jb-track { flex: 1 1 140px; height: 8px; background: var(--surface-2); border-radius: 5px; overflow: hidden; min-width: 120px; }
-      .jobbar .jb-fill { display: block; height: 100%; background: var(--accent); border-radius: 5px; transition: width .4s ease; }
-      .jobbar .jb-err { flex-basis: 100%; color: #b42318; font-size: 13px; }
-      :root[data-theme="dark"] .jobbar .jb-err { color: #ff8a7a; }
       .card.highlight { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow); }
       .card .btn-row { display: flex; flex-wrap: wrap; gap: 6px; }
       .card .btn-row .expand-btn { padding: 5px 10px; font-size: 13px; gap: 5px; }
@@ -523,13 +517,6 @@
           <div class="ar-actions" id="ar-actions"></div>
         </div>
       </section>
-
-      <div class="jobbar" id="jobbar" hidden aria-live="polite">
-        <span id="jb-text"></span>
-        <span class="jb-track"><span class="jb-fill" id="jb-fill" style="width:0%"></span></span>
-        <button class="mini-btn" id="jb-btn" type="button"></button>
-        <span class="jb-err" id="jb-err" hidden></span>
-      </div>
 
       <section aria-labelledby="map-h" style="margin-top:28px">
         <div class="sec-head"><h2 id="map-h">Browse by shelf</h2><span class="hint">Tap a shelf to filter</span></div>
@@ -950,69 +937,14 @@
         archived = res.archived;
         state.prompts = new Set(res.promptIds || []);
         if (res.meta.theme && res.meta.theme !== document.documentElement.getAttribute('data-theme')) applyTheme(res.meta.theme);
-        JOB = res.job || {};
         DATA.clusters = res.meta.clusters || [];
         DATA.attachments = res.meta.attachments || [];
         DATA.unresolved = res.meta.unresolved || [];
         document.getElementById('loading').hidden = true;
         renderChrome();
         render();
-        renderJob();
       }
 
-      // ---------- background job: research post links + pre-write install prompts ----------
-      let JOB = {};
-      let jobPoll = null;
-      let autoStarted = false;
-      function renderJob() {
-        const bar = document.getElementById('jobbar');
-        const total = (JOB.researchTotal || 0) + (JOB.total || 0);
-        const done = (JOB.researchDone || 0) + (JOB.promptsDone || 0);
-        const allDone = JOB.promptsDone >= JOB.total && JOB.researchDone >= JOB.researchTotal;
-        bar.hidden = !JOB.runId && !JOB.running;
-        if (allDone && !JOB.running && !JOB.lastError) bar.hidden = true;
-        const pct = total ? Math.round(done / total * 100) : 0;
-        document.getElementById('jb-fill').style.width = pct + '%';
-        document.getElementById('jb-text').innerHTML =
-          (JOB.running ? '<b>Preparing your library</b> in the background' : (allDone ? '<b>Library prepared</b>' : '<b>Paused</b>')) +
-          ' &middot; post links researched <b>' + (JOB.researchDone || 0) + '/' + (JOB.researchTotal || 0) + '</b>' +
-          (JOB.toolLinksFound ? ' (' + JOB.toolLinksFound + ' now open the tool itself)' : '') +
-          ' &middot; install prompts ready <b>' + (JOB.promptsDone || 0) + '/' + (JOB.total || 0) + '</b>';
-        const btn = document.getElementById('jb-btn');
-        btn.textContent = JOB.running ? 'Pause' : 'Resume';
-        btn.hidden = allDone && !JOB.running;
-        const err = document.getElementById('jb-err');
-        err.hidden = !JOB.lastError;
-        err.textContent = JOB.lastError ? 'Last problem: ' + JOB.lastError + (JOB.running ? '' : ' — fix it, then press Resume.') : '';
-        clearInterval(jobPoll);
-        if (JOB.running) jobPoll = setInterval(refreshQuietly, 20000);
-      }
-      async function refreshQuietly() {
-        if (!modal.hidden || document.activeElement === addText || document.activeElement === askText) return;
-        try {
-          const res = await call('query', 'items:list', {});
-          const changed = res.active.length !== items.length || (res.promptIds || []).length !== state.prompts.size || JSON.stringify(res.job) !== JSON.stringify(JOB);
-          items = res.active; archived = res.archived; state.prompts = new Set(res.promptIds || []); JOB = res.job || {};
-          if (changed) { renderChrome(); render(); }
-          renderJob();
-        } catch (e) {}
-      }
-      async function startJob() {
-        await call('mutation', 'pipeline:start', { today: (function () { const d = new Date(); return d.getDate() + ' ' + MONTH_LABELS[d.getMonth()] + ' ' + d.getFullYear(); })() });
-        await refreshQuietly();
-      }
-      document.getElementById('jb-btn').addEventListener('click', async e => {
-        e.target.disabled = true;
-        try { if (JOB.running) await call('mutation', 'pipeline:pause', {}); else await startJob(); await refreshQuietly(); }
-        catch (x) { document.getElementById('jb-err').hidden = false; document.getElementById('jb-err').textContent = x.message; }
-        finally { e.target.disabled = false; }
-      });
-      // First visit after deploying: start preparing everything automatically (once).
-      async function maybeAutoStart() {
-        if (autoStarted || JOB.runId || JOB.running) return;
-        autoStarted = true;
-        try { await startJob(); } catch (e) {}
-      }
       function showLock(msg) {
         document.getElementById('lock').hidden = false;
         document.getElementById('lock-err').textContent = msg || '';
@@ -1110,7 +1042,7 @@
         const el = document.getElementById('card-' + id);
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
-      document.getElementById('ar-actions').addEventListener('click', e => {
+      addResult.addEventListener('click', e => {
         const s = e.target.closest('[data-show]'); if (s) { goToCard(Number(s.dataset.show)); return; }
         const i = e.target.closest('[data-install]'); if (i) openInstall(Number(i.dataset.install), false);
       });
@@ -1122,6 +1054,7 @@
         addBtn.disabled = true; addStatus.className = 'add-status';
         addStatus.textContent = 'Working on it \u2014 opening the link and identifying the tool\u2026 (usually 10\u201340 seconds)';
         try {
+          const shotsSent = shots.length;
           const res = await call('action', 'ingest:addFromText', { text: text, today: todayISO(), images: shots.map(s => ({ mime: s.mime, data: s.data })) });
           addText.value = ''; shots = []; renderShots();
           addStatus.textContent = '';
@@ -1129,19 +1062,37 @@
           state.justAdded = res.item.id;
           state.expanded.add(res.item.id);
           await load();
-          const it = res.item;
-          const shelf = (CATS[it.cat] || CATS.other).label;
-          const actions = '<button type="button" class="mini-btn" data-show="' + it.id + '">Show it in the library</button>' +
+          const results = (res.results && res.results.length) ? res.results : [res];
+          const actionsFor = it => '<button type="button" class="mini-btn" data-show="' + it.id + '">Show it in the library</button>' +
             '<button type="button" class="mini-btn" data-install="' + it.id + '">Install prompt</button>' +
             '<a class="mini-btn" style="text-decoration:none;display:inline-flex;align-items:center" href="' + esc(it.url) + '" target="_blank" rel="noopener">Open</a>';
-          if (res.status === 'again') {
-            showResult('again', 'Already in your library',
-              '<b dir="auto">' + esc(it.title) + '</b> was first saved on ' + esc(it.date) + ', so no duplicate was added. It\u2019s now marked \u201CSaved again\u201D' +
-              (res.wasArchived ? ' and was brought back from the archive.' : '.'), actions);
+          const shotNote = shotsSent > 1 ? ' (All ' + shotsSent + ' screenshots were read.)' : '';
+          if (results.length === 1) {
+            const it = res.item;
+            const shelf = (CATS[it.cat] || CATS.other).label;
+            if (res.status === 'again') {
+              showResult('again', 'Already in your library',
+                '<b dir="auto">' + esc(it.title) + '</b> was first saved on ' + esc(it.date) + ', so no duplicate was added. It\u2019s now marked \u201CSaved again\u201D' +
+                (res.wasArchived ? ' and was brought back from the archive.' : '.') + shotNote, actionsFor(it));
+            } else {
+              showResult('ok', 'Tool added',
+                '<b dir="auto">' + esc(it.title) + '</b> is now on the <b>' + esc(shelf) + '</b> shelf' + (it.os === true ? ' (open source)' : '') + '. ' +
+                'Its install prompt is being written and will be ready in about a minute.' + shotNote, actionsFor(it));
+            }
           } else {
-            showResult('ok', 'Tool added',
-              '<b dir="auto">' + esc(it.title) + '</b> is now on the <b>' + esc(shelf) + '</b> shelf' + (it.os === true ? ' (open source)' : '') + '. ' +
-              'Its install prompt is being written and will be ready in about a minute.', actions);
+            const nAdd = results.filter(r => r.status === 'added').length, nAgain = results.filter(r => r.status === 'again').length, nFail = results.filter(r => r.status === 'failed').length;
+            const head = [nAdd ? nAdd + (nAdd === 1 ? ' tool added' : ' tools added') : '', nAgain ? nAgain + ' already in your library' : '', nFail ? nFail + ' couldn\u2019t be added' : ''].filter(Boolean).join(' \u00b7 ');
+            const lines = results.map(r => {
+              const it = r.item || {};
+              const tag = r.status === 'added' ? '\u2713 Added' : r.status === 'again' ? '\u21BA Already saved' : '! Couldn\u2019t add';
+              const extra = r.status === 'added' ? ' \u2014 ' + esc((CATS[it.cat] || CATS.other).label) + ' shelf'
+                : r.status === 'again' ? ' \u2014 first saved ' + esc(it.date) + ', marked \u201CSaved again\u201D' : ' \u2014 no link found for it';
+              const btn = r.status === 'failed' ? '' : ' <button type="button" class="mini-btn" style="min-height:26px;padding:2px 10px;font-size:12.5px" data-show="' + it.id + '">Show</button>';
+              return '<span style="display:block;margin-top:6px"><b>' + tag + ':</b> <span dir="auto">' + esc(it.title || '') + '</span>' + extra + btn + '</span>';
+            }).join('');
+            showResult(nAdd ? 'ok' : (nAgain ? 'again' : 'fail'), head,
+              'Found ' + results.length + ' different tools in what you added.' + shotNote + lines +
+              (nAdd ? '<span style="display:block;margin-top:8px">Install prompts for the new ones are being written and will be ready in about a minute.</span>' : ''), '');
           }
         } catch (e) {
           addStatus.textContent = '';

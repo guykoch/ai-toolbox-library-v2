@@ -24,7 +24,10 @@ function dateParts(isoToday: string) {
 // Screenshots per add (the page enforces the same limit).
 const MAX_SHOTS = 20;
 
-const FORMAT_SPEC = `You file links into a personal "AI Toolbox Library" library. Return ONE card as a JSON object, nothing else.
+type AddResult = { status: "added" | "again" | "failed"; item: any; wasArchived?: boolean; reason?: string };
+type AddResponse = AddResult & { results: AddResult[] };
+
+const FORMAT_SPEC = `You file links into a personal "AI Toolbox Library" library. Return the card as a JSON object, nothing else (or {"cards": [...]} when there are several different tools — see below).
 
 Fields (match the examples exactly in style and length):
 - "title": the tool/post's real name. For GitHub repos use "owner/repo: <repo description>". For a social post about a tool, a short name for what it is (e.g. "TranslateGemma", "Five Claude Code tips"). Keep the original language of the title if the page title is Hebrew.
@@ -45,6 +48,7 @@ Fields (match the examples exactly in style and length):
 - "priv": true only if the user's text says the content is private / not to be shared, else false.
 
 Screenshots may be attached: read them (they are usually the post itself — text, images, links shown in it).
+ONE OR SEVERAL TOOLS: if the screenshots/text cover two or more DIFFERENT tools (e.g. two screenshots of two different posts), return {"cards": [card1, card2, ...]} with one card per distinct tool. Several screenshots of the SAME tool/post = one card. A single tool can be returned as a plain card object.
 If there is NOT enough information to tell what this is (e.g. only a social-media link that couldn't be read, no text, no screenshot, and search can't find it), return exactly {"unreadable": true} instead of guessing.
 
 If the input is only a name or description, use web search to identify the real tool and its official link. Never invent facts; if unsure, say less.`;
@@ -75,7 +79,7 @@ export const addFromText = action({
     today: v.string(),
     images: v.optional(v.array(v.object({ mime: v.string(), data: v.string() }))),
   },
-  handler: async (ctx, { key, text, today, images }): Promise<{ status: "added" | "again"; item: any; wasArchived?: boolean }> => {
+  handler: async (ctx, { key, text, today, images }): Promise<AddResponse> => {
     checkKey(key);
     const input = text.trim();
     const pics = (images || []).filter((im) => /^image\/(png|jpeg|webp|gif)$/.test(im.mime)).slice(0, MAX_SHOTS);
@@ -83,98 +87,109 @@ export const addFromText = action({
     if (!/^\d{4}-\d{2}-\d{2}$/.test(today)) throw new ConvexError("Bad date.");
     const day = dateParts(today);
 
-    const urls = Array.from(new Set((input.match(/https?:\/\/[^\s<>"')\]]+/g) || []).map((u) => u.replace(/[.,;]+$/, "")))).slice(0, 3);
+    const urls = Array.from(new Set((input.match(/https?:\/\/[^\s<>"')\]]+/g) || []).map((u) => u.replace(/[.,;]+$/, "")))).slice(0, 5);
     const rows: { status: string; data: any }[] = await ctx.runQuery(internal.items.allForIngest, {});
 
-    // 1. Already in the library? Mark it "saved again" instead of adding a duplicate.
     // Prefer a card whose own link matches; fall back to a card that only mentions it.
     const findDup = (u: string) =>
       rows.find((r) => r.data.url && norm(r.data.url) === norm(u)) ||
       rows.find((r) => [r.data.mentioned, r.data.docs, r.data.savedFrom].filter(Boolean).some((x: string) => norm(x) === norm(u)));
-    for (const u of urls) {
-      const dup = findDup(u);
-      if (dup) {
-        const res = await ctx.runMutation(internal.items.markSavedAgain, { id: dup.data.id, date: day.date });
-        return { status: "again", item: res.item, wasArchived: res.wasArchived };
-      }
-    }
+    const again = async (dup: { data: any }): Promise<AddResult> => {
+      const res = await ctx.runMutation(internal.items.markSavedAgain, { id: dup.data.id, date: day.date });
+      return { status: "again", item: res.item, wasArchived: res.wasArchived };
+    };
+    const reply = (results: AddResult[]): AddResponse => ({ ...results[0], results });
+
+    // 1. A single link that's already in the library: no AI needed.
+    const single = urls.length === 1 && !pics.length;
+    if (single && findDup(urls[0])) return reply([await again(findDup(urls[0])!)]);
 
     // 2. Gather context from every link.
     const fetched = await Promise.all(urls.map(gatherUrl));
-    for (const f of fetched) {
-      const dup = findDup(f.finalUrl);
-      if (dup) {
-        const res = await ctx.runMutation(internal.items.markSavedAgain, { id: dup.data.id, date: day.date });
-        return { status: "again", item: res.item, wasArchived: res.wasArchived };
-      }
-    }
+    if (single && findDup(fetched[0].finalUrl)) return reply([await again(findDup(fetched[0].finalUrl)!)]);
 
-    // 3. Ask Claude to write the card in the library's format.
+    // 3. Ask the AI to write the card(s) in the library's format — one per distinct tool.
     const examples = pickExamples(rows.map((r) => r.data));
     const userMsg =
       `Today is ${day.date}.\n\nEXAMPLE CARDS FROM THE LIBRARY (copy their style):\n${JSON.stringify(examples, null, 1)}\n\n` +
-      `WHAT THE USER PASTED:\n"""\n${input.slice(0, 9000) || "(nothing typed — see the attached screenshot)"}\n"""\n\n` +
-      (pics.length ? `${pics.length} SCREENSHOT(S) ATTACHED — read them.\n\n` : "") +
+      `WHAT THE USER PASTED:\n"""\n${input.slice(0, 9000) || "(nothing typed — see the attached screenshots)"}\n"""\n\n` +
+      (pics.length ? `${pics.length} SCREENSHOT(S) ATTACHED — read every one of them.\n\n` : "") +
       (fetched.length ? `WHAT I FOUND AT THE LINKS:\n${fetched.map((f) => f.notes).join("\n---\n")}\n\n` : "") +
-      `Return only the JSON card.`;
+      `Return only the JSON.`;
     // Claude writes the card if you gave it a key; otherwise Gemini does (one key runs everything).
     const answer = process.env.ANTHROPIC_API_KEY
       ? await callClaude(FORMAT_SPEC, userMsg, true, pics)
-      : (await callGemini({ model: MODELS.addGemini(), system: FORMAT_SPEC, turns: [{ role: "user", text: userMsg, images: pics }], search: true, thinking: "medium", maxTokens: 4096 })).text;
-    const raw = parseJson(answer);
-    if (raw.unreadable === true) {
+      : (await callGemini({ model: MODELS.addGemini(), system: FORMAT_SPEC, turns: [{ role: "user", text: userMsg, images: pics }], search: true, thinking: "medium", maxTokens: 8192 })).text;
+    const parsed = parseJson(answer);
+    if (parsed.unreadable === true) {
       throw new ConvexError("I couldn't read that post — Facebook hides posts from servers. Paste the post's text or a screenshot here along with the link.");
     }
+    const raws: any[] = (Array.isArray(parsed.cards) ? parsed.cards : [parsed]).filter((c: any) => c && typeof c === "object" && c.unreadable !== true).slice(0, 10);
+    if (!raws.length) throw new ConvexError("I couldn't work out which tool this is. Add the tool's name, its website, or a bit more detail.");
 
-    // 4. Validate and normalise every field so the card matches the others exactly.
+    // 4. Validate and normalise every field so each card matches the others exactly.
     const str = (x: any) => (typeof x === "string" ? x.trim() : "");
-    const url = cleanUrl(str(raw.url) || fetched[0]?.finalUrl || urls[0] || "");
-    if (!/^https?:\/\//.test(url)) throw new ConvexError("Couldn't find a link for this. Paste the link itself, or add more detail.");
-    const innerLink = str(raw.mentioned);
-    const dupAfter = findDup(url) || (/github\.com\//i.test(innerLink) ? rows.find((r) => r.data.url && norm(r.data.url) === norm(innerLink)) : undefined);
-    if (dupAfter) {
-      const res = await ctx.runMutation(internal.items.markSavedAgain, { id: dupAfter.data.id, date: day.date });
-      return { status: "again", item: res.item, wasArchived: res.wasArchived };
-    }
-    const cat = CATS.includes(raw.cat) ? raw.cat : "other";
-    const gh = fetched.find((f) => f.github)?.github;
-    const why: string[] = (Array.isArray(raw.why) ? raw.why : []).map(str).filter(Boolean).slice(0, 4);
-    if (gh) why.push(`${fmt(gh.stars)} GitHub stars and ${fmt(gh.forks)} forks when checked on ${day.date}${gh.license ? ` — ${gh.license} licence` : ""}`);
-    if (!why.length) why.push("Little wider buzz found — mostly a niche or local find");
-    let os: boolean | "unknown" = raw.os === true ? true : raw.os === false ? false : "unknown";
-    if (gh && gh.license) os = true;
-
-    const item: any = {
-      again: "",
-      date: day.date,
-      iso: day.iso,
-      month: day.month,
-      title: str(raw.title) || hostLabel(url),
-      summary: str(raw.summary),
-      cat,
-      type: TYPES.includes(raw.type) ? raw.type : gh ? "open-source-repo" : "other",
-      os,
-      lang: LANGS.includes(raw.lang) ? raw.lang : "unknown",
-      author: str(raw.author),
-      url,
-      host: hostLabel(url),
-      mentioned: str(raw.mentioned) && norm(str(raw.mentioned)) !== norm(url) ? cleanUrl(str(raw.mentioned)) : "",
-      priv: raw.priv === true,
-      extra: (Array.isArray(raw.extra) ? raw.extra : []).filter((c: any) => CATS.includes(c) && c !== cat),
-      pop: Math.max(1, Math.min(100, Math.round(Number(raw.pop) || 40))),
-      why,
-    };
-    // Keep the social post the tool came from, when the card now links to the tool itself.
     const social = urls.find((u) => /facebook\.com|fb\.watch|linkedin\.com|(^|\/\/)(www\.)?(x|twitter)\.com/i.test(u));
-    if (social && norm(social) !== norm(url) && !/facebook\.com|fb\.watch|linkedin\.com/i.test(url)) item.savedFrom = cleanUrl(social);
-    const docs = str(raw.docs);
-    if (docs && /^https?:\/\//.test(docs) && norm(docs) !== norm(url)) item.docs = cleanUrl(docs);
-    const install = (Array.isArray(raw.install) ? raw.install : []).map(str).filter(Boolean);
-    if (install.length) item.install = install;
+    const results: AddResult[] = [];
+    const seenNow = new Set<string>();
+    for (const raw of raws) {
+      const url = cleanUrl(str(raw.url) || (raws.length === 1 ? fetched[0]?.finalUrl || urls[0] || "" : ""));
+      if (!/^https?:\/\//.test(url)) {
+        results.push({ status: "failed", item: { title: str(raw.title) || "Unknown tool" }, reason: "no link found" });
+        continue;
+      }
+      if (seenNow.has(norm(url))) continue; // the AI listed the same tool twice
+      seenNow.add(norm(url));
+      const innerLink = str(raw.mentioned);
+      const dup = findDup(url) || (/github\.com\//i.test(innerLink) ? rows.find((r) => r.data.url && norm(r.data.url) === norm(innerLink)) : undefined);
+      if (dup) {
+        results.push(await again(dup));
+        continue;
+      }
+      const cat = CATS.includes(raw.cat) ? raw.cat : "other";
+      const gh = fetched.find((f) => f.github && norm(f.finalUrl) === norm(url))?.github || (raws.length === 1 ? fetched.find((f) => f.github)?.github : undefined);
+      const why: string[] = (Array.isArray(raw.why) ? raw.why : []).map(str).filter(Boolean).slice(0, 4);
+      if (gh) why.push(`${fmt(gh.stars)} GitHub stars and ${fmt(gh.forks)} forks when checked on ${day.date}${gh.license ? ` \u2014 ${gh.license} licence` : ""}`);
+      if (!why.length) why.push("Little wider buzz found \u2014 mostly a niche or local find");
+      let os: boolean | "unknown" = raw.os === true ? true : raw.os === false ? false : "unknown";
+      if (gh && gh.license) os = true;
 
-    const saved = await ctx.runMutation(internal.items.insertItem, { data: item });
-    // Write its install prompt in the background, so it's ready when you open it.
-    await ctx.scheduler.runAfter(0, internal.pipeline.promptForNew, { id: saved.id, today: day.date });
-    return { status: "added", item: saved };
+      const item: any = {
+        again: "",
+        date: day.date,
+        iso: day.iso,
+        month: day.month,
+        title: str(raw.title) || hostLabel(url),
+        summary: str(raw.summary),
+        cat,
+        type: TYPES.includes(raw.type) ? raw.type : gh ? "open-source-repo" : "other",
+        os,
+        lang: LANGS.includes(raw.lang) ? raw.lang : "unknown",
+        author: str(raw.author),
+        url,
+        host: hostLabel(url),
+        mentioned: innerLink && norm(innerLink) !== norm(url) ? cleanUrl(innerLink) : "",
+        priv: raw.priv === true,
+        extra: (Array.isArray(raw.extra) ? raw.extra : []).filter((c: any) => CATS.includes(c) && c !== cat),
+        pop: Math.max(1, Math.min(100, Math.round(Number(raw.pop) || 40))),
+        why,
+      };
+      // Keep the social post the tool came from, when the card now links to the tool itself.
+      if (social && norm(social) !== norm(url) && !/facebook\.com|fb\.watch|linkedin\.com/i.test(url)) item.savedFrom = cleanUrl(social);
+      const docs = str(raw.docs);
+      if (docs && /^https?:\/\//.test(docs) && norm(docs) !== norm(url)) item.docs = cleanUrl(docs);
+      const install = (Array.isArray(raw.install) ? raw.install : []).map(str).filter(Boolean);
+      if (install.length) item.install = install;
+
+      const saved = await ctx.runMutation(internal.items.insertItem, { data: item });
+      rows.push({ status: "active", data: saved }); // so a later card in this batch can't duplicate it
+      // Write its install prompt in the background, so it's ready when you open it.
+      await ctx.scheduler.runAfter(0, internal.pipeline.promptForNew, { id: saved.id, today: day.date });
+      results.push({ status: "added", item: saved });
+    }
+    if (!results.some((r) => r.status !== "failed")) {
+      throw new ConvexError("Couldn't find a link for this. Paste the link itself, or add more detail.");
+    }
+    return reply(results);
   },
 });
