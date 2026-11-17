@@ -2,6 +2,7 @@ import { action } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v, ConvexError } from "convex/values";
 import { checkKey } from "./auth";
+import { KINDS, guessKind } from "./kinds";
 import { cleanUrl, norm, hostLabel, gatherUrl } from "./web";
 import { callClaude, callGemini, parseJson, MODELS } from "./llm";
 
@@ -35,6 +36,7 @@ Fields (match the examples exactly in style and length):
 - "cat": main shelf, one of: ${CATS.join(", ")}.
 - "extra": array of other shelves it also clearly belongs to (usually []).
 - "type": one of: ${TYPES.join(", ")}.
+- "kind": what kind of thing it is / how you'd use it, one of: skill (SKILL.md instruction folders for Claude & other agents), connector (MCP server / connector that links an AI to another service), plugin (browser/IDE/app extension or plugin), webapp (website or SaaS you sign up for), app (desktop or phone app you download), devtool (CLI, library, self-hosted repo you run yourself), model (AI model you call or run), learn (guide, course, video, prompt tips, post to learn from), news (announcement, roundup, report).
 - "os": true if it is open source (public code repo / open licence), false if clearly not, "unknown" if you can't tell.
 - "lang": language of the post/page the link opens: "he", "en" or "unknown".
 - "author": the person who wrote/shared the social post (Facebook/LinkedIn/X) or "" for websites, repos and YouTube.
@@ -163,6 +165,7 @@ export const addFromText = action({
         summary: str(raw.summary),
         cat,
         type: TYPES.includes(raw.type) ? raw.type : gh ? "open-source-repo" : "other",
+        kind: (KINDS as readonly string[]).includes(raw.kind) ? raw.kind : "",
         os,
         lang: LANGS.includes(raw.lang) ? raw.lang : "unknown",
         author: str(raw.author),
@@ -174,6 +177,7 @@ export const addFromText = action({
         pop: Math.max(1, Math.min(100, Math.round(Number(raw.pop) || 40))),
         why,
       };
+      if (!item.kind) item.kind = guessKind(item);
       // Keep the social post the tool came from, when the card now links to the tool itself.
       if (social && norm(social) !== norm(url) && !/facebook\.com|fb\.watch|linkedin\.com/i.test(url)) item.savedFrom = cleanUrl(social);
       const docs = str(raw.docs);

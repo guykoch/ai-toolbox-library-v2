@@ -2,7 +2,7 @@ import { query, mutation, internalMutation, internalQuery } from "./_generated/s
 import { v, ConvexError } from "convex/values";
 import { checkKey } from "./auth";
 import { SEED_ITEMS, SEED_META } from "./seedData";
-import { PREPARED, PREPARED_VERSION, PREPARED_NEW } from "./preparedData";
+import { PREPARED, PREPARED_VERSION, PREPARED_NEW, PREPARED_KINDS } from "./preparedData";
 
 const SOCIAL = ["Facebook", "LinkedIn", "linkedin.com"];
 
@@ -281,6 +281,11 @@ export const applyPrepared = mutation({
       }
     }
     if (to >= PREPARED.length) {
+      // Give every original card its type (never overwrites a type that's already set).
+      for (const r of rows) {
+        const k = PREPARED_KINDS[r.itemId];
+        if (k && !r.data?.kind) await ctx.db.patch(r._id, { data: { ...r.data, kind: k } });
+      }
       // Add new ready-made tools, unless the library already has them (any link form).
       const known = new Set<string>();
       for (const r of rows) for (const u of [r.data?.url, r.data?.mentioned, r.data?.docs, r.data?.savedFrom]) if (u) known.add(sameTool(u));

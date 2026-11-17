@@ -106,6 +106,23 @@ The app ships with install prompts for all 208 existing tools, plus research tha
 - **Regenerate** in the pop-up rewrites a prompt with fresh Gemini research, if you ever want that.
 - If an older version already started the paid background job, loading this data stops it.
 
+## Tool types
+
+Every card has a **type**, showing what kind of thing it is and how you'd use it:
+- 🧩 Skill
+- 🔌 Connector (MCP)
+- 🧱 Plugin / extension
+- 🌐 Web app
+- 💻 Desktop / phone app
+- 🛠️ Developer tool
+- 🧠 AI model
+- 📚 Learn
+- 📰 News
+
+Cards also show an **effort to start** label: ● Ready now, ⚡ Quick install or ⚙️ Tech setup.
+
+The **Type** chips above "Browse by shelf" filter by type, and they combine with shelves and search. Existing cards were classified by Claude, and new tools get their type automatically when added.
+
 ## Updating hype scores
 
 The **Hype** button at the top re-checks every tool's score with fresh research:

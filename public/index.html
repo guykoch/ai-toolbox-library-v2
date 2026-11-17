@@ -261,6 +261,17 @@
       .fold { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 4px 18px 10px; margin-bottom: 12px; box-shadow: var(--shadow); }
       .fold summary { cursor: pointer; font-weight: 700; font-size: 16px; padding: 13px 2px; min-height: 48px; display: flex; align-items: center; }
       .fold .plain-list { margin-bottom: 6px; }
+      /* Tool types: a scrollable row of chips */
+      .kindrow { margin-top: 18px; }
+      .kindrow .kr-label { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+      .kindchips { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 8px; scrollbar-width: thin; }
+      .kindchip { flex: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 7px 13px; font-size: 14px; font-weight: 600; min-height: 38px; }
+      .kindchip .kc-n { font-size: 12px; font-weight: 600; color: var(--muted); }
+      .kindchip:hover { border-color: var(--accent); }
+      .kindchip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+      .kindchip[aria-pressed="true"] .kc-n { color: inherit; opacity: .75; }
+      .badge.kind { background: var(--surface-2); }
+      .card .meta .effort { margin-left: auto; font-family: inherit; font-size: 12px; color: var(--muted); }
       /* "Browse by shelf": collapsed by default, opens on tap */
       .shelf-fold > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 16px; min-height: 52px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
       .shelf-fold > summary::-webkit-details-marker { display: none; }
@@ -575,7 +586,12 @@
         </div>
       </div>
 
-      <section aria-label="Browse by shelf" style="margin-top:18px">
+      <section class="kindrow" aria-labelledby="kind-h">
+        <p class="kr-label" id="kind-h">Type</p>
+        <div class="kindchips" id="kindchips"></div>
+      </section>
+
+      <section aria-label="Browse by shelf" style="margin-top:14px">
         <details class="shelf-fold" id="shelf-fold">
           <summary><span class="sf-title" id="map-h">Browse by shelf</span><span class="sf-active" id="sf-active"></span><span class="sf-hint">Tap to open</span></summary>
           <div class="catchips" id="catchips"></div>
@@ -680,10 +696,41 @@
         'translation':    { label: 'Translation',    color: '#64748b' },
         'other':          { label: 'Other',          color: '#6d6d6d' }
       };
+      // Tool types ("what kind of thing is it?"), kept in sync with convex/kinds.ts.
+      const KINDS = {
+        skill:     { label: 'Skill',               plural: 'Skills',             icon: '\u{1F9E9}' },
+        connector: { label: 'Connector (MCP)',     plural: 'Connectors (MCP)',   icon: '\u{1F50C}' },
+        plugin:    { label: 'Plugin / extension',  plural: 'Plugins & extensions', icon: '\u{1F9F1}' },
+        webapp:    { label: 'Web app',             plural: 'Web apps',           icon: '\u{1F310}' },
+        app:       { label: 'Desktop / phone app', plural: 'Desktop & phone apps', icon: '\u{1F4BB}' },
+        devtool:   { label: 'Developer tool',      plural: 'Developer tools',    icon: '\u{1F6E0}\uFE0F' },
+        model:     { label: 'AI model',            plural: 'AI models',          icon: '\u{1F9E0}' },
+        learn:     { label: 'Learn',               plural: 'Learn',              icon: '\u{1F4DA}' },
+        news:      { label: 'News',                plural: 'News',               icon: '\u{1F4F0}' }
+      };
+      const KIND_ORDER = ['skill', 'connector', 'plugin', 'webapp', 'app', 'devtool', 'model', 'learn', 'news'];
+      const EFFORT = { webapp: 'Ready now', learn: 'Ready now', news: 'Ready now', skill: 'Quick install', plugin: 'Quick install', app: 'Quick install', connector: 'Quick install', devtool: 'Tech setup', model: 'Tech setup' };
+      const EFFORT_ICON = { 'Ready now': '\u25CF', 'Quick install': '\u26A1', 'Tech setup': '\u2699\uFE0F' };
+      // Best guess for a card without a type (same rules as the server).
+      function kindOf(it) {
+        if (KINDS[it.kind]) return it.kind;
+        const t = ((it.title || '') + ' ' + (it.summary || '')).toLowerCase(), url = String(it.url || '').toLowerCase(), type = String(it.type || '');
+        if (type === 'news') return 'news';
+        if (['guide', 'course', 'video', 'post'].includes(type) || /youtube\.com|youtu\.be/.test(url)) return 'learn';
+        const gh = /github\.com/.test(url) || type === 'open-source-repo';
+        if (/\bskills?\b|skill\.md/.test(t)) return 'skill';
+        if (/desktop app|mac app|menu bar|iphone|android|ios app|app store|windows, macos|for windows|desktop meeting|video editor|image editor|on-device/.test(t)) return 'app';
+        if (/\bmcp server\b|\bconnector\b/.test(t) && !/\bcli\b/.test(t)) return 'connector';
+        if (/extension|plugin|add-on/.test(t) || /chromewebstore|marketplace\.visualstudio/.test(url)) return 'plugin';
+        if (/open-weight|open weights|text-to-speech model|image model|diarization model/.test(t) || /huggingface\.co/.test(url)) return 'model';
+        if (gh || /\bcli\b|library|sdk|self-hosted|framework|api\b|apis\b/.test(t)) return 'devtool';
+        if (/\bnews\b|report|benchmark/.test(t)) return 'news';
+        return 'webapp';
+      }
       const CAT_ORDER = ['coding-agents','agent-skills','courses-guides','productivity','app-building','video','image','audio','ai-models','news-analysis','translation','other'];
       const MONTH_LABELS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-      const state = { q: '', cat: 'all', osOnly: false, videoOnly: false, cluster: -1, month: '', sort: 'pop', expanded: new Set(), justAdded: -1, highlight: -1, prompts: new Set() };
+      const state = { q: '', kind: 'all', cat: 'all', osOnly: false, videoOnly: false, cluster: -1, month: '', sort: 'pop', expanded: new Set(), justAdded: -1, highlight: -1, prompts: new Set() };
       let items = [];
       let archived = [];
       const DATA = { clusters: [], attachments: [], unresolved: [], months: [] };
@@ -731,6 +778,11 @@
             '<span class="cc-name"><span class="dot" style="background:' + CATS[c].color + '"></span>' + CATS[c].label + '</span>' +
             '<span class="cc-counts">' + catCount(c) + ' items &middot; ' + catOS(c) + ' open source</span></button>').join('');
 
+        const kindCount = {}; items.forEach(i => { const k = kindOf(i); kindCount[k] = (kindCount[k] || 0) + 1; });
+        document.getElementById('kindchips').innerHTML =
+          '<button type="button" class="kindchip" data-kind="all" aria-pressed="true">All types <span class="kc-n">' + items.length + '</span></button>' +
+          KIND_ORDER.filter(k => kindCount[k]).map(k =>
+            '<button type="button" class="kindchip" data-kind="' + k + '" aria-pressed="false" title="' + EFFORT[k] + '">' + KINDS[k].icon + ' ' + KINDS[k].plural + ' <span class="kc-n">' + kindCount[k] + '</span></button>').join('');
         const liveIds = new Set(items.map(i => i.id));
         clustersEl.innerHTML = DATA.clusters.map((c, idx) => {
           const n = c.ids.filter(id => liveIds.has(id)).length;
@@ -760,11 +812,12 @@
       function matches(it) {
         if (state.cluster >= 0 && !DATA.clusters[state.cluster].ids.includes(it.id)) return false;
         if (state.month && monthKey(it) !== state.month) return false;
+        if (state.kind !== 'all' && kindOf(it) !== state.kind) return false;
         if (state.cat !== 'all' && !inCat(it, state.cat)) return false;
         if (state.videoOnly && !inCat(it, 'video')) return false;
         if (state.osOnly && it.os !== true) return false;
         if (state.q) {
-          const hay = (it.title + ' ' + it.summary + ' ' + it.author + ' ' + ((it.install || []).join(' ')) + ' ' + ((it.installAlt || []).join(' ')) + ' ' + (CATS[it.cat] ? CATS[it.cat].label : '')).toLowerCase();
+          const hay = (it.title + ' ' + it.summary + ' ' + it.author + ' ' + ((it.install || []).join(' ')) + ' ' + ((it.installAlt || []).join(' ')) + ' ' + (CATS[it.cat] ? CATS[it.cat].label : '') + ' ' + KINDS[kindOf(it)].label + ' ' + KINDS[kindOf(it)].plural).toLowerCase();
           if (!hay.includes(state.q)) return false;
         }
         return true;
@@ -773,7 +826,9 @@
         const m = CATS[it.cat] || CATS.other;
         const open = state.expanded.has(it.id);
         // Always visible: shelf + open-source mark. Everything else waits behind "Read more".
-        let badges = '<span class="badge cat"><span class="dot" style="background:' + m.color + '"></span>' + m.label + '</span>';
+        const kd = kindOf(it);
+        let badges = '<span class="badge cat"><span class="dot" style="background:' + m.color + '"></span>' + m.label + '</span>' +
+          '<span class="badge kind">' + KINDS[kd].icon + ' ' + KINDS[kd].label + '</span>';
         if (it.os === true) badges += '<span class="badge os"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>Open source</span>';
         let moreBadges = '';
         if (it.priv) moreBadges += '<span class="badge priv">Private — do not share</span>';
@@ -817,7 +872,7 @@
           (inArchive ? '' : foot) +
           '</div>';
         return '<article class="card' + (it.id === state.justAdded && !inArchive ? ' just-added' : '') + (it.id === state.highlight && !inArchive ? ' highlight' : '') + '" id="' + (inArchive ? 'acard-' : 'card-') + it.id + '" data-id="' + it.id + '">' +
-          '<div class="meta"><span>' + esc(it.date) + '</span>' + (inArchive && it.archivedAt ? '<span>Archived ' + esc(it.archivedAt) + '</span>' : (it.id === state.justAdded ? '<span>Just added</span>' : '')) + '</div>' +
+          '<div class="meta"><span>' + esc(it.date) + '</span>' + (inArchive && it.archivedAt ? '<span>Archived ' + esc(it.archivedAt) + '</span>' : (it.id === state.justAdded ? '<span>Just added</span>' : '')) + '<span class="effort" title="Effort to start">' + EFFORT_ICON[EFFORT[kd]] + ' ' + EFFORT[kd] + '</span></div>' +
           '<h3 dir="auto">' + esc(it.title) + '</h3>' +
           '<p class="summary' + (open ? ' full' : '') + '" dir="auto" data-short="' + esc(shortSummary(it.summary)) + '" data-full="' + esc(it.summary) + '">' + esc(open ? it.summary : shortSummary(it.summary)) + '</p>' +
           poprow +
@@ -833,6 +888,7 @@
         const parts = [];
         if (state.cluster >= 0) parts.push('collection <b>' + esc(DATA.clusters[state.cluster].name) + '</b>');
         if (state.month) { const mm = DATA.months.find(m => m.key === state.month); parts.push('<b>' + (mm ? MONTH_LABELS[Number(mm.key.slice(5, 7)) - 1] + ' ' + mm.year : state.month) + '</b>'); }
+        if (state.kind !== 'all') parts.push('<b>' + KINDS[state.kind].plural + '</b>');
         if (state.cat !== 'all') parts.push('<b>' + CATS[state.cat].label + '</b>');
         if (state.videoOnly) parts.push('<b>video tools</b>');
         if (state.osOnly) parts.push('<b>open source</b>');
@@ -858,6 +914,7 @@
         document.getElementById('result-count').textContent = list.length + ' of ' + items.length + ' items';
         document.getElementById('active-desc').innerHTML = activeDesc();
         document.querySelectorAll('#catchips .catchip').forEach(c => c.setAttribute('aria-pressed', String(state.cat === c.dataset.cat)));
+        document.querySelectorAll('#kindchips .kindchip').forEach(c => c.setAttribute('aria-pressed', String(state.kind === c.dataset.kind)));
         document.getElementById('sf-active').textContent = state.cat !== 'all' && CATS[state.cat] ? 'Showing: ' + CATS[state.cat].label : '';
         document.querySelectorAll('#clusters .cluster').forEach(c => c.setAttribute('aria-pressed', String(state.cluster === Number(c.dataset.cluster))));
         document.querySelectorAll('#months .month-row').forEach(r => r.setAttribute('aria-pressed', String(state.month === r.dataset.month)));
@@ -875,7 +932,7 @@
         window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
       }
       function resetFilters() {
-        state.q = ''; state.cat = 'all'; state.osOnly = false; state.videoOnly = false; state.cluster = -1; state.month = ''; state.expanded.clear(); state.highlight = -1;
+        state.q = ''; state.kind = 'all'; state.cat = 'all'; state.osOnly = false; state.videoOnly = false; state.cluster = -1; state.month = ''; state.expanded.clear(); state.highlight = -1;
         document.getElementById('q').value = '';
       }
 
@@ -1372,6 +1429,11 @@
       });
 
       // ---------- wiring ----------
+      document.getElementById('kindchips').addEventListener('click', e => {
+        const c = e.target.closest('.kindchip'); if (!c) return;
+        state.kind = state.kind === c.dataset.kind ? 'all' : c.dataset.kind;
+        render(); scrollToLibrary();
+      });
       chipsEl.addEventListener('click', e => {
         const c = e.target.closest('.catchip'); if (!c) return;
         state.cat = state.cat === c.dataset.cat ? 'all' : c.dataset.cat;
