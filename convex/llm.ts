@@ -7,6 +7,8 @@ export const MODELS = {
   install: () => process.env.GEMINI_MODEL_INSTALL || "gemini-3.8-flash",
   // Answers "What would you like to do?" from your library.
   advisor: () => process.env.GEMINI_MODEL_ADVISOR || "gemini-3.8-flash",
+  // Re-scores hype for "Update hype scores" (uses Google Search).
+  hype: () => process.env.GEMINI_MODEL_HYPE || "gemini-3.8-flash",
   // Writes new cards from what you paste (Claude if ANTHROPIC_API_KEY is set, otherwise Gemini).
   addClaude: () => process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5",
   addGemini: () => process.env.GEMINI_MODEL_ADD || "gemini-3.8-flash",

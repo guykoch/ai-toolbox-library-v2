@@ -106,6 +106,16 @@ The app ships with install prompts for all 208 existing tools, plus research tha
 - **Regenerate** in the pop-up rewrites a prompt with fresh Gemini research, if you ever want that.
 - If an older version already started the paid background job, loading this data stops it.
 
+## Updating hype scores
+
+The **Hype** button at the top re-checks every tool's score with fresh research:
+- **GitHub repos are free.** The app reads their live star counts, and the score moves with how much the stars have grown.
+- **Everything else uses one Gemini call with Google Search per tool.** That's about 1–2 cents each, or roughly $2–4 for the whole library.
+- **It asks before starting** and shows the cost and time first.
+- **A status line** shows progress, time left and how many scores changed. It has Pause/Resume, and keeps running if you close the page.
+- **Tools checked in the last 24 hours are skipped,** so pressing twice costs nothing.
+- **Tip:** add a `GITHUB_TOKEN` (any GitHub token, no permissions needed) in Convex. Without one, GitHub allows only 60 free lookups an hour, and any repo beyond that is scored with Gemini instead.
+
 ## Using it
 
 - **Ask** ("What would you like to do?"): press Enter to send, or Shift+Enter for a new line. Typos, Hebrew and short phrases are all fine.

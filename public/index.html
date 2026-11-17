@@ -334,6 +334,14 @@
       }
       :root[data-theme="dark"] .primary-btn { color: #0b1a14; }
       .primary-btn[disabled] { opacity: .55; cursor: progress; }
+      .hypebar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 12px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font-size: 13.5px; color: var(--ink-2); max-width: 56em; }
+      .hypebar[hidden] { display: none; }
+      .hypebar .hb-text { flex: 1 1 260px; }
+      .hypebar .hb-track { flex: 1 1 140px; height: 8px; background: var(--surface-2); border-radius: 5px; overflow: hidden; min-width: 120px; }
+      .hypebar .hb-fill { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 5px; transition: width .5s ease; }
+      .hypebar .hb-actions { display: inline-flex; align-items: center; gap: 4px; }
+      .hypebar .hb-err { flex-basis: 100%; color: #b42318; font-size: 13px; }
+      :root[data-theme="dark"] .hypebar .hb-err { color: #ff8a7a; }
       .deployed { margin: 4px 0 0; font-size: 12px; color: var(--muted); opacity: .8; }
       .add-status { font-size: 14px; color: var(--ink-2); }
       .add-result { display: grid; grid-template-columns: 30px 1fr auto; gap: 2px 12px; align-items: start; margin-top: 12px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); }
@@ -455,8 +463,17 @@
   <body>
     <div class="top-actions">
       <button class="theme-btn" id="refresh-btn" type="button" aria-label="Reload the page" title="Reload the page from scratch"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>Refresh</button>
+      <button class="theme-btn" id="hype-btn" type="button" aria-label="Update hype scores" aria-expanded="false" aria-controls="hype-pop" title="Re-check every tool's hype score"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Hype</button>
       <button class="theme-btn" id="credit-btn" type="button" aria-label="Check Gemini credit" aria-expanded="false" aria-controls="credit-pop"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></svg>Credit</button>
       <button class="theme-btn" id="theme-btn" type="button" aria-label="Switch light or dark mode"></button>
+    </div>
+    <div class="credit-pop" id="hype-pop" hidden role="dialog" aria-labelledby="hp-h">
+      <div class="cp-head"><b id="hp-h">Update hype scores</b><button class="cp-close" id="hp-close" type="button" aria-label="Close">&times;</button></div>
+      <p class="cp-detail" id="hp-detail"></p>
+      <div class="cp-actions">
+        <button class="primary-btn" id="hp-start" type="button" style="min-height:36px;padding:6px 16px;font-size:13.5px">Start</button>
+        <button class="mini-btn" id="hp-cancel" type="button">Cancel</button>
+      </div>
     </div>
     <div class="credit-pop" id="credit-pop" hidden role="dialog" aria-labelledby="cp-h">
       <div class="cp-head"><b id="cp-h">Gemini credit</b><button class="cp-close" id="cp-close" type="button" aria-label="Close">&times;</button></div>
@@ -495,6 +512,12 @@
         <h1>AI Toolbox Library</h1>
         <p class="statline" id="statline"></p>
         <p class="deployed" id="deployed" hidden></p>
+        <div class="hypebar" id="hypebar" hidden aria-live="polite">
+          <span class="hb-text" id="hb-text"></span>
+          <span class="hb-track"><span class="hb-fill" id="hb-fill"></span></span>
+          <span class="hb-actions"><button class="mini-btn" id="hb-btn" type="button"></button><button class="cp-close" id="hb-close" type="button" aria-label="Dismiss" hidden>&times;</button></span>
+          <span class="hb-err" id="hb-err" hidden></span>
+        </div>
       </header>
 
       <section class="askbox" aria-labelledby="ask-h">
@@ -885,6 +908,95 @@
         el.hidden = false;
       })();
 
+      // ---------- "Update hype scores": confirm, run in the background, show progress + time left ----------
+      const PARALLEL_HYPE = 4, SECS_AI = 10, SECS_REPO = 1.5;   // rough per-tool times, used before real timing is known
+      const hypePop = document.getElementById('hype-pop'), hypeBtn = document.getElementById('hype-btn');
+      let HYPE = {}, hypePoll = null;
+      const isRepo = it => /github\.com\/[\w.-]+\/[\w.-]+/i.test(it.url || '');
+      function fmtDur(sec) {
+        sec = Math.max(0, Math.round(sec));
+        if (sec < 60) return 'under a minute';
+        const m = Math.round(sec / 60);
+        return m < 60 ? 'about ' + m + ' min' : 'about ' + Math.floor(m / 60) + ' h ' + (m % 60) + ' min';
+      }
+      function roughEstimate(nRepo, nAi) { return (nRepo * SECS_REPO + nAi * SECS_AI) / PARALLEL_HYPE; }
+      function openHypeConfirm() {
+        if (HYPE.running) { document.getElementById('hypebar').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+        const nRepo = items.filter(isRepo).length, nAi = items.length - nRepo;
+        const lo = (nAi * 0.01).toFixed(0), hi = Math.max(1, Math.ceil(nAi * 0.02));
+        document.getElementById('hp-detail').innerHTML =
+          'Re-checks the hype score of all <b>' + items.length + '</b> tools with fresh research.<br>' +
+          '\u2022 <b>' + nRepo + '</b> GitHub repos: free (live star counts)<br>' +
+          '\u2022 <b>' + nAi + '</b> others: Gemini with Google Search, about <b>$' + Math.max(1, lo) + '\u2013' + hi + '</b><br>' +
+          '\u2022 Takes <b>' + fmtDur(roughEstimate(nRepo, nAi)) + '</b> and keeps running if you close the page. Tools checked in the last 24 hours are skipped.';
+        hypePop.hidden = false; hypeBtn.setAttribute('aria-expanded', 'true');
+        document.getElementById('hp-start').focus();
+      }
+      function closeHypeConfirm() { hypePop.hidden = true; hypeBtn.setAttribute('aria-expanded', 'false'); }
+      hypeBtn.addEventListener('click', () => { if (!hypePop.hidden) closeHypeConfirm(); else { closeCredit(); openHypeConfirm(); } });
+      document.getElementById('hp-close').addEventListener('click', closeHypeConfirm);
+      document.getElementById('hp-cancel').addEventListener('click', closeHypeConfirm);
+      document.addEventListener('click', e => { if (!hypePop.hidden && !hypePop.contains(e.target) && !hypeBtn.contains(e.target)) closeHypeConfirm(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && !hypePop.hidden) closeHypeConfirm(); });
+      document.getElementById('hp-start').addEventListener('click', async e => {
+        e.target.disabled = true;
+        try { HYPE = await call('mutation', 'hype:start', {}); closeHypeConfirm(); renderHype(); document.getElementById('hypebar').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        catch (x) { document.getElementById('hp-detail').textContent = x.message; }
+        finally { e.target.disabled = false; }
+      });
+      function hypeTimeLeft() {
+        const left = HYPE.total - HYPE.done;
+        const doneNow = HYPE.done - (HYPE.doneAtResume || 0), secs = (Date.now() - (HYPE.resumedAt || HYPE.startedAt)) / 1000;
+        if (doneNow >= 6 && secs > 5) return left * secs / doneNow;          // real pace so far
+        const repoShare = HYPE.total ? (HYPE.repos || 0) / Math.max(1, HYPE.repos + HYPE.others) : 0;
+        return roughEstimate(left * repoShare, left * (1 - repoShare));     // first moments: rough estimate
+      }
+      function renderHype() {
+        const bar = document.getElementById('hypebar');
+        if (!HYPE.runId || HYPE.dismissed) { bar.hidden = true; clearInterval(hypePoll); return; }
+        bar.hidden = false;
+        const pct = HYPE.total ? Math.round(HYPE.done / HYPE.total * 100) : 0;
+        document.getElementById('hb-fill').style.width = pct + '%';
+        const txt = document.getElementById('hb-text'), btn = document.getElementById('hb-btn');
+        if (HYPE.finished) {
+          const t = new Date(HYPE.finishedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+          txt.innerHTML = '<b>Hype scores updated</b> \u00b7 ' + HYPE.total + ' tools checked \u00b7 <b>' + HYPE.changed + '</b> score' + (HYPE.changed === 1 ? '' : 's') + ' changed \u00b7 finished ' + t;
+          btn.hidden = true;
+        } else if (HYPE.running) {
+          txt.innerHTML = '<b>Updating hype scores</b> \u00b7 ' + HYPE.done + ' of ' + HYPE.total + ' tools \u00b7 <b>' + fmtDur(hypeTimeLeft()) + ' left</b>' + (HYPE.changed ? ' \u00b7 ' + HYPE.changed + ' changed so far' : '');
+          btn.hidden = false; btn.textContent = 'Pause';
+        } else {
+          txt.innerHTML = '<b>Paused</b> \u00b7 ' + HYPE.done + ' of ' + HYPE.total + ' tools checked \u00b7 ' + fmtDur(hypeTimeLeft()) + ' left when resumed';
+          btn.hidden = false; btn.textContent = 'Resume';
+        }
+        document.getElementById('hb-close').hidden = !!HYPE.running;
+        const err = document.getElementById('hb-err');
+        err.hidden = !HYPE.lastError;
+        err.textContent = HYPE.lastError ? (HYPE.running ? 'Skipped one: ' : 'Stopped: ') + HYPE.lastError + (HYPE.running ? '' : ' \u2014 fix it (e.g. top up Gemini credit), then press Resume.') : '';
+        clearInterval(hypePoll);
+        if (HYPE.running) hypePoll = setInterval(pollHype, 4000);
+      }
+      async function pollHype() {
+        try {
+          const res = await call('query', 'items:list', {});
+          const was = HYPE.done;
+          HYPE = res.meta.hype || {};
+          if (HYPE.done !== was || HYPE.finished) {   // fresh scores on the cards as they come in
+            items = res.active; archived = res.archived; renderChrome(); render();
+          }
+          renderHype();
+        } catch (e) {}
+      }
+      document.getElementById('hb-btn').addEventListener('click', async e => {
+        e.target.disabled = true;
+        try { await call('mutation', HYPE.running ? 'hype:pause' : 'hype:resume', {}); await pollHype(); }
+        finally { e.target.disabled = false; }
+      });
+      document.getElementById('hb-close').addEventListener('click', async () => {
+        document.getElementById('hypebar').hidden = true; HYPE.dismissed = true;
+        try { await call('mutation', 'hype:dismiss', {}); } catch (e) {}
+      });
+
       // ---------- Gemini credit: is it working? (Google has no API for the exact balance) ----------
       const creditPop = document.getElementById('credit-pop');
       const creditBtn = document.getElementById('credit-btn');
@@ -913,6 +1025,7 @@
       function closeCredit() { creditPop.hidden = true; creditBtn.setAttribute('aria-expanded', 'false'); }
       creditBtn.addEventListener('click', () => {
         if (!creditPop.hidden) { closeCredit(); return; }
+        closeHypeConfirm();
         creditPop.hidden = false; creditBtn.setAttribute('aria-expanded', 'true');
         checkCredit();
       });
@@ -953,6 +1066,7 @@
         items = res.active;
         archived = res.archived;
         state.prompts = new Set(res.promptIds || []);
+        HYPE = res.meta.hype || {};
         if (res.meta.theme && res.meta.theme !== document.documentElement.getAttribute('data-theme')) applyTheme(res.meta.theme);
         DATA.clusters = res.meta.clusters || [];
         DATA.attachments = res.meta.attachments || [];
@@ -960,6 +1074,7 @@
         document.getElementById('loading').hidden = true;
         renderChrome();
         render();
+        renderHype();
       }
 
       function showLock(msg) {

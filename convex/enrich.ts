@@ -90,7 +90,7 @@ export async function enrichItem(ctx: any, id: number, today: string): Promise<{
   if (/github\.com\//i.test(url)) {
     const gh = (await gatherUrl(url)).github;
     if (gh) {
-      next.why = [...(item.why || []).filter((w: string) => !/GitHub stars and/.test(w)), `${fmt(gh.stars)} GitHub stars and ${fmt(gh.forks)} forks when checked on ${today}${gh.license ? ` — ${gh.license} licence` : ""}`];
+      next.why = [...(item.why || []).filter((w: string) => !/\d[\d,]* GitHub stars and/.test(w)), `${fmt(gh.stars)} GitHub stars and ${fmt(gh.forks)} forks when checked on ${today}${gh.license ? ` — ${gh.license} licence` : ""}`];
       if (gh.license) next.os = true;
       next.type = "open-source-repo";
     }

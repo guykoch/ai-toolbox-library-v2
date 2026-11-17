@@ -14,6 +14,9 @@ export default defineSchema({
     enrichNote: v.optional(v.string()),
     // Failed background attempts for this item (it is skipped after 2).
     attempts: v.optional(v.number()),
+    // "Update hype scores": which run last checked this item, and when (ISO time).
+    hypeRun: v.optional(v.string()),
+    hypeAt: v.optional(v.string()),
   })
     .index("by_itemId", ["itemId"])
     .index("by_status", ["status"]),

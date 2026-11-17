@@ -263,7 +263,7 @@ export const applyPrepared = mutation({
             if (e.docs && normUrl(e.docs) !== normUrl(e.url)) next.docs = e.docs;
             if (e.install && e.install.length && !(row.data.install && row.data.install.length)) next.install = e.install;
             if (next.mentioned && normUrl(next.mentioned) === normUrl(e.url)) next.mentioned = "";
-            if (e.whyExtra) next.why = [...(row.data.why || []).filter((w: string) => !/GitHub stars and/.test(w)), e.whyExtra];
+            if (e.whyExtra) next.why = [...(row.data.why || []).filter((w: string) => !/\d[\d,]* GitHub stars and/.test(w)), e.whyExtra];
             await ctx.db.patch(row._id, { data: next, enrichedAt: today, enrichNote: e.note || "" });
             urlOwner.set(normUrl(e.url), p.id);
             switched++;
