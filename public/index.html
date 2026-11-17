@@ -268,6 +268,7 @@
       .kindchip { flex: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 7px 13px; font-size: 14px; font-weight: 600; min-height: 38px; }
       .kindchip .kc-n { font-size: 12px; font-weight: 600; color: var(--muted); }
       .kindchip:hover { border-color: var(--accent); }
+      .kindchip.empty { opacity: .45; }
       .kindchip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
       .kindchip[aria-pressed="true"] .kc-n { color: inherit; opacity: .75; }
       .badge.kind { background: var(--surface-2); }
@@ -781,7 +782,7 @@
         const kindCount = {}; items.forEach(i => { const k = kindOf(i); kindCount[k] = (kindCount[k] || 0) + 1; });
         document.getElementById('kindchips').innerHTML =
           '<button type="button" class="kindchip" data-kind="all" aria-pressed="true">All types <span class="kc-n">' + items.length + '</span></button>' +
-          KIND_ORDER.filter(k => kindCount[k]).map(k =>
+          KIND_ORDER.map(k =>
             '<button type="button" class="kindchip" data-kind="' + k + '" aria-pressed="false" title="' + EFFORT[k] + '">' + KINDS[k].icon + ' ' + KINDS[k].plural + ' <span class="kc-n">' + kindCount[k] + '</span></button>').join('');
         const liveIds = new Set(items.map(i => i.id));
         clustersEl.innerHTML = DATA.clusters.map((c, idx) => {
@@ -914,7 +915,18 @@
         document.getElementById('result-count').textContent = list.length + ' of ' + items.length + ' items';
         document.getElementById('active-desc').innerHTML = activeDesc();
         document.querySelectorAll('#catchips .catchip').forEach(c => c.setAttribute('aria-pressed', String(state.cat === c.dataset.cat)));
-        document.querySelectorAll('#kindchips .kindchip').forEach(c => c.setAttribute('aria-pressed', String(state.kind === c.dataset.kind)));
+        // Type counts reflect every other active filter (shelf, search, checkboxes, month, collection).
+        const keepKind = state.kind; state.kind = 'all';
+        const pool = items.filter(matches);
+        state.kind = keepKind;
+        const counts = { all: pool.length };
+        pool.forEach(i => { const k = kindOf(i); counts[k] = (counts[k] || 0) + 1; });
+        document.querySelectorAll('#kindchips .kindchip').forEach(c => {
+          const n = counts[c.dataset.kind] || 0;
+          c.setAttribute('aria-pressed', String(state.kind === c.dataset.kind));
+          c.querySelector('.kc-n').textContent = n;
+          c.classList.toggle('empty', n === 0 && state.kind !== c.dataset.kind);
+        });
         document.getElementById('sf-active').textContent = state.cat !== 'all' && CATS[state.cat] ? 'Showing: ' + CATS[state.cat].label : '';
         document.querySelectorAll('#clusters .cluster').forEach(c => c.setAttribute('aria-pressed', String(state.cluster === Number(c.dataset.cluster))));
         document.querySelectorAll('#months .month-row').forEach(r => r.setAttribute('aria-pressed', String(state.month === r.dataset.month)));
