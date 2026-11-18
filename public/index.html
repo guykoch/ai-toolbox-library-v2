@@ -818,8 +818,15 @@
         if (state.videoOnly && !inCat(it, 'video')) return false;
         if (state.osOnly && it.os !== true) return false;
         if (state.q) {
-          const hay = (it.title + ' ' + it.summary + ' ' + it.author + ' ' + ((it.install || []).join(' ')) + ' ' + ((it.installAlt || []).join(' ')) + ' ' + (CATS[it.cat] ? CATS[it.cat].label : '') + ' ' + KINDS[kindOf(it)].label + ' ' + KINDS[kindOf(it)].plural).toLowerCase();
-          if (!hay.includes(state.q)) return false;
+          // Everything on the card counts, including the "Why a hype score" reasons and links.
+          const hay = [
+            it.title, it.summary, it.author, (it.why || []).join(' '), (it.install || []).join(' '), (it.installAlt || []).join(' '), it.installNote,
+            CATS[it.cat] ? CATS[it.cat].label : '', (it.extra || []).map(c => CATS[c] ? CATS[c].label : c).join(' '),
+            KINDS[kindOf(it)].label, KINDS[kindOf(it)].plural, TYPE_LABELS[it.type] || it.type,
+            it.host, it.url, it.docs, it.mentioned, it.savedFrom
+          ].filter(Boolean).join(' ').toLowerCase();
+          // Several words match in any order ("higgsfield video" = both words somewhere on the card).
+          if (!state.q.split(/\s+/).filter(Boolean).every(w => hay.includes(w))) return false;
         }
         return true;
       }
