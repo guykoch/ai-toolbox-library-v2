@@ -1123,6 +1123,7 @@
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
       // ---------- loading ----------
+      let altsAsked = false;
       async function load() {
         let res = await call('query', 'items:list', {});
         if (!res.seeded) {
@@ -1152,6 +1153,20 @@
         renderChrome();
         render();
         renderHype();
+        if (res.altsMissing > 0 && !altsAsked) {
+          // Some cards still lack "Alternative for": ask the server to fill them, then pick up the result quietly.
+          altsAsked = true;
+          call('mutation', 'items:requestAlts', {}).then(r => { if (r && r.started) setTimeout(refreshAlts, 25000); }).catch(() => {});
+        }
+      }
+      async function refreshAlts() {
+        try {
+          const res = await call('query', 'items:list', {});
+          const byId = new Map(res.active.map(i => [i.id, i]));
+          let changed = false;
+          for (const it of items) { const n = byId.get(it.id); if (n && n.alternativeTo && !it.alternativeTo) { it.alternativeTo = n.alternativeTo; changed = true; } }
+          if (changed) render();
+        } catch (e) {}
       }
 
       function showLock(msg) {

@@ -28,7 +28,12 @@ export const save = internalMutation({
 export const fill = internalAction({
   args: {},
   handler: async (ctx) => {
-    const items = await ctx.runQuery(internal.alts.missing, {});
+    const all = await ctx.runQuery(internal.alts.missing, {});
+    for (let i = 0; i < all.length; i += 40) await fillBatch(ctx, all.slice(i, i + 40));
+  },
+});
+
+async function fillBatch(ctx: any, items: { id: number; title: string; summary: string; kind: string; host: string }[]) {
     if (!items.length) return;
     const list = items.map((i) => `${i.id} | ${i.title} | ${String(i.summary || "").replace(/\s+/g, " ")} | ${i.kind} | ${i.host}`).join("\n");
     let parsed: any = null;
@@ -40,17 +45,17 @@ export const fill = internalAction({
         turns: [{ role: "user", text: "id | title | summary | type | site\n" + list }],
         json: true,
         thinking: "low",
-        maxTokens: 4096,
+        maxTokens: 8192,
       });
       parsed = parseJson(res.text);
     } catch (e) {
       console.log("alternatives fill failed", String(e));
       return; // tried again next time the page loads new prepared data
     }
-    const alts = items.map((i) => ({
-      id: i.id,
-      list: Array.isArray(parsed?.[String(i.id)]) ? parsed[String(i.id)].map((x: any) => String(x).trim()).filter(Boolean).slice(0, 3) : [],
-    }));
-    await ctx.runMutation(internal.alts.save, { alts });
-  },
-});
+    // Only save cards the model actually answered for; the rest are tried again later.
+    const alts = items
+      .filter((i) => Array.isArray(parsed?.[String(i.id)]))
+      .map((i) => ({ id: i.id, list: parsed[String(i.id)].map((x: any) => String(x).trim()).filter(Boolean).slice(0, 3) }));
+    if (!alts.length) console.log("alternatives fill: no usable answer", String(parsed).slice(0, 200));
+    if (alts.length) await ctx.runMutation(internal.alts.save, { alts });
+}

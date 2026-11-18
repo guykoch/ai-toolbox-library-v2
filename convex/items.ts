@@ -34,7 +34,9 @@ export const list = query({
       .map((r) => ({ ...r.data, archivedAt: r.archivedAt ?? "" }));
     const preparedPending = PREPARED.length > 0 && meta.prepared !== PREPARED_VERSION;
     delete meta.prepared;
-    return { active, archived, meta, promptIds, job, preparedPending, preparedCount: PREPARED.length, seeded: rows.length > 0 || metaRows.length > 0 };
+    const altsMissing = rows.filter((r) => r.data && r.data.alternativeTo === undefined).length;
+    delete meta.alts;
+    return { active, archived, meta, promptIds, job, preparedPending, altsMissing, preparedCount: PREPARED.length, seeded: rows.length > 0 || metaRows.length > 0 };
   },
 });
 
@@ -302,13 +304,26 @@ export const applyPrepared = mutation({
         if (!prompted.has(id)) await ctx.db.insert("prompts", { itemId: id, text: n.prompt, sources: [], model: "Claude (prepared in advance)", createdAt: n.card.date });
         known.add(sameTool(n.card.url));
       }
-      // Cards you added in the app before "Alternative for" existed: fill them with one small Gemini call.
-      if (rows.some((r) => !(r.itemId in PREPARED_KINDS) && r.data && r.data.alternativeTo === undefined)) await ctx.scheduler.runAfter(0, internal.alts.fill, {});
       const m = await ctx.db.query("meta").withIndex("by_key", (q) => q.eq("key", "prepared")).first();
       if (m) await ctx.db.patch(m._id, { value: PREPARED_VERSION });
       else await ctx.db.insert("meta", { key: "prepared", value: PREPARED_VERSION });
     }
     return { switched, prompts };
+  },
+});
+
+// Fill "Alternative for" on cards that don't have it yet (one small Gemini call). At most once every 10 minutes.
+export const requestAlts = mutation({
+  args: { key: v.string() },
+  handler: async (ctx, { key }) => {
+    checkKey(key);
+    const m = await ctx.db.query("meta").withIndex("by_key", (q) => q.eq("key", "alts")).first();
+    const now = Date.now();
+    if (m && now - (m.value?.at || 0) < 10 * 60 * 1000) return { started: false };
+    if (m) await ctx.db.patch(m._id, { value: { at: now } });
+    else await ctx.db.insert("meta", { key: "alts", value: { at: now } });
+    await ctx.scheduler.runAfter(0, internal.alts.fill, {});
+    return { started: true };
   },
 });
 
