@@ -37,6 +37,7 @@ Fields (match the examples exactly in style and length):
 - "extra": array of other shelves it also clearly belongs to (usually []).
 - "type": one of: ${TYPES.join(", ")}.
 - "kind": what kind of thing it is / how you'd use it, one of: skill (SKILL.md instruction folders for Claude & other agents), connector (MCP server / connector that links an AI to another service), plugin (browser/IDE/app extension or plugin), webapp (website or SaaS you sign up for), app (desktop or phone app you download), devtool (CLI, library, self-hosted repo you run yourself), model (AI model you call or run), learn (guide, course, video, prompt tips, post to learn from), news (announcement, roundup, report).
+- "alternativeTo": array of up to 3 famous, widely known products on the market that this tool can replace or is an open/cheaper alternative to (e.g. ["Higgsfield","Runway","Krea"]). Most famous first. Use [] for guides, courses, news and announcements.
 - "os": true if it is open source (public code repo / open licence), false if clearly not, "unknown" if you can't tell.
 - "lang": language of the post/page the link opens: "he", "en" or "unknown".
 - "author": the person who wrote/shared the social post (Facebook/LinkedIn/X) or "" for websites, repos and YouTube.
@@ -166,6 +167,7 @@ export const addFromText = action({
         cat,
         type: TYPES.includes(raw.type) ? raw.type : gh ? "open-source-repo" : "other",
         kind: (KINDS as readonly string[]).includes(raw.kind) ? raw.kind : "",
+        alternativeTo: Array.isArray(raw.alternativeTo) ? raw.alternativeTo.map((x: any) => str(x)).filter(Boolean).slice(0, 3) : [],
         os,
         lang: LANGS.includes(raw.lang) ? raw.lang : "unknown",
         author: str(raw.author),

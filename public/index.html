@@ -823,7 +823,7 @@
             it.title, it.summary, it.author, (it.why || []).join(' '), (it.install || []).join(' '), (it.installAlt || []).join(' '), it.installNote,
             CATS[it.cat] ? CATS[it.cat].label : '', (it.extra || []).map(c => CATS[c] ? CATS[c].label : c).join(' '),
             KINDS[kindOf(it)].label, KINDS[kindOf(it)].plural, TYPE_LABELS[it.type] || it.type,
-            it.host, it.url, it.docs, it.mentioned, it.savedFrom
+            it.host, it.url, it.docs, it.mentioned, it.savedFrom, (it.alternativeTo || []).join(' ')
           ].filter(Boolean).join(' ').toLowerCase();
           // Several words match in any order ("higgsfield video" = both words somewhere on the card).
           if (!state.q.split(/\s+/).filter(Boolean).every(w => hay.includes(w))) return false;
@@ -854,6 +854,7 @@
         if (it.author) facts += '<dt>Shared by</dt><dd dir="auto">' + esc(it.author) + '</dd>';
         facts += '<dt>Post language</dt><dd>' + (LANG_LABELS[it.lang] || esc(it.lang)) + '</dd>' +
           '<dt>Open source</dt><dd>' + (it.os === true ? 'Yes' : (it.os === 'unknown' ? 'Not confirmed' : 'No')) + '</dd>';
+        if (it.alternativeTo && it.alternativeTo.length) facts += '<dt>Alternative for</dt><dd>' + it.alternativeTo.map(esc).join(', ') + '</dd>';
         if (it.mentioned) facts += '<dt>Also linked</dt><dd><a href="' + esc(it.mentioned) + '" target="_blank" rel="noopener">' + esc(hostOf(it.mentioned) || it.mentioned) + '</a></dd>';
         const docsHTML = it.docs ? '<a class="also-link" href="' + esc(it.docs) + '" target="_blank" rel="noopener">Docs · ' + esc(hostOf(it.docs) || it.docs) + '</a>' : '';
         let installHTML = '';

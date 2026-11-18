@@ -36,7 +36,7 @@ function libraryText(items: any[]) {
       const shelves = [i.cat, ...(i.extra || [])].map((c: string) => SHELVES[c] || c).join("/");
       const os = i.os === true ? "open-source" : i.os === false ? "not-OS" : "OS?";
       const summary = String(i.summary || "").replace(/\s+/g, " ");
-      return `${i.id} | ${i.title} | ${summary} | ${shelves} | ${KIND_LABEL[guessKind(i)]} | ${os} | hype ${i.pop} | ${i.host}${i.lang === "he" ? " | Hebrew post" : ""}`;
+      return `${i.id} | ${i.title} | ${summary} | ${shelves} | ${KIND_LABEL[guessKind(i)]} | ${os} | hype ${i.pop} | ${i.host}${i.lang === "he" ? " | Hebrew post" : ""}${i.alternativeTo?.length ? " | alt to " + i.alternativeTo.join(", ") : ""}`;
     })
     .join("\n");
 }
@@ -54,7 +54,7 @@ export const ask = action({
     if (!items.length) throw new ConvexError("Your library is empty.");
     const byId = new Map(items.map((i) => [i.id, i]));
 
-    const system = SYSTEM + `\n\nLIBRARY (${items.length} items; columns: id | title | summary | shelf | type | open source | hype 1-100 | site):\n` + libraryText(items);
+    const system = SYSTEM + `\n\nLIBRARY (${items.length} items; columns: id | title | summary | shelf | type | open source | hype 1-100 | site | alternative to):\n` + libraryText(items);
     const res = await callGemini({
       model: MODELS.advisor(),
       system,

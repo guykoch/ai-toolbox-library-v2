@@ -1,8 +1,9 @@
 import { query, mutation, internalMutation, internalQuery } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { checkKey } from "./auth";
+import { internal } from "./_generated/api";
 import { SEED_ITEMS, SEED_META } from "./seedData";
-import { PREPARED, PREPARED_VERSION, PREPARED_NEW, PREPARED_KINDS } from "./preparedData";
+import { PREPARED, PREPARED_VERSION, PREPARED_NEW, PREPARED_KINDS, PREPARED_ALTS } from "./preparedData";
 
 const SOCIAL = ["Facebook", "LinkedIn", "linkedin.com"];
 
@@ -284,7 +285,11 @@ export const applyPrepared = mutation({
       // Give every original card its type (never overwrites a type that's already set).
       for (const r of rows) {
         const k = PREPARED_KINDS[r.itemId];
-        if (k && !r.data?.kind) await ctx.db.patch(r._id, { data: { ...r.data, kind: k } });
+        const patch: any = {};
+        if (k && !r.data?.kind) patch.kind = k;
+        // "Alternative for" (an original card with no entry is a guide/news card: it gets an empty list).
+        if (r.itemId in PREPARED_KINDS && r.data?.alternativeTo === undefined) patch.alternativeTo = PREPARED_ALTS[r.itemId] || [];
+        if (Object.keys(patch).length) await ctx.db.patch(r._id, { data: { ...r.data, ...patch } });
       }
       // Add new ready-made tools, unless the library already has them (any link form).
       const known = new Set<string>();
@@ -297,6 +302,8 @@ export const applyPrepared = mutation({
         if (!prompted.has(id)) await ctx.db.insert("prompts", { itemId: id, text: n.prompt, sources: [], model: "Claude (prepared in advance)", createdAt: n.card.date });
         known.add(sameTool(n.card.url));
       }
+      // Cards you added in the app before "Alternative for" existed: fill them with one small Gemini call.
+      if (rows.some((r) => !(r.itemId in PREPARED_KINDS) && r.data && r.data.alternativeTo === undefined)) await ctx.scheduler.runAfter(0, internal.alts.fill, {});
       const m = await ctx.db.query("meta").withIndex("by_key", (q) => q.eq("key", "prepared")).first();
       if (m) await ctx.db.patch(m._id, { value: PREPARED_VERSION });
       else await ctx.db.insert("meta", { key: "prepared", value: PREPARED_VERSION });
