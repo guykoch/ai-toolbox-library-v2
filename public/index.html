@@ -77,6 +77,12 @@
 
       /* ---------- header ---------- */
       header.hero { padding: 40px 0 8px; }
+      .subtabs { display: inline-flex; gap: 4px; padding: 4px; margin: 14px 0 4px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+      .subtab { font: inherit; font-size: 15px; font-weight: 700; padding: 8px 20px; border: 0; border-radius: 999px; background: transparent; color: var(--ink-2); cursor: pointer; }
+      .subtab:hover { color: var(--ink); }
+      .subtab[aria-selected="true"] { background: var(--ink); color: var(--bg); }
+      .empty-tab { padding: 60px 0 120px; text-align: center; color: var(--ink-2); }
+      .empty-tab h2 { margin: 0 0 6px; color: var(--ink); }
       .hero h1 { font-size: clamp(30px, 5vw, 44px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.08; margin: 0 0 12px; }
       .hero p.lede { font-size: clamp(16px, 2.4vw, 19px); color: var(--ink-2); max-width: 46em; margin: 0; }
       .hero p.lede b { color: var(--ink); }
@@ -522,15 +528,20 @@
     <div class="wrap">
       <header class="hero">
         <h1>AI Toolbox Library</h1>
-        <p class="statline" id="statline"></p>
         <p class="deployed" id="deployed" hidden></p>
+        <div class="subtabs" role="tablist" aria-label="Sections">
+          <button class="subtab" role="tab" id="tabbtn-tools" data-tab="tools" aria-controls="tab-tools" type="button">Tools</button>
+          <button class="subtab" role="tab" id="tabbtn-prompts" data-tab="prompts" aria-controls="tab-prompts" type="button">Prompts</button>
+        </div>
+      </header>
+      <div id="tab-tools" role="tabpanel" aria-labelledby="tabbtn-tools">
+        <p class="statline" id="statline"></p>
         <div class="hypebar" id="hypebar" hidden aria-live="polite">
           <span class="hb-text" id="hb-text"></span>
           <span class="hb-track"><span class="hb-fill" id="hb-fill"></span></span>
           <span class="hb-actions"><button class="mini-btn" id="hb-btn" type="button"></button><button class="cp-close" id="hb-close" type="button" aria-label="Dismiss" hidden>&times;</button></span>
           <span class="hb-err" id="hb-err" hidden></span>
         </div>
-      </header>
 
       <section class="askbox" aria-labelledby="ask-h">
         <h2 id="ask-h">What would you like to do?</h2>
@@ -656,6 +667,13 @@
         <p>Built from your WhatsApp export of the &ldquo;AI Content&rdquo; group (197 messages, 18 Jan &ndash; 12 Nov 2026), plus links added on 13 and 14 Nov 2026 and everything added since through the box above. Re-saving a link that&rsquo;s already here doesn&rsquo;t create a duplicate &mdash; the existing card is marked &ldquo;saved again&rdquo;. Each link is opened to identify what it actually points to; summaries are in fresh words, and tracking parameters are stripped from the links.</p>
         <p>Items marked <b>Private &mdash; do not share</b> are the DanielAI workshop links, which were shared in the group with a request not to distribute them. This map is for your personal use and is locked with your access key.</p>
       </footer>
+      </div>
+      <div id="tab-prompts" role="tabpanel" aria-labelledby="tabbtn-prompts" hidden>
+        <div class="empty-tab">
+          <h2>Prompts</h2>
+          <p>Nothing here yet.</p>
+        </div>
+      </div>
     </div>
     <script>
       // ---------- connection to Convex ----------
@@ -1121,6 +1139,21 @@
       });
       if (/[?&]fresh=/.test(location.search)) history.replaceState(null, '', location.pathname);
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+      // ---------- sub-tabs (Tools / Prompts) ----------
+      const TAB_STORE = 'aicm-tab';
+      function showTab(name) {
+        if (name !== 'prompts') name = 'tools';
+        for (const t of ['tools', 'prompts']) {
+          document.getElementById('tab-' + t).hidden = t !== name;
+          const b = document.getElementById('tabbtn-' + t);
+          b.setAttribute('aria-selected', t === name ? 'true' : 'false');
+          b.tabIndex = t === name ? 0 : -1;
+        }
+        try { localStorage.setItem(TAB_STORE, name); } catch (e) {}
+      }
+      document.querySelectorAll('.subtab').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+      showTab((function () { try { return localStorage.getItem(TAB_STORE); } catch (e) { return ''; } })());
 
       // ---------- loading ----------
       let altsAsked = false;
