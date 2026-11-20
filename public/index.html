@@ -1253,7 +1253,9 @@
       document.getElementById('refresh-btn').addEventListener('click', e => {
         const b = e.currentTarget;
         b.disabled = true; b.classList.add('spinning');
-        location.replace(location.pathname + '?fresh=' + Date.now());
+        // Also ask for a fresh library snapshot for Claude (written a few seconds later, only if something changed).
+        const go = () => location.replace(location.pathname + '?fresh=' + Date.now());
+        Promise.race([call('mutation', 'snapshot:refreshNow', {}).catch(() => {}), new Promise(r => setTimeout(r, 1500))]).then(go);
       });
       if (/[?&]fresh=/.test(location.search)) history.replaceState(null, '', location.pathname);
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';

@@ -44,6 +44,22 @@ export const ensure = mutation({
   },
 });
 
+// The app's Refresh button: write the snapshot in a few seconds (skipped if nothing changed).
+export const refreshNow = mutation({
+  args: { key: v.string() },
+  handler: async (ctx, { key }) => {
+    checkKey(key);
+    const m = await meta(ctx);
+    const val = m?.value || {};
+    if (val.pendingUntil && val.pendingUntil > Date.now() && val.pendingUntil - Date.now() < 10_000) return null;
+    const next = { ...val, pendingUntil: Date.now() + 5000 };
+    if (m) await ctx.db.patch(m._id, { value: next });
+    else await ctx.db.insert("meta", { key: "snapshot", value: next });
+    await ctx.scheduler.runAfter(5000, internal.snapshot.write, {});
+    return null;
+  },
+});
+
 export const status = query({
   args: { key: v.string() },
   handler: async (ctx, { key }) => {
