@@ -1303,41 +1303,46 @@
         if (!pfCache.has(hit.pid)) pfCache.set(hit.pid, call('query', 'promptLibs:promptText', { pid: hit.pid }).catch(e => { pfCache.delete(hit.pid); throw e; }));
         return await pfCache.get(hit.pid);
       }
-      let pfLast = null, pfShown = null;
-      async function pfShow(hit) {
-        const box = document.getElementById('pf-best');
-        box.innerHTML = '<p class="pf-why">Loading the prompt…</p>';
+      let pfLast = null;
+      async function pfToggle(i, forceOpen) {
+        const m = pfLast && pfLast.matches[i]; if (!m) return;
+        const box = document.getElementById('pf-body-' + i), btn = document.querySelector('[data-pfshow="' + i + '"]');
+        if (!box.hidden && !forceOpen) { box.hidden = true; btn.textContent = 'Show prompt'; return; }
+        box.hidden = false; btn.textContent = 'Hide prompt';
+        if (box.dataset.loaded) return;
+        box.innerHTML = '<p class="pf-why">Loading the prompt\u2026</p>';
         try {
-          const p = await pfText(hit);
-          pfShown = p;
-          box.innerHTML = '<h3 dir="auto">' + esc(hit.title) + '</h3>' +
-            '<div class="badges"><span class="badge kind">🔓 ' + esc(hit.libName) + '</span></div>' +
-            (hit.why ? '<p class="pf-why" dir="auto">' + esc(hit.why) + '</p>' : '') +
-            '<pre class="pf-pre" dir="auto">' + esc(p.text) + '</pre>' +
-            '<div class="pf-actions"><button class="primary-btn" type="button" data-pfcopy>Copy prompt</button>' +
-            '<a class="expand-btn" style="text-decoration:none" href="' + esc(p.url) + '" target="_blank" rel="noopener">Source ↗</a><span class="pf-copied" id="pf-copied"></span></div>';
+          const p = await pfText(m);
+          m.text = p.text;
+          box.dataset.loaded = '1';
+          box.innerHTML = '<pre class="pf-pre" dir="auto">' + esc(p.text) + '</pre>' +
+            '<div class="pf-actions"><button class="primary-btn" type="button" data-pfcopy="' + i + '">Copy prompt</button>' +
+            '<a class="expand-btn" style="text-decoration:none" href="' + esc(p.url) + '" target="_blank" rel="noopener">Source \u2197</a><span class="pf-copied" id="pf-copied-' + i + '"></span></div>';
         } catch (e) { box.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; }
       }
       async function pfFind() {
         const ta = document.getElementById('pf-text'), btn = document.getElementById('pf-btn'), out = document.getElementById('pf-out');
         const q = ta.value.trim(); if (!q) { ta.focus(); return; }
         btn.disabled = true;
-        out.innerHTML = '<p class="pf-why">Searching the open-source libraries…</p>';
+        out.innerHTML = '<p class="pf-why">Searching the open-source libraries\u2026</p>';
         try {
           const res = await call('action', 'promptFinder:find', { query: q });
           pfLast = res;
-          const tag = { full: '✓ Found', partial: '≈ Close match', none: '✕ No match' }[res.coverage];
+          const tag = { full: '\u2713 Found', partial: '\u2248 Close match', none: '\u2715 No match' }[res.coverage];
           let html = '<p class="pf-msg"><span class="pf-tag ' + res.coverage + '">' + tag + '</span>' + esc(res.message) + '</p>';
-          if (res.best) html += '<div class="pf-best" id="pf-best"></div>';
-          else html += '<div class="pf-best" id="pf-best" hidden></div>';
-          if (res.others.length) html += '<div class="pf-others"><p class="d-label">' + (res.best ? 'Other close matches' : 'Closest prompts') + '</p>' +
-            res.others.map((o, i) => '<div class="pf-other"><span><span class="t" dir="auto">' + esc(o.title) + '</span> <span class="w">· ' + esc(o.libName) + (o.why ? ' — ' + esc(o.why) : '') + '</span></span><button class="expand-btn" type="button" data-pfother="' + i + '">Show</button></div>').join('') + '</div>';
-          if (res.tryWebsite) {
-            const lib = PROMPT_LIBS.find(p => p.title.toLowerCase().startsWith(res.tryWebsite.toLowerCase().split(' (')[0].slice(0, 14)));
-            html += '<p class="pf-try">Also try the website <b>' + esc(res.tryWebsite) + '</b>' + (lib ? ' &mdash; <a href="' + esc(lib.links[0][1]) + '" target="_blank" rel="noopener">open it ↗</a>' : '') + '.</p>';
-          }
+          if (res.matches.length) html += (res.matches.length > 1 ? '<p class="d-label" style="margin:0">' + res.matches.length + ' matching prompts, most relevant first</p>' : '') +
+            res.matches.map((m, i) => '<div class="pf-best">' +
+              '<div style="display:flex;gap:10px;align-items:baseline;justify-content:space-between"><h3 dir="auto"><span class="pg-n" style="font-family:\'IBM Plex Mono\',monospace;color:var(--muted);margin-right:6px">' + (i + 1) + '</span>' + esc(m.title) + '</h3>' +
+              '<button class="expand-btn" type="button" data-pfshow="' + i + '">Show prompt</button></div>' +
+              '<div class="badges"><span class="badge kind">\uD83D\uDD13 ' + esc(m.libName) + '</span>' + (m.fit === 'partial' ? '<span class="pf-tag partial">\u2248 Partly</span>' : '') + '</div>' +
+              (m.why ? '<p class="pf-why" dir="auto">' + esc(m.why) + '</p>' : '') +
+              '<div id="pf-body-' + i + '" hidden></div></div>').join('');
+          if (res.trySites && res.trySites.length) html += '<div class="pf-others"><p class="d-label">' + (res.matches.length ? 'Also worth checking in your library' : 'Try these libraries from your list') + '</p>' +
+            res.trySites.map(s => '<div class="pf-other"><span><span class="t">' + esc(s.title) + '</span>' + (s.why ? ' <span class="w">\u2014 ' + esc(s.why) + '</span>' : '') + '</span>' +
+              '<span style="display:flex;gap:6px;flex:none">' + (s.url ? '<a class="expand-btn" style="text-decoration:none" href="' + esc(s.url) + '" target="_blank" rel="noopener">Open \u2197</a>' : '') +
+              '<button class="expand-btn" type="button" data-pfcard="' + esc(s.libId) + '">Card</button></span></div>').join('') + '</div>';
           out.innerHTML = html;
-          if (res.best) pfShow(res.best);
+          if (res.matches.length) pfToggle(0, true);
         } catch (e) {
           out.innerHTML = '<p class="err">' + esc(e.message) + '</p>';
         } finally { btn.disabled = false; }
@@ -1345,12 +1350,15 @@
       document.getElementById('pf-btn').addEventListener('click', pfFind);
       document.getElementById('pf-text').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); pfFind(); } });
       document.getElementById('pf-out').addEventListener('click', async e => {
-        const o = e.target.closest('[data-pfother]');
-        if (o && pfLast) { const box = document.getElementById('pf-best'); box.hidden = false; await pfShow(pfLast.others[Number(o.dataset.pfother)]); box.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return; }
-        if (e.target.closest('[data-pfcopy]') && pfShown) {
-          try { await navigator.clipboard.writeText(pfShown.text); }
-          catch (err) { const t = document.createElement('textarea'); t.value = pfShown.text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
-          const c = document.getElementById('pf-copied'); if (c) { c.textContent = 'Copied ✓'; setTimeout(() => { c.textContent = ''; }, 2500); }
+        const sh = e.target.closest('[data-pfshow]'); if (sh) { pfToggle(Number(sh.dataset.pfshow)); return; }
+        const cd = e.target.closest('[data-pfcard]');
+        if (cd) { pClear(); pstate.expanded.add(cd.dataset.pfcard); renderPrompts(); const el = document.getElementById('pcard-' + cd.dataset.pfcard); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+        const cp = e.target.closest('[data-pfcopy]');
+        if (cp && pfLast) {
+          const text = pfLast.matches[Number(cp.dataset.pfcopy)].text || '';
+          try { await navigator.clipboard.writeText(text); }
+          catch (err) { const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
+          const c = document.getElementById('pf-copied-' + cp.dataset.pfcopy); if (c) { c.textContent = 'Copied \u2713'; setTimeout(() => { c.textContent = ''; }, 2500); }
         }
       });
 

@@ -41,7 +41,7 @@ type Hit = { pid: number; libId: string; libName: string; title: string; desc: s
 
 export const find = action({
   args: { key: v.string(), query: v.string() },
-  handler: async (ctx, { key, query }): Promise<{ coverage: "full" | "partial" | "none"; message: string; best: (Hit & { why: string }) | null; others: (Hit & { why: string })[]; tryWebsite: string }> => {
+  handler: async (ctx, { key, query }): Promise<{ coverage: "full" | "partial" | "none"; message: string; matches: (Hit & { why: string; fit: "full" | "partial" })[]; trySites: { libId: string; title: string; url: string; why: string }[] }> => {
     checkKey(key);
     const q = query.trim().slice(0, 500);
     if (!q) throw new ConvexError("Type what kind of prompt you're looking for first.");
@@ -73,49 +73,62 @@ export const find = action({
       if (page.done) break;
       cursor = page.cursor;
     }
-    if (!catalog.length) throw new ConvexError("No prompts are in the app yet. Add an open-source prompt library first (or wait for the copy to finish).");
-    const libs = (await ctx.runQuery(internal.promptLibs.libNames, {})) as { libId: string; title: string; summary: string; imported: boolean }[];
+    const libs = (await ctx.runQuery(internal.promptLibs.libNames, {})) as { libId: string; title: string; summary: string; imported: boolean; links: [string, string][] }[];
     const names = new Map<string, string>(libs.map((l) => [l.libId, l.title]));
-    // Libraries whose prompts aren't in the app (websites), for "try this site" suggestions.
-    const WEBSITE_LIBS = libs.filter((l) => !l.imported).map((l) => `${l.title} (${l.summary.slice(0, 90)})`).join(" | ");
-    const cands = shortlist(catalog.filter((r) => names.has(r.libId)), keywords, 40);
+    // Libraries in the user's list whose prompts aren't copied into the app (websites), for "try these" suggestions.
+    const sites = libs.filter((l) => !l.imported);
+    const siteList = sites.map((l) => `${l.libId} | ${l.title} | ${l.summary.slice(0, 140)}`).join("\n");
+    const cands = shortlist(catalog.filter((r) => names.has(r.libId)), keywords, 60);
     const byId = new Map(cands.map((r) => [r.pid, r]));
     const list = cands.map((r) => `${r.pid} | ${names.get(r.libId)} | ${r.title} | ${r.desc}`).join("\n");
 
-    // 3. Let Gemini pick.
+    // 3. Let Gemini rank.
     const r2 = await callGemini({
       model: MODELS.advisor(),
       system:
-        "You help someone find a ready-made prompt. You get their request and CANDIDATES (prompts from open-source libraries: id | library | title | description). " +
-        "Pick the single best candidate only if it really does what they asked; add up to 3 other close candidates. Never invent prompts or ids. " +
-        'coverage: "full" = the best one does what they asked; "partial" = close but missing part of the request (say which part in message); "none" = nothing fits (best = null). ' +
-        "message: one or two plain-English sentences for the user. why: one short sentence per pick. " +
-        "If coverage is not full, set tryWebsite to the one website library most likely to have it, chosen from: " + WEBSITE_LIBS + ' (name only, or "" if none fits). ' +
-        'Reply JSON only: {"coverage":"full|partial|none","message":"...","best":{"id":0,"why":"..."} or null,"others":[{"id":0,"why":"..."}],"tryWebsite":""}',
-      turns: [{ role: "user", text: `REQUEST: ${q}\n\nCANDIDATES:\n${list || "(none found)"}` }],
+        "You help someone find a ready-made prompt. You get their REQUEST, CANDIDATES (prompts copied from open-source libraries: id | library | title | description) " +
+        "and OTHER LIBRARIES (prompt libraries in their list whose prompts are NOT searchable here, mostly websites: libId | name | what it has). " +
+        "matches: up to 5 candidates that genuinely match the request, most relevant first. Only include real matches (it is fine to return 1 or 0). " +
+        'Each match: id, fit ("full" = does what was asked, "partial" = close but missing something), why (one short sentence: what it does for this request). Never invent ids. ' +
+        'coverage: "full" if at least one match fully fits, "partial" if only partial matches, "none" if no matches. ' +
+        "message: one or two plain-English sentences for the user (when partial, say what is missing). " +
+        "trySites: when coverage is not full, up to 3 OTHER LIBRARIES most likely to have this prompt, most likely first, each with why (one short sentence); [] if none is a reasonable bet or coverage is full. Use only libIds from OTHER LIBRARIES. " +
+        'Reply JSON only: {"coverage":"full|partial|none","message":"...","matches":[{"id":0,"fit":"full|partial","why":"..."}],"trySites":[{"libId":"p7","why":"..."}]}',
+      turns: [{ role: "user", text: `REQUEST: ${q}\n\nCANDIDATES:\n${list || "(none found)"}\n\nOTHER LIBRARIES:\n${siteList || "(none)"}` }],
       json: true,
       thinking: "low",
-      maxTokens: 2048,
+      maxTokens: 3000,
     });
     const raw = parseJson(r2.text) || {};
-    const pick = (p: any) => {
-      const r = byId.get(Number(p?.id));
-      return r ? { pid: r.pid, libId: r.libId, libName: names.get(r.libId) || r.libId, title: r.title, desc: r.desc, why: String(p?.why || "").trim() } : null;
-    };
-    const best = raw.best ? pick(raw.best) : null;
-    const seen = new Set(best ? [best.pid] : []);
-    const others = (Array.isArray(raw.others) ? raw.others : [])
-      .map(pick)
-      .filter((h: any) => h && !seen.has(h.pid) && seen.add(h.pid))
-      .slice(0, 3);
-    let coverage = ["full", "partial", "none"].includes(raw.coverage) ? raw.coverage : best ? "full" : "none";
-    if (!best && coverage !== "none") coverage = others.length ? "partial" : "none";
+    const seen = new Set<number>();
+    const matches = (Array.isArray(raw.matches) ? raw.matches : [])
+      .map((p: any) => {
+        const r = byId.get(Number(p?.id));
+        if (!r || seen.has(r.pid)) return null;
+        seen.add(r.pid);
+        return { pid: r.pid, libId: r.libId, libName: names.get(r.libId) || r.libId, title: r.title, desc: r.desc, why: String(p?.why || "").trim(), fit: p?.fit === "partial" ? "partial" : "full" };
+      })
+      .filter(Boolean)
+      .slice(0, 5) as (Hit & { why: string; fit: "full" | "partial" })[];
+    let coverage: "full" | "partial" | "none" = ["full", "partial", "none"].includes(raw.coverage) ? raw.coverage : matches.length ? "full" : "none";
+    if (!matches.length) coverage = "none";
+    else if (coverage === "none") coverage = "partial";
+    const siteById = new Map(sites.map((l) => [l.libId, l]));
+    const seenSite = new Set<string>();
+    const trySites = coverage === "full" ? [] : (Array.isArray(raw.trySites) ? raw.trySites : [])
+      .map((t: any) => {
+        const l = siteById.get(String(t?.libId || ""));
+        if (!l || seenSite.has(l.libId)) return null;
+        seenSite.add(l.libId);
+        return { libId: l.libId, title: l.title, url: (l.links && l.links[0] && l.links[0][1]) || "", why: String(t?.why || "").trim() };
+      })
+      .filter(Boolean)
+      .slice(0, 3) as { libId: string; title: string; url: string; why: string }[];
     return {
       coverage,
-      message: String(raw.message || (best ? "" : "No prompt in the open-source libraries matches that.")).trim(),
-      best,
-      others,
-      tryWebsite: coverage === "full" ? "" : String(raw.tryWebsite || "").trim(),
+      message: String(raw.message || (matches.length ? "" : "No prompt in the open-source libraries matches that.")).trim(),
+      matches,
+      trySites,
     };
   },
 });
