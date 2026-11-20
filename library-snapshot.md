@@ -1,7 +1,7 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-20 16:59 UTC.
-Tools: 258 active, 0 archived. Prompt libraries: 45 (14 open source, 4,497 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-20 17:00 UTC.
+Tools: 258 active, 0 archived. Prompt libraries: 45 (14 open source, 4,578 prompts copied into Find a prompt).
 
 ## Tools (active)
 
@@ -274,15 +274,15 @@ None.
 
 | id | Name | Section | Source | Open source | Prompts in Find a prompt | Best for | Link |
 |---|---|---|---|---|---|---|---|
-| p1 | OpenAI Academy & Examples | All-purpose libraries | Official | no | copying… | Everyday office work by role (marketing, sales, finance, ops), plus examples of getting structured JSON answers. | https://academy.openai.com/public/clubs/work-users-ynjqu/resources/chatgpt-for-any-role |
-| p2 | Anthropic Prompt Library | All-purpose libraries | Official | no | — | Polished Claude prompts for writing, summarizing and pulling data out of text; good templates to learn from. | https://docs.anthropic.com/en/resources/prompt-library/library |
+| p1 | OpenAI Academy & Examples | All-purpose libraries | Official | no | 26 | Everyday office work by role (marketing, sales, finance, ops), plus examples of getting structured JSON answers. | https://academy.openai.com/public/clubs/work-users-ynjqu/resources/chatgpt-for-any-role |
+| p2 | Anthropic Prompt Library | All-purpose libraries | Official | no | 55 | Polished Claude prompts for writing, summarizing and pulling data out of text; good templates to learn from. | https://docs.anthropic.com/en/resources/prompt-library/library |
 | p3 | prompts.chat (Awesome ChatGPT Prompts) | All-purpose libraries | Open source | yes | 3058 | Turning the AI into any expert ("act as…"): 3,000+ role prompts across business, writing, coding and images. | https://prompts.chat |
 | p4 | Fabric Patterns | All-purpose libraries | Open source | yes | 266 | Repeatable one-job tasks: summarize a talk, extract key ideas, check claims, threat-model. About 270 sharp patterns. | https://github.com/danielmiessler/fabric/tree/main/data/patterns |
 | p5 | awesome-claude-prompts | All-purpose libraries | Open source | yes | 129 | Claude-specific prompts: marketing copy, emails, decision-making, plus Claude Code and system-prompt examples. | https://github.com/langgptai/awesome-claude-prompts |
 | p39 | 10 NotebookLM prompts (10 פרומפטים ל־NotebookLM) | All-purpose libraries | Community | no | — | Getting more out of NotebookLM: 10 copy-paste prompts with tips on sources and citations (Hebrew). | https://eilon.co/10-%d7%a4%d7%a8%d7%95%d7%9e%d7%a4%d7%98%d7%99%d7%9d-%d7%9c-notebooklm-%d7%a9%d7%a9%d7%99%d7%a0%d7%95/ |
-| p6 | Microsoft Copilot Prompt Gallery | Business & productivity | Official | no | — | Microsoft 365 work: meeting recaps, proposals, Excel analysis and scheduling in Word, Excel and Teams. | https://copilot.cloud.microsoft/en-US/prompts |
-| p7 | ClickUp AI Prompt Templates | Business & productivity | Free | no | — | Fill-in-the-blank templates for project plans, roadmaps, blog outlines and brand voice. | https://clickup.com/blog/ai-prompt-workflow-templates/ |
-| p8 | Orbit Media B2B Marketing Prompts | Business & productivity | Free | no | — | B2B content marketing: articles, case studies, webinar scripts and email sequences, with real output examples. | https://www.orbitmedia.com/blog/ai-marketing-prompts/ |
+| p6 | Microsoft Copilot Prompt Gallery | Business & productivity | Official | no | copy failed | Microsoft 365 work: meeting recaps, proposals, Excel analysis and scheduling in Word, Excel and Teams. | https://copilot.cloud.microsoft/en-US/prompts |
+| p7 | ClickUp AI Prompt Templates | Business & productivity | Free | no | copy failed | Fill-in-the-blank templates for project plans, roadmaps, blog outlines and brand voice. | https://clickup.com/blog/ai-prompt-workflow-templates/ |
+| p8 | Orbit Media B2B Marketing Prompts | Business & productivity | Free | no | copying… | B2B content marketing: articles, case studies, webinar scripts and email sequences, with real output examples. | https://www.orbitmedia.com/blog/ai-marketing-prompts/ |
 | p9 | Momentum Revenue Prompts | Business & productivity | Free | no | — | Sales reps: cold outreach, objection handling, discovery-call prep and competitive positioning. | https://www.momentum.io/resources/ai-prompts |
 | p41 | Gemini stock analysis prompts | Business & productivity | Community | no | — | Analyzing a stock like an analyst with Gemini: 10 ready prompts. | https://facebook.com/61571991616735/posts/pfbid02g9Fk5iWkhucB8v5ptETFfBJRtUZkcx6rkvDTzmzV27FTYMTaGLetYksFx1QixWbtl/ |
 | p10 | cursor.directory | Coding | Community | no | — | Setting up AI coding tools: ready rule files per tech stack (Next.js, Python, React) for Cursor and Windsurf. | https://cursor.directory |
