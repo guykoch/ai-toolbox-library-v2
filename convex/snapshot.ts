@@ -84,9 +84,13 @@ export const data = internalQuery({
   handler: async (ctx) => {
     const items = await ctx.db.query("items").collect();
     const libs = await ctx.db.query("plibs").collect();
+    const cards = await ctx.db.query("tcards").collect();
+    const pbs = await ctx.db.query("playbooks").collect();
     return {
       tools: items.map((r) => ({ status: r.status, ...pickTool(r.data) })),
       libs: libs.filter((l) => !l.deleting).map((l) => ({ id: l.libId, ...l.data, imp: l.imp })),
+      cards: cards.filter((c) => !c.deleting).map((c) => ({ id: c.cid, tab: c.tab, title: c.data?.title, sec: c.data?.sec, kind: c.data?.kind, bestFor: c.data?.bestFor || c.data?.summary, link: c.data?.links?.[0]?.[1] || "", imp: c.imp })),
+      playbooks: pbs.map((p) => ({ id: p.pbId, ...p.data })),
     };
   },
 });
@@ -100,7 +104,7 @@ function pickTool(d: any) {
 
 const cell = (s: any) => String(s ?? "").replace(/\|/g, "\\|").replace(/\s+/g, " ").trim();
 
-function render(tools: any[], libs: any[]) {
+function render(tools: any[], libs: any[], cards: any[] = [], playbooks: any[] = []) {
   const active = tools.filter((t) => t.status === "active").sort((a, b) => (b.iso || "").localeCompare(a.iso || "") || b.id - a.id);
   const archived = tools.filter((t) => t.status === "archived").sort((a, b) => b.id - a.id);
   const secOrder = Object.keys(SECTION);
@@ -109,7 +113,8 @@ function render(tools: any[], libs: any[]) {
   const out: string[] = [];
   out.push("# AI Toolbox — library snapshot", "");
   out.push(`Updated automatically by the app: ${new Date().toISOString().replace("T", " ").slice(0, 16)} UTC.`);
-  out.push(`Tools: ${active.length} active, ${archived.length} archived. Prompt libraries: ${libs.length} (${libs.filter((l) => l.kind === "open").length} open source, ${promptsTotal.toLocaleString("en-US")} prompts copied into Find a prompt).`, "");
+  out.push(`Tools: ${active.length} active, ${archived.length} archived. Prompt libraries: ${libs.length} (${libs.filter((l) => l.kind === "open").length} open source, ${promptsTotal.toLocaleString("en-US")} prompts copied into Find a prompt).`);
+  out.push(`Rules: ${cards.filter((c) => c.tab === "rules").length}. Agents: ${cards.filter((c) => c.tab === "agents").length}. Automations: ${cards.filter((c) => c.tab === "autos").length}. Playbooks: ${playbooks.length}.`, "");
   out.push("## Tools (active)", "");
   out.push("| id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |", "|---|---|---|---|---|---|---|---|---|");
   for (const t of active) {
@@ -128,9 +133,29 @@ function render(tools: any[], libs: any[]) {
     const n = l.imp?.state === "done" ? String(l.imp.count) : l.imp?.state === "importing" ? "copying…" : l.imp?.state === "failed" ? "copy failed" : "—";
     out.push(`| ${l.id} | ${cell(l.title)} | ${cell(SECTION[l.sec] || l.sec)} | ${cell(SOURCE[l.kind] || l.kind)} | ${l.kind === "open" ? "yes" : "no"} | ${n} | ${cell(l.bestFor || l.summary)} | ${cell(l.links?.[0]?.[1] || "")} |`);
   }
+  for (const [tab, name] of [["rules", "Rules"], ["agents", "Agents"], ["autos", "Automations"]]) {
+    const list = cards.filter((c) => c.tab === tab).sort((a, b) => (TAB_SEC[tab] || []).indexOf(a.sec) - (TAB_SEC[tab] || []).indexOf(b.sec) || Number(String(a.id).slice(1)) - Number(String(b.id).slice(1)));
+    out.push("", `## ${name}`, "");
+    if (!list.length) { out.push("None yet."); continue; }
+    out.push("| id | Name | Section | Source | Files copied | Best for | Link |", "|---|---|---|---|---|---|---|");
+    for (const c of list) {
+      const n = c.imp?.state === "done" ? String(c.imp.count) : c.imp?.state === "importing" ? "copying…" : c.imp?.state === "failed" ? "copy failed" : "—";
+      out.push(`| ${c.id} | ${cell(c.title)} | ${cell(c.sec)} | ${cell(SOURCE[c.kind] || c.kind)} | ${n} | ${cell(c.bestFor)} | ${cell(c.link)} |`);
+    }
+  }
+  out.push("", "## Playbooks", "");
+  if (!playbooks.length) out.push("None yet.");
+  else {
+    out.push("| id | Name | Type | Topics | Steps (items used) |", "|---|---|---|---|---|");
+    for (const p of [...playbooks].sort((a, b) => String(a.type).localeCompare(String(b.type)) || Number(String(a.id).slice(1)) - Number(String(b.id).slice(1)))) {
+      const steps = (p.steps || []).map((s: any, i: number) => `${i + 1}. ${s.title}` + (s.use?.length ? ` (${s.use.map((u: any) => u.k + ":" + u.id).join(", ")})` : "")).join("; ");
+      out.push(`| ${p.id} | ${cell(p.title)} | ${cell(p.type)} | ${cell((p.topics || []).join(", "))} | ${cell(steps)} |`);
+    }
+  }
   out.push("");
   return out.join("\n");
 }
+const TAB_SEC: Record<string, string[]> = { rules: ["standards", "coding", "collections", "design"], agents: ["subagents", "assistants", "teams"], autos: ["templates", "collections", "ai"] };
 
 const b64 = (s: string) => {
   const bytes = new TextEncoder().encode(s);
@@ -145,8 +170,8 @@ export const write = internalAction({
     const token = process.env.GITHUB_TOKEN;
     if (!token) { await ctx.runMutation(internal.snapshot.record, { ok: false, error: "GITHUB_TOKEN isn't set in Convex." }); return; }
     try {
-      const d: { tools: any[]; libs: any[] } = await ctx.runQuery(internal.snapshot.data, {});
-      const md = render(d.tools, d.libs);
+      const d: { tools: any[]; libs: any[]; cards: any[]; playbooks: any[] } = await ctx.runQuery(internal.snapshot.data, {});
+      const md = render(d.tools, d.libs, d.cards, d.playbooks);
       const api = `https://api.github.com/repos/${REPO()}/contents/${PATH}`;
       const headers = { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "User-Agent": "ai-toolbox", "Content-Type": "application/json" };
       // Two updates can land at the same moment; if GitHub says the file just changed (409), read it again and retry.

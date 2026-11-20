@@ -545,6 +545,74 @@
       .loading { padding: 40px 0; color: var(--muted); }
       footer { margin-top: 52px; border-top: 1px solid var(--line); padding-top: 18px; font-size: 13.5px; color: var(--muted); max-width: 56em; }
       footer p { margin: 0 0 8px; }
+      /* ---------- six tabs, delete on collapsed cards ---------- */
+      .subtabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+      .subtabs::-webkit-scrollbar { display: none; }
+      .subtab { white-space: nowrap; flex: none; }
+      @media (max-width: 640px) { .subtabs { flex-wrap: wrap; justify-content: center; border-radius: 18px; } .subtab { padding: 7px 12px; font-size: 14px; } .mk-row { flex-direction: column; align-items: stretch; } }
+      .trash-btn { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px; height: 24px; min-width: 26px; padding: 0 4px; margin: -3px -4px -3px 2px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: var(--muted); cursor: pointer; font: inherit; font-size: 12px; font-weight: 600; }
+      .trash-btn:hover, .trash-btn.confirm { color: #b42318; border-color: #e7b3ab; background: var(--surface); }
+      :root[data-theme="dark"] .trash-btn:hover, :root[data-theme="dark"] .trash-btn.confirm { color: #ff8a7a; border-color: #6b3029; }
+      .trash-btn.confirm { padding: 0 8px; white-space: nowrap; }
+      .tab-intro { margin: 18px 0 0; color: var(--ink-2); font-size: 15px; line-height: 1.5; max-width: 820px; }
+      .t-example { display: flex; flex-direction: column; gap: 6px; }
+      .t-rel { display: flex; flex-wrap: wrap; gap: 6px; }
+      .chipref { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); border-radius: 999px; padding: 3px 10px; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; text-align: left; }
+      .chipref:hover { border-color: var(--accent); color: var(--accent-ink); }
+      .chipref .ck { flex: none; white-space: nowrap; font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+      .chipref .cx { margin-left: 2px; color: var(--muted); font-size: 14px; line-height: 1; }
+      .chipref .cx:hover { color: #b42318; }
+      .chipref span.cn { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .flash { animation: flash 1.6s ease-out 1; }
+      @keyframes flash { 0%, 40% { box-shadow: 0 0 0 4px var(--accent); } 100% { box-shadow: var(--shadow); } }
+      /* playbooks */
+      .pb-steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; counter-reset: st; }
+      .pb-steps > li { display: grid; grid-template-columns: 26px 1fr; gap: 2px 10px; }
+      .pb-steps > li::before { counter-increment: st; content: counter(st); grid-row: span 6; width: 24px; height: 24px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-ink); font-weight: 800; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; }
+      .pb-steps .st-t { font-weight: 700; font-size: 14.5px; }
+      .pb-steps .st-d { margin: 0; font-size: 13.8px; color: var(--ink-2); line-height: 1.5; }
+      .pb-steps .st-tip { margin: 0; font-size: 13px; color: var(--muted); }
+      .pb-steps .st-p { display: flex; flex-direction: column; gap: 5px; margin-top: 2px; }
+      .st-p summary { cursor: pointer; font-size: 13px; font-weight: 650; color: var(--accent-ink); }
+      .mk-row { display: flex; gap: 10px; align-items: flex-start; margin-top: 10px; }
+      .mk-row textarea { flex: 1; }
+      .mk-defaults { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--muted); }
+      .mk-defaults .pin { border: 1px dashed var(--line); border-radius: 999px; padding: 2px 9px; color: var(--ink-2); background: var(--surface-2); }
+      .pbx { margin-top: 18px; border: 1.5px solid var(--accent); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+      .pbx-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+      .pbx-top h2 { margin: 0; font-size: 16px; }
+      .pbx input[type=text], .pbx textarea, .pbx select { font: inherit; font-size: 14px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; width: 100%; box-sizing: border-box; }
+      .pbx textarea { resize: vertical; min-height: 38px; }
+      .pbx .pbx-title { font-size: 18px; font-weight: 800; }
+      .pbx-meta { display: grid; grid-template-columns: 1.2fr 2fr 1fr; gap: 8px; }
+      @media (max-width: 640px) { .pbx-meta { grid-template-columns: 1fr; } }
+      .pbx-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+      .pbx-step { border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; display: flex; flex-direction: column; gap: 6px; background: var(--surface); }
+      .pbx-step.changed { border-color: var(--accent); background: var(--accent-soft); }
+      .pbx-sh { display: flex; gap: 8px; align-items: center; }
+      .pbx-sh .n { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-ink); font-weight: 800; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; }
+      .pbx-sh b { flex: 1; font-size: 14.5px; min-width: 0; }
+      .pbx-ctl { display: inline-flex; gap: 2px; flex: none; }
+      .pbx-ctl button { border: 1px solid transparent; background: transparent; color: var(--muted); border-radius: 6px; cursor: pointer; font: inherit; font-size: 13px; padding: 2px 6px; }
+      .pbx-ctl button:hover:not(:disabled) { border-color: var(--line); color: var(--ink); }
+      .pbx-ctl button:disabled { opacity: .35; cursor: default; }
+      .pbx-ctl button.del:hover { color: #b42318; }
+      .pbx-step p { margin: 0; font-size: 13.8px; color: var(--ink-2); }
+      .pbx-find { display: flex; flex-direction: column; gap: 4px; }
+      .pbx-find .res { display: flex; flex-direction: column; max-height: 220px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
+      .pbx-find .res button { all: unset; cursor: pointer; padding: 6px 9px; font-size: 13px; border-top: 1px solid var(--line); }
+      .pbx-find .res button:first-child { border-top: 0; }
+      .pbx-find .res button:hover, .pbx-find .res button:focus { background: var(--accent-soft); }
+      .pbx-find .res small { color: var(--muted); }
+      .pbx-chat { border-top: 1px solid var(--line); padding-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+      .pbx-msgs { display: flex; flex-direction: column; gap: 6px; max-height: 300px; overflow: auto; }
+      .pbx-msg { font-size: 13.8px; padding: 7px 10px; border-radius: 10px; max-width: 92%; }
+      .pbx-msg.u { align-self: flex-end; background: var(--accent-soft); color: var(--ink); }
+      .pbx-msg.a { align-self: flex-start; background: var(--surface-2); color: var(--ink-2); }
+      .pbx-msg.n { align-self: center; background: transparent; color: var(--muted); font-size: 12.5px; padding: 0; }
+      .pbx-msg ul { margin: 4px 0 0; padding-left: 18px; }
+      .pbx-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+      .pbx-bar .st { font-size: 13px; color: var(--muted); }
     </style>
     <script src="config.js"></script>
   </head>
@@ -579,6 +647,19 @@
         <p class="err" id="lock-err"></p>
         <button class="primary-btn" type="submit">Open library</button>
       </form>
+    </div>
+    <div class="modal" id="tb" hidden role="dialog" aria-modal="true" aria-labelledby="tb-title">
+      <div class="panel pb-panel">
+        <header>
+          <div><h2 id="tb-title">Files</h2><p class="m-sub" id="tb-sub"></p></div>
+          <button class="showall-btn" id="tb-exit" type="button" style="margin-left:0">Close</button>
+        </header>
+        <div class="pb-tools">
+          <div class="search-box"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.8-3.8"/></svg><input id="tb-q" type="search" placeholder="Filter by name, app or topic&hellip;" aria-label="Filter" /></div>
+          <div class="kindchips" id="tb-chips"></div>
+        </div>
+        <div class="m-body" id="tb-body"></div>
+      </div>
     </div>
     <div class="modal" id="pb" hidden role="dialog" aria-modal="true" aria-labelledby="pb-title">
       <div class="panel pb-panel">
@@ -616,6 +697,10 @@
         <div class="subtabs" role="tablist" aria-label="Sections">
           <button class="subtab" role="tab" id="tabbtn-tools" data-tab="tools" aria-controls="tab-tools" type="button">Tools</button>
           <button class="subtab" role="tab" id="tabbtn-prompts" data-tab="prompts" aria-controls="tab-prompts" type="button">Prompts</button>
+          <button class="subtab" role="tab" id="tabbtn-rules" data-tab="rules" aria-controls="tab-rules" type="button">Rules</button>
+          <button class="subtab" role="tab" id="tabbtn-agents" data-tab="agents" aria-controls="tab-agents" type="button">Agents</button>
+          <button class="subtab" role="tab" id="tabbtn-autos" data-tab="autos" aria-controls="tab-autos" type="button">Automations</button>
+          <button class="subtab" role="tab" id="tabbtn-playbooks" data-tab="playbooks" aria-controls="tab-playbooks" type="button">Playbooks</button>
         </div>
       </header>
       <div id="tab-tools" role="tabpanel" aria-labelledby="tabbtn-tools">
@@ -815,6 +900,10 @@
         </section>
         <div id="pgroups" style="margin-top:18px"></div>
       </div>
+      <div id="tab-rules" role="tabpanel" aria-labelledby="tabbtn-rules" hidden></div>
+      <div id="tab-agents" role="tabpanel" aria-labelledby="tabbtn-agents" hidden></div>
+      <div id="tab-autos" role="tabpanel" aria-labelledby="tabbtn-autos" hidden></div>
+      <div id="tab-playbooks" role="tabpanel" aria-labelledby="tabbtn-playbooks" hidden></div>
     </div>
     <script>
       // ---------- connection to Convex ----------
@@ -1003,6 +1092,7 @@
         }
         return true;
       }
+      const TRASH_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>';
       function cardHTML(it, inArchive) {
         const m = CATS[it.cat] || CATS.other;
         const open = state.expanded.has(it.id);
@@ -1053,7 +1143,7 @@
           (inArchive ? '' : foot) +
           '</div>';
         return '<article class="card' + (it.id === state.justAdded && !inArchive ? ' just-added' : '') + (it.id === state.highlight && !inArchive ? ' highlight' : '') + '" id="' + (inArchive ? 'acard-' : 'card-') + it.id + '" data-id="' + it.id + '">' +
-          '<div class="meta"><span>' + esc(it.date) + '</span>' + (inArchive && it.archivedAt ? '<span>Archived ' + esc(it.archivedAt) + '</span>' : (it.id === state.justAdded ? '<span>Just added</span>' : '')) + '<span class="effort" title="Effort to start">' + EFFORT_ICON[EFFORT[kd]] + ' ' + EFFORT[kd] + '</span></div>' +
+          '<div class="meta"><span>' + esc(it.date) + '</span>' + (inArchive && it.archivedAt ? '<span>Archived ' + esc(it.archivedAt) + '</span>' : (it.id === state.justAdded ? '<span>Just added</span>' : '')) + '<span class="effort" title="Effort to start">' + EFFORT_ICON[EFFORT[kd]] + ' ' + EFFORT[kd] + '</span><button type="button" class="trash-btn" data-act="delete" data-id="' + it.id + '" title="Delete" aria-label="Delete ' + esc(it.title) + '">' + TRASH_SVG + '</button></div>' +
           '<h3 dir="auto">' + esc(it.title) + '</h3>' +
           '<p class="summary' + (open ? ' full' : '') + '" dir="auto" data-short="' + esc(shortSummary(it.summary)) + '" data-full="' + esc(it.summary) + '">' + esc(open ? it.summary : shortSummary(it.summary)) + '</p>' +
           poprow +
@@ -1365,7 +1455,7 @@
           '<dt>Links</dt><dd class="plinks">' + p.links.map(l => '<a href="' + esc(l[1]) + '" target="_blank" rel="noopener">' + esc(l[0]) + ' &#8599;</a>').join('') + '</dd>';
         const did = 'pdetail-' + p.id;
         return '<article class="card" id="pcard-' + p.id + '">' +
-          '<div class="meta"><span>' + esc(p.format) + '</span><span class="effort">' + esc(hostOf(p.links[0][1]) || '') + '</span></div>' +
+          '<div class="meta"><span>' + esc(p.format) + '</span><span class="effort">' + esc(hostOf(p.links[0][1]) || '') + '</span><button type="button" class="trash-btn" data-pdelete="' + p.id + '" title="Delete" aria-label="Delete ' + esc(p.title) + '">' + TRASH_SVG + '</button></div>' +
           '<h3>' + esc(p.title) + '</h3>' +
           '<p class="summary' + (open ? ' full' : '') + '">' + esc(p.summary) + '</p>' +
           '<div class="badges">' + badges + '</div>' +
@@ -1780,9 +1870,10 @@
 
       // ---------- sub-tabs (Tools / Prompts) ----------
       const TAB_STORE = 'aicm-tab';
+      const ALL_TABS = ['tools', 'prompts', 'rules', 'agents', 'autos', 'playbooks'];
       function showTab(name) {
-        if (name !== 'prompts') name = 'tools';
-        for (const t of ['tools', 'prompts']) {
+        if (!ALL_TABS.includes(name)) name = 'tools';
+        for (const t of ALL_TABS) {
           document.getElementById('tab-' + t).hidden = t !== name;
           const b = document.getElementById('tabbtn-' + t);
           b.setAttribute('aria-selected', t === name ? 'true' : 'false');
@@ -1825,6 +1916,7 @@
         render();
         renderHype();
         loadPrompts();
+        if (typeof loadTabs === 'function' && !window.__tabsStarted) { window.__tabsStarted = true; loadTabs(); }
         if (!snapAsked) {
           snapAsked = true;
           call('mutation', 'snapshot:ensure', {}).catch(() => {});
@@ -2018,8 +2110,9 @@
         const id = Number(btn.dataset.id);
         const act = btn.dataset.act;
         if (act === 'delete' && !btn.classList.contains('confirm')) {
+          const orig = btn.innerHTML;
           btn.classList.add('confirm'); btn.textContent = 'Delete for good?';
-          confirmTimers.set(btn, setTimeout(() => { btn.classList.remove('confirm'); btn.textContent = 'Delete'; }, 4000));
+          confirmTimers.set(btn, setTimeout(() => { btn.classList.remove('confirm'); btn.innerHTML = orig; }, 4000));
           return;
         }
         clearTimeout(confirmTimers.get(btn));
@@ -2214,6 +2307,683 @@
       });
 
       start();
+    </script>
+    <script>
+      // =====================================================================
+      // Rules / Agents / Automations / Playbooks tabs (plan "abc", 20 Nov 2026)
+      // =====================================================================
+      const TAB_DEFS = {
+        rules: {
+          name: 'Rules', noun: 'rule file', itemWord: 'rule files', browse: 'Browse rules',
+          intro: 'Instruction files that tell an AI how to behave in your projects &mdash; <b>CLAUDE.md, AGENTS.md, Cursor, Copilot, Windsurf and Cline rules</b> &mdash; plus ready collections to copy from. Each card says which tools read it, where the file goes, and has an example to copy.',
+          addH: 'Add a rule file or collection', addSub: 'Paste a link to a rules doc, a rule collection on GitHub or a DESIGN.md source &mdash; or several links separated by commas or spaces. <b>Open-source repos</b> get their rule files copied in, so you can browse and copy them here.',
+          ph: 'e.g. https://github.com/owner/awesome-rules', search: 'Search&hellip; e.g. Cursor, Next.js, CLAUDE.md',
+          secs: [
+            { key: 'standards', label: 'Shared standard', color: '#2f6db3', sub: 'One file that many coding agents read.' },
+            { key: 'coding', label: 'Per-tool rule files', color: '#7c5cbf', sub: 'Where each AI tool looks for its rules, with an example to copy.' },
+            { key: 'collections', label: 'Collections to copy from', color: '#3d8b4f', sub: 'Ready rule files by tech stack &mdash; start from one instead of a blank page.' },
+            { key: 'design', label: 'Design & brand rules', color: '#be4b7a', sub: 'Files that make AI-built UI follow a look.' }
+          ]
+        },
+        agents: {
+          name: 'Agents', noun: 'agent', itemWord: 'agents', browse: 'Browse agents',
+          intro: 'Ready-made AI helpers with their own instructions: <b>Claude Code subagents</b>, <b>Gemini Gems</b>, <b>custom GPTs</b>, <b>Claude Projects</b> and agent teams. Open-source collections are copied in &mdash; open one, copy an agent, and drop it into your project.',
+          addH: 'Add an agent or agent collection', addSub: 'Paste a link to an agent, a Gem/GPT page or an agent collection on GitHub &mdash; or several links separated by commas or spaces. <b>Open-source repos</b> get their agent files copied in.',
+          ph: 'e.g. https://github.com/owner/claude-agents', search: 'Search&hellip; e.g. reviewer, Gems, SQL, product manager',
+          secs: [
+            { key: 'subagents', label: 'Coding-agent subagents', color: '#7c5cbf', sub: 'Specialists for Claude Code and other coding agents (one Markdown file each).' },
+            { key: 'assistants', label: 'Custom chat assistants', color: '#0e7490', sub: 'Saved assistants in Gemini, ChatGPT and Claude.' },
+            { key: 'teams', label: 'Agent teams', color: '#b45309', sub: 'Several agents working together on bigger jobs.' }
+          ]
+        },
+        autos: {
+          name: 'Automations', noun: 'automation', itemWord: 'workflows', browse: 'Browse workflows',
+          intro: 'Workflows that run by themselves: <b>n8n, Zapier and Make</b> template galleries, open-source workflow collections (copied in, with the trigger and apps of each one), and AI automations. Each card shows what starts it, what it does, the apps it needs and how much setup it takes.',
+          addH: 'Add an automation or collection', addSub: 'Paste a link to a workflow template, a template gallery or a workflow collection on GitHub &mdash; or several links separated by commas or spaces. <b>Open-source n8n collections</b> get their workflows copied in.',
+          ph: 'e.g. https://n8n.io/workflows/1234 or a GitHub repo', search: 'Search&hellip; e.g. Gmail, Telegram, n8n, schedule',
+          secs: [
+            { key: 'templates', label: 'Official template galleries', color: '#2f6db3', sub: 'Thousands of ready workflows from n8n, Zapier and Make.' },
+            { key: 'collections', label: 'Workflow collections', color: '#3d8b4f', sub: 'Open-source workflows you can browse here and import.' },
+            { key: 'ai', label: 'AI automations', color: '#be4b7a', sub: 'Agents and AI routines that do a job on a schedule or on request.' }
+          ]
+        }
+      };
+      const T_KINDS = { official: { label: 'Official', icon: '\u{1F3E2}' }, open: { label: 'Open source', icon: '\u{1F513}' }, community: { label: 'Community', icon: '\u{1F465}' }, free: { label: 'Free', icon: '\u{1F193}' } };
+      const T_TABS = ['rules', 'agents', 'autos'];
+      let TCARDS = { rules: [], agents: [], autos: [] }, tLoadedOnce = false, tPoll = null, tResumed = false;
+      const tstate = {}; T_TABS.forEach(t => { tstate[t] = { q: '', sec: 'all', kind: 'all', expanded: new Set(), flash: '' }; });
+      const SEARCH_SVG = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.8-3.8"/></svg>';
+      const OPEN_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>';
+      const CHEV_SVG = '<svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+
+      async function copyText(text) {
+        try { await navigator.clipboard.writeText(text); }
+        catch (err) { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+      }
+      function flashCopied(btn, label) { const old = btn.textContent; btn.textContent = label || 'Copied ✓'; setTimeout(() => { btn.textContent = old; }, 2000); }
+      // Same small "x" clear button as the other text boxes.
+      function addClearX(el) {
+        if (!el || el.dataset.clearx) return; el.dataset.clearx = '1';
+        const btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'clear-x'; btn.setAttribute('aria-label', 'Clear'); btn.title = 'Clear'; btn.innerHTML = '&times;'; btn.hidden = true;
+        if (el.parentElement.classList.contains('search-box')) { el.classList.add('has-clear'); el.parentElement.appendChild(btn); }
+        else { const wrap = document.createElement('span'); wrap.className = 'clear-wrap'; el.parentElement.insertBefore(wrap, el); wrap.appendChild(el); wrap.appendChild(btn); }
+        const sync = () => { btn.hidden = !el.value || el.disabled; };
+        el.addEventListener('input', sync);
+        btn.addEventListener('mousedown', e => e.preventDefault());
+        btn.addEventListener('click', () => { el.value = ''; el.dispatchEvent(new Event('input', { bubbles: true })); sync(); el.focus(); });
+        setInterval(sync, 500); sync();
+      }
+
+      // ---------- jumping to any item in the library (from playbooks and "In your library") ----------
+      function flashEl(el) { if (!el) return; el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+      function jumpTo(k, id, tab) {
+        if (k === 't') {
+          const n = Number(id);
+          if (!items.some(i => i.id === n)) { alert('That tool is no longer in your Tools tab.'); return; }
+          showTab('tools'); goToCard(n); setTimeout(() => flashEl(document.getElementById('card-' + n)), 50); return;
+        }
+        if (k === 'l') {
+          if (!PROMPT_LIBS.some(p => p.id === id)) { alert('That prompt library is no longer in your Prompts tab.'); return; }
+          showTab('prompts'); pClear(); pstate.expanded.add(id); renderPrompts();
+          setTimeout(() => flashEl(document.getElementById('pcard-' + id)), 50); return;
+        }
+        if (k === 'c') {
+          const c = T_TABS.map(t => TCARDS[t].find(x => x.id === id)).find(Boolean);
+          if (!c) { alert('That card is no longer in your library.'); return; }
+          const st = tstate[c.tab]; st.q = ''; st.sec = 'all'; st.kind = 'all'; st.expanded.add(c.id);
+          const qi = document.getElementById('tq-' + c.tab); if (qi) qi.value = '';
+          showTab(c.tab); tRender(c.tab); setTimeout(() => flashEl(document.getElementById('tcard-' + c.id)), 50); return;
+        }
+        if (k === 'b') { showTab('playbooks'); pbs.q = ''; pbs.type = 'all'; pbs.topic = 'all'; pbs.expanded.add(id); const qi = document.getElementById('pbl-q'); if (qi) qi.value = ''; pblRender(); setTimeout(() => flashEl(document.getElementById('pbcard-' + id)), 50); }
+      }
+      // Every item in the library, for playbook links and the "add an item" search.
+      function libIndex() {
+        const out = [];
+        for (const it of items) out.push({ k: 't', id: String(it.id), name: it.title, info: (CATS[it.cat] ? CATS[it.cat].label : '') + ' · tool' });
+        for (const p of PROMPT_LIBS) out.push({ k: 'l', id: p.id, name: p.title, info: 'prompt library' });
+        for (const t of T_TABS) for (const c of TCARDS[t]) out.push({ k: 'c', id: c.id, tab: t, name: c.title, info: TAB_DEFS[t].noun });
+        return out;
+      }
+      const REF_KIND = { t: 'Tool', l: 'Prompts', c: '' };
+      function refName(u) {
+        if (u.k === 't') { const it = items.find(i => String(i.id) === String(u.id)); return it ? it.title : u.name; }
+        if (u.k === 'l') { const p = PROMPT_LIBS.find(x => x.id === u.id); return p ? p.title : u.name; }
+        const c = T_TABS.map(t => TCARDS[t].find(x => x.id === u.id)).find(Boolean); return c ? c.title : u.name;
+      }
+      function refLabel(u) {
+        if (u.k === 'c') { const c = T_TABS.map(t => TCARDS[t].find(x => x.id === u.id)).find(Boolean); const tab = c ? c.tab : u.tab; return tab ? TAB_DEFS[tab].name.replace(/s$/, '') : 'Card'; }
+        return REF_KIND[u.k] || '';
+      }
+      function refChip(u, removeAttr) {
+        return '<button type="button" class="chipref" data-jump="' + esc(u.k + '|' + u.id + '|' + (u.tab || '')) + '" title="Open in your library"><span class="ck">' + esc(refLabel(u)) + '</span><span class="cn" dir="auto">' + esc(refName(u) || u.name || u.id) + '</span>' +
+          (removeAttr ? '<span class="cx" role="button" aria-label="Remove" ' + removeAttr + '>&times;</span>' : '') + '</button>';
+      }
+      document.addEventListener('click', e => {
+        if (e.target.closest('.cx')) return;
+        const j = e.target.closest('[data-jump]'); if (!j) return;
+        const [k, id, tab] = j.dataset.jump.split('|'); jumpTo(k, id, tab);
+      });
+
+      // ---------- Rules / Agents / Automations: panels ----------
+      function tPanelHTML(tab) {
+        const d = TAB_DEFS[tab];
+        return '<p class="tab-intro">' + d.intro + '</p>' +
+          '<section class="addbox" aria-labelledby="tadd-h-' + tab + '"><h2 id="tadd-h-' + tab + '">' + d.addH + '</h2><p class="sub">' + d.addSub + '</p>' +
+          '<div class="ask-row"><textarea id="tadd-text-' + tab + '" dir="auto" rows="1" placeholder="' + esc(d.ph) + '"></textarea><button class="primary-btn" type="button" data-tadd="' + tab + '">Add</button></div>' +
+          '<div class="pf-why" id="tadd-out-' + tab + '" aria-live="polite" hidden></div></section>' +
+          '<p class="statline" id="tstat-' + tab + '" style="margin-top:22px"></p>' +
+          '<div class="controls" style="margin-top:22px"><div class="search-row"><div class="search-box">' + SEARCH_SVG + '<input id="tq-' + tab + '" type="search" placeholder="' + d.search + '" aria-label="Search ' + d.name + '" /></div></div>' +
+          '<div class="toggle-row"><button class="showall-btn" type="button" data-tclear="' + tab + '">Show all</button></div></div>' +
+          '<section class="kindrow"><p class="kr-label">Section</p><div class="kindchips" id="tsec-' + tab + '"></div></section>' +
+          '<section class="kindrow" style="margin-top:6px"><p class="kr-label">Source</p><div class="kindchips" id="tkind-' + tab + '"></div></section>' +
+          '<div id="tgroups-' + tab + '" style="margin-top:18px"><p class="p-empty">Loading&hellip;</p></div>';
+      }
+      function tMatches(c, ignore) {
+        const st = tstate[c.tab];
+        if (ignore !== 'sec' && st.sec !== 'all' && c.sec !== st.sec) return false;
+        if (ignore !== 'kind' && st.kind !== 'all' && c.kind !== st.kind) return false;
+        if (st.q) {
+          const s = TAB_DEFS[c.tab].secs.find(x => x.key === c.sec);
+          const hay = allText(c, ['imp']) + ' ' + [s ? s.label : '', T_KINDS[c.kind] ? T_KINDS[c.kind].label : ''].join(' ').toLowerCase();
+          if (!st.q.split(/\s+/).filter(Boolean).every(w => hay.includes(w))) return false;
+        }
+        return true;
+      }
+      const isStaleImp = imp => imp && imp.state === 'importing' && Date.now() - Date.parse(imp.at || 0) > 4 * 60 * 1000;
+      function tCardHTML(c) {
+        const d = TAB_DEFS[c.tab], s = d.secs.find(x => x.key === c.sec) || d.secs[0], k = T_KINDS[c.kind] || T_KINDS.community;
+        const st = tstate[c.tab], open = st.expanded.has(c.id), imp = c.imp || { state: 'none', count: 0 };
+        const link = (c.links && c.links[0]) ? c.links[0][1] : '';
+        let badges = '<span class="badge cat"><span class="dot" style="background:' + s.color + '"></span>' + s.label + '</span><span class="badge kind">' + k.icon + ' ' + k.label + '</span>';
+        if (imp.state === 'done' && imp.count) badges += '<span class="badge" title="Copied into the app">\u{1F4C4} ' + imp.count.toLocaleString() + ' ' + d.itemWord + '</span>';
+        if (imp.state === 'importing') badges += '<span class="badge" title="' + esc(imp.note || '') + '">⌛ ' + esc(imp.note || 'Copying…') + '</span>';
+        if (c.tab === 'autos' && c.effort) badges += '<span class="badge">' + ({ Easy: '\u{1F7E2}', Medium: '\u{1F7E1}', Advanced: '\u{1F534}' }[c.effort] || '') + ' ' + esc(c.effort) + ' setup</span>';
+        let facts = '';
+        if (c.bestFor) facts += '<dt>Best for</dt><dd dir="auto">' + esc(c.bestFor) + '</dd>';
+        if (c.tab === 'rules') {
+          if (c.tools) facts += '<dt>Read by</dt><dd>' + esc(c.tools) + '</dd>';
+          if (c.where) facts += '<dt>Where it goes</dt><dd>' + esc(c.where) + '</dd>';
+        } else if (c.tab === 'agents') {
+          if (c.platform) facts += '<dt>Runs in</dt><dd>' + esc(c.platform) + '</dd>';
+          if (c.how) facts += '<dt>How to use</dt><dd>' + esc(c.how) + '</dd>';
+        } else {
+          if (c.platform) facts += '<dt>Platform</dt><dd>' + esc(c.platform) + '</dd>';
+          if (c.trigger) facts += '<dt>Starts when</dt><dd>' + esc(c.trigger) + '</dd>';
+          if (c.does) facts += '<dt>What it does</dt><dd>' + esc(c.does) + '</dd>';
+          if (c.apps) facts += '<dt>Apps needed</dt><dd>' + esc(c.apps) + '</dd>';
+          if (c.effort) facts += '<dt>Setup</dt><dd>' + esc(c.effort) + '</dd>';
+        }
+        facts += '<dt>Source</dt><dd>' + k.label + '</dd><dt>License</dt><dd>' + esc(c.license || 'Not stated') + '</dd>';
+        if (c.repo) {
+          facts += '<dt>Copied into the app</dt><dd>' + (imp.state === 'done' ? 'Yes &mdash; <b>' + imp.count.toLocaleString() + '</b> ' + d.itemWord + (imp.count ? ' <button class="mini-btn" type="button" data-tbrowse="' + c.id + '">Browse</button>' : '')
+            : imp.state === 'importing' ? esc(imp.note || 'Copying…') + (isStaleImp(imp) ? ' <button class="mini-btn" type="button" data-treimport="' + c.id + '">Restart copy</button>' : '')
+            : imp.state === 'failed' ? 'Couldn&rsquo;t copy: ' + esc(imp.note) + ' <button class="mini-btn" type="button" data-treimport="' + c.id + '">Try again</button>'
+            : 'Not yet <button class="mini-btn" type="button" data-treimport="' + c.id + '">Copy now</button>') + '</dd>';
+        } else if ((c.links || []).some(l => /github\.com\/[\w.-]+\/[\w.-]+/i.test(l[1]))) {
+          facts += '<dt>Copied into the app</dt><dd>No &mdash; no open license found on GitHub</dd>';
+        }
+        const rel = (c.related || []).map(id => ({ k: 't', id: String(id) })).filter(u => items.some(i => String(i.id) === u.id))
+          .concat((c.relatedLibs || []).map(id => ({ k: 'l', id })).filter(u => PROMPT_LIBS.some(p => p.id === u.id)));
+        if (rel.length) facts += '<dt>In your library</dt><dd class="t-rel">' + rel.map(u => refChip(u)).join('') + '</dd>';
+        facts += '<dt>Links</dt><dd class="plinks">' + (c.links || []).map(l => '<a href="' + esc(l[1]) + '" target="_blank" rel="noopener">' + esc(l[0]) + ' &#8599;</a>').join('') + '</dd>';
+        const example = c.example ? '<div class="t-example"><p class="d-label">Example' + (c.tab === 'agents' ? ' agent file' : ' file') + '</p><pre class="pf-pre">' + esc(c.example) + '</pre><div class="pf-actions"><button class="expand-btn" type="button" data-tcopyex="' + c.id + '">Copy example</button></div></div>' : '';
+        const did = 'tdetail-' + c.id;
+        const metaLeft = c.tab === 'rules' ? (c.where ? esc(c.where.split(/[;,(]| for | in the| — /)[0].slice(0, 42)) : 'Rules') : esc(c.platform || d.name);
+        return '<article class="card" id="tcard-' + c.id + '">' +
+          '<div class="meta"><span>' + metaLeft + '</span><span class="effort">' + esc(hostOf(link) || '') + '</span><button type="button" class="trash-btn" data-tdelete="' + c.id + '" title="Delete" aria-label="Delete ' + esc(c.title) + '">' + TRASH_SVG + '</button></div>' +
+          '<h3 dir="auto">' + esc(c.title) + '</h3><p class="summary' + (open ? ' full' : '') + '" dir="auto">' + esc(c.summary) + '</p>' +
+          '<div class="badges">' + badges + '</div>' +
+          '<div class="btn-row"><button type="button" class="expand-btn" data-texpand="' + c.id + '" aria-expanded="' + open + '" aria-controls="' + did + '">' + (open ? 'Show less' : 'Read more') + CHEV_SVG + '</button>' +
+          (imp.state === 'done' && imp.count ? '<button type="button" class="expand-btn" data-tbrowse="' + c.id + '">' + d.browse + '</button>' : '') +
+          (c.example && !open ? '<button type="button" class="expand-btn" data-tcopyex="' + c.id + '">Copy example</button>' : '') +
+          (link ? '<a class="expand-btn" style="text-decoration:none" href="' + esc(link) + '" target="_blank" rel="noopener">Open ' + OPEN_SVG + '</a>' : '') + '</div>' +
+          '<div class="detail" id="' + did + '"' + (open ? '' : ' hidden') + '>' + example + '<div><p class="d-label">Before you click</p><dl class="facts">' + facts + '</dl></div>' +
+          '<div class="foot"><span class="manage"><button type="button" class="manage-btn danger" data-tdelete="' + c.id + '">Delete</button></span></div></div>' +
+          '</article>';
+      }
+      function tRender(tab) {
+        const d = TAB_DEFS[tab], st = tstate[tab], list0 = TCARDS[tab];
+        const stat = document.getElementById('tstat-' + tab); if (!stat) return;
+        const copied = list0.reduce((n, c) => n + (c.imp && c.imp.state === 'done' ? c.imp.count : 0), 0);
+        const copying = list0.filter(c => c.imp && c.imp.state === 'importing').length;
+        stat.innerHTML = '<b>' + list0.length + '</b> cards &middot; <b>' + list0.filter(c => c.kind === 'open').length + '</b> open source &middot; <b>' + copied.toLocaleString() + '</b> ' + d.itemWord + ' copied in' + (copying ? ' <b>(&#8987; copying ' + copying + ' now&hellip;)</b>' : '');
+        const chip = (attr, key, label, n, on) => '<button type="button" class="kindchip" ' + attr + '="' + key + '" aria-pressed="' + on + '"' + (n === 0 && !on ? ' style="opacity:.45"' : '') + '>' + label + ' <span class="kc-n">' + n + '</span></button>';
+        const secBase = list0.filter(c => tMatches(c, 'sec'));
+        document.getElementById('tsec-' + tab).innerHTML = chip('data-tsec', 'all', 'All', secBase.length, st.sec === 'all') +
+          d.secs.map(s => chip('data-tsec', s.key, '<span class="dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:' + s.color + '"></span> ' + s.label, secBase.filter(c => c.sec === s.key).length, st.sec === s.key)).join('');
+        const kindBase = list0.filter(c => tMatches(c, 'kind'));
+        document.getElementById('tkind-' + tab).innerHTML = chip('data-tkind', 'all', 'All', kindBase.length, st.kind === 'all') +
+          Object.keys(T_KINDS).map(k => chip('data-tkind', k, T_KINDS[k].icon + ' ' + T_KINDS[k].label, kindBase.filter(c => c.kind === k).length, st.kind === k)).join('');
+        const list = list0.filter(c => tMatches(c));
+        let html = '';
+        d.secs.forEach((s, i) => {
+          const cs = list.filter(c => (d.secs.some(x => x.key === c.sec) ? c.sec : d.secs[0].key) === s.key);
+          if (!cs.length) return;
+          html += '<section class="pgroup"><h2 class="pgroup-h"><span class="dot" style="background:' + s.color + '"></span>' + (i + 1) + '. ' + s.label + ' <span class="pg-n">' + cs.length + '</span></h2><p class="pgroup-sub">' + s.sub + '</p><div class="grid">' + cs.map(tCardHTML).join('') + '</div></section>';
+        });
+        document.getElementById('tgroups-' + tab).innerHTML = !tLoadedOnce ? '<p class="p-empty">Loading&hellip;</p>' : (html || '<p class="p-empty">Nothing matches. <button class="showall-btn" type="button" data-tclear="' + tab + '">Show all</button></p>');
+      }
+      function tClear(tab) { const st = tstate[tab]; st.q = ''; st.sec = 'all'; st.kind = 'all'; const qi = document.getElementById('tq-' + tab); if (qi) qi.value = ''; tRender(tab); }
+      async function tAdd(tab) {
+        const ta = document.getElementById('tadd-text-' + tab), btn = document.querySelector('[data-tadd="' + tab + '"]'), out = document.getElementById('tadd-out-' + tab);
+        const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+        const list = pAddItems(text), results = [];
+        btn.disabled = true; ta.disabled = true; out.hidden = false;
+        const STEPS = ['reading the page', 'checking for duplicates', 'writing the card', 'checking the license'];
+        let n = 0, started = 0, timer = null;
+        const status = () => {
+          const secs = Math.round((Date.now() - started) / 1000);
+          out.innerHTML = results.map(r => '<div>' + r + '</div>').join('') + '<div class="padd-status">⏳ ' + (list.length > 1 ? 'Adding <b>' + (n + 1) + ' of ' + list.length + '</b>: ' : 'Adding ') + '<b>' + esc(pAddLabel(list[n])) + '</b> · ' + STEPS[Math.min(STEPS.length - 1, Math.floor(secs / 5))] + '… <span style="color:var(--muted)">' + secs + 's</span></div>';
+        };
+        let lastId = null, anyAdded = false;
+        for (n = 0; n < list.length; n++) {
+          started = Date.now(); status(); clearInterval(timer); timer = setInterval(status, 1000);
+          try {
+            const r = await call('action', 'tabAdd:add', { tab, text: list[n] });
+            lastId = r.cid;
+            if (r.status === 'exists') results.push('ℹ️ <b>' + esc(r.title) + '</b> is already in your list.');
+            else { anyAdded = true; results.push('✓ Added <b>' + esc(r.title) + '</b>.' + (r.importing ? ' Copying its ' + TAB_DEFS[tab].itemWord + ' into the app now.' : r.why === 'nolicense' ? ' Its GitHub repo has no open license, so its files weren’t copied.' : '')); }
+          } catch (e) { results.push('<span style="color:#b42318">✕ <b>' + esc(pAddLabel(list[n])) + '</b>: ' + esc(e.message) + '</span>'); }
+        }
+        clearInterval(timer);
+        out.innerHTML = results.map(r => '<div>' + r + '</div>').join('') + (list.length > 1 ? '<div style="color:var(--muted);margin-top:4px">Done: ' + list.length + ' links processed.</div>' : '');
+        btn.disabled = false; ta.disabled = false;
+        if (anyAdded) ta.value = '';
+        await loadTabs(true);
+        if (lastId) jumpTo('c', lastId);
+      }
+      document.addEventListener('click', e => {
+        const panel = e.target.closest('#tab-rules, #tab-agents, #tab-autos'); if (!panel) return;
+        const tab = panel.id.slice(4), st = tstate[tab];
+        const sc = e.target.closest('[data-tsec]'); if (sc) { st.sec = sc.dataset.tsec; tRender(tab); return; }
+        const kc = e.target.closest('[data-tkind]'); if (kc) { st.kind = kc.dataset.tkind; tRender(tab); return; }
+        if (e.target.closest('[data-tclear]')) { tClear(tab); return; }
+        const ad = e.target.closest('[data-tadd]'); if (ad) { tAdd(tab); return; }
+        const ex = e.target.closest('[data-texpand]'); if (ex) { const id = ex.dataset.texpand; st.expanded.has(id) ? st.expanded.delete(id) : st.expanded.add(id); tRender(tab); return; }
+        const br = e.target.closest('[data-tbrowse]'); if (br) { tbOpen(br.dataset.tbrowse); return; }
+        const ce = e.target.closest('[data-tcopyex]'); if (ce) { const c = TCARDS[tab].find(x => x.id === ce.dataset.tcopyex); if (c) copyText(c.example).then(() => flashCopied(ce)); return; }
+        const ri = e.target.closest('[data-treimport]'); if (ri) { ri.disabled = true; call('mutation', 'tabs:reimport', { cid: ri.dataset.treimport }).then(() => loadTabs(true)).catch(err => { ri.disabled = false; alert(err.message); }); return; }
+        const del = e.target.closest('[data-tdelete]');
+        if (del) {
+          const c = TCARDS[tab].find(x => x.id === del.dataset.tdelete); if (!c) return;
+          const n = c.imp && c.imp.state === 'done' ? c.imp.count : 0;
+          if (!confirm('Delete “' + c.title + '”' + (n ? ' and its ' + n.toLocaleString() + ' copied ' + TAB_DEFS[tab].itemWord : '') + '? This can’t be undone.')) return;
+          TCARDS[tab] = TCARDS[tab].filter(x => x.id !== c.id); tRender(tab); pblRender();
+          call('mutation', 'tabs:remove', { cid: c.id }).catch(err => { alert('Couldn’t delete: ' + err.message); loadTabs(true); });
+        }
+      });
+      document.addEventListener('keydown', e => {
+        if (e.key !== 'Enter' || e.shiftKey || !e.target.id) return;
+        const m = e.target.id.match(/^tadd-text-(rules|agents|autos)$/); if (m) { e.preventDefault(); tAdd(m[1]); }
+      });
+
+      // ---------- "Browse" pop-up for copied files ----------
+      const tbState = { card: null, rows: [], q: '', tag: 'all', open: new Set() };
+      const tbTexts = new Map();
+      async function tbText(cid, n) { const k = cid + ':' + n; if (!tbTexts.has(k)) tbTexts.set(k, call('query', 'tabs:itemText', { cid, n }).catch(e => { tbTexts.delete(k); throw e; })); return tbTexts.get(k); }
+      async function tbOpen(cid) {
+        const c = T_TABS.map(t => TCARDS[t].find(x => x.id === cid)).find(Boolean); if (!c) return;
+        Object.assign(tbState, { card: c, rows: [], q: '', tag: 'all', open: new Set() });
+        document.getElementById('tb-q').value = '';
+        document.getElementById('tb-title').textContent = c.title;
+        document.getElementById('tb-sub').textContent = 'Loading…';
+        document.getElementById('tb-chips').innerHTML = ''; document.getElementById('tb-body').innerHTML = '';
+        document.getElementById('tb').hidden = false; document.body.style.overflow = 'hidden';
+        try {
+          const rows = await call('query', 'tabs:items', { cid });
+          rows.forEach(r => { r.tag = r.tag || 'Other'; });
+          rows.sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base', numeric: true }));
+          tbState.rows = rows; tbRender(); document.getElementById('tb-q').focus();
+        } catch (e) { document.getElementById('tb-sub').textContent = e.message; }
+      }
+      function tbClose() { document.getElementById('tb').hidden = true; document.body.style.overflow = ''; }
+      function tbRender() {
+        const c = tbState.card, d = TAB_DEFS[c.tab], rows = tbState.rows;
+        const words = tbState.q.toLowerCase().split(/\s+/).filter(Boolean);
+        const hit = r => !words.length || words.every(w => (r.title + ' ' + r.desc + ' ' + r.tag).toLowerCase().includes(w));
+        const base = rows.filter(hit);
+        const shown = base.filter(r => tbState.tag === 'all' || r.tag === tbState.tag);
+        const counts = new Map(); base.forEach(r => counts.set(r.tag, (counts.get(r.tag) || 0) + 1));
+        const tags = [...counts.entries()].sort((a, b) => (a[0] === 'Other') - (b[0] === 'Other') || b[1] - a[1]);
+        const grouped = tags.length > 1 && tags.length <= 60;
+        document.getElementById('tb-sub').textContent = rows.length.toLocaleString() + ' ' + d.itemWord + (grouped ? ', grouped' : ', A to Z') + (words.length || tbState.tag !== 'all' ? ' · showing ' + shown.length.toLocaleString() : '') + ' · tap a name to open it';
+        const chip = (key, label, n) => '<button type="button" class="kindchip" data-tbtag="' + esc(key) + '" aria-pressed="' + (tbState.tag === key) + '">' + esc(label) + ' <span class="kc-n">' + n.toLocaleString() + '</span></button>';
+        document.getElementById('tb-chips').innerHTML = tags.length > 1 ? chip('all', 'All', base.length) + tags.slice(0, 40).map(([t, n]) => chip(t, t, n)).join('') : '';
+        const LIMIT = 400;
+        const row = r => {
+          const open = tbState.open.has(r.n);
+          const copyLabel = c.tab === 'autos' ? 'Copy workflow JSON' : c.tab === 'agents' ? 'Copy agent file' : 'Copy rule file';
+          const hint = c.tab === 'autos' ? '<p class="pb-d" style="color:var(--muted)">In n8n: open a new workflow and paste (Ctrl/Cmd+V), or use Import from file.</p>'
+            : c.tab === 'agents' ? '<p class="pb-d" style="color:var(--muted)">Save it as <code>.claude/agents/NAME.md</code> in your project (or <code>~/.claude/agents/</code> for all projects).</p>' : '';
+          return '<div class="pb-row"><button type="button" data-tbrow="' + r.n + '" aria-expanded="' + open + '"><span class="pb-t" dir="auto">' + esc(r.title) + '</span><span class="pb-chev">' + (open ? '▲' : '▼') + '</span></button>' +
+            (open ? '<div class="pb-more"><p class="pb-d" dir="auto">' + esc(r.desc) + '</p>' + hint + '<div id="tb-full-' + r.n + '"></div><div class="pf-actions"><button class="expand-btn" type="button" data-tbfull="' + r.n + '">Show full file</button><button class="primary-btn" type="button" data-tbcopy="' + r.n + '">' + copyLabel + '</button><span class="pf-copied" id="tb-copied-' + r.n + '"></span></div></div>' : '') + '</div>';
+        };
+        let html = '';
+        if (!shown.length) html = '<p class="pb-empty">Nothing matches.</p>';
+        else if (grouped && tbState.tag === 'all' && !words.length) {
+          let left = LIMIT;
+          for (const [t] of tags) { if (left <= 0) break; const g = shown.filter(r => r.tag === t).slice(0, left); left -= g.length; html += '<section class="pb-group"><h3>' + esc(t) + ' <span class="c-n">' + counts.get(t).toLocaleString() + '</span></h3>' + g.map(row).join('') + '</section>'; }
+        } else html = shown.slice(0, LIMIT).map(row).join('');
+        if (shown.length > LIMIT) html += '<p class="pb-empty">Showing the first ' + LIMIT + ' of ' + shown.length.toLocaleString() + ' &mdash; type in the filter box or pick a group to narrow it down.</p>';
+        document.getElementById('tb-body').innerHTML = html;
+      }
+      document.getElementById('tb-exit').addEventListener('click', tbClose);
+      document.getElementById('tb-q').addEventListener('input', e => { tbState.q = e.target.value.trim(); tbRender(); document.getElementById('tb-body').scrollTop = 0; });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && !document.getElementById('tb').hidden) tbClose(); });
+      document.getElementById('tb').addEventListener('click', async e => {
+        if (e.target.id === 'tb') { tbClose(); return; }
+        const t = e.target.closest('[data-tbtag]'); if (t) { tbState.tag = t.dataset.tbtag; tbRender(); document.getElementById('tb-body').scrollTop = 0; return; }
+        const r = e.target.closest('[data-tbrow]'); if (r) { const n = Number(r.dataset.tbrow); tbState.open.has(n) ? tbState.open.delete(n) : tbState.open.add(n); tbRender(); return; }
+        const f = e.target.closest('[data-tbfull]');
+        if (f) {
+          const n = Number(f.dataset.tbfull), box = document.getElementById('tb-full-' + n);
+          if (box.innerHTML) { box.innerHTML = ''; f.textContent = 'Show full file'; return; }
+          box.innerHTML = '<p class="pf-why">Loading…</p>';
+          try { const p = await tbText(tbState.card.id, n); box.innerHTML = '<pre class="pf-pre" dir="auto">' + esc(p.text) + '</pre><a class="expand-btn" style="text-decoration:none;margin-top:6px" href="' + esc(p.url) + '" target="_blank" rel="noopener">On GitHub ↗</a>'; f.textContent = 'Hide full file'; }
+          catch (err) { box.innerHTML = '<p class="err">' + esc(err.message) + '</p>'; }
+          return;
+        }
+        const cp = e.target.closest('[data-tbcopy]');
+        if (cp) {
+          const n = Number(cp.dataset.tbcopy);
+          try { const p = await tbText(tbState.card.id, n); await copyText(p.text); const s = document.getElementById('tb-copied-' + n); if (s) { s.textContent = 'Copied ✓'; setTimeout(() => { s.textContent = ''; }, 2500); } }
+          catch (err) { alert(err.message); }
+        }
+      });
+
+      // ---------- loading ----------
+      async function loadTabs(quick) {
+        try {
+          let r = await call('query', 'tabs:list', {});
+          if (!r.seeded) { await call('mutation', 'tabs:ensureSeeded', {}); r = await call('query', 'tabs:list', {}); }
+          TCARDS = { rules: r.rules || [], agents: r.agents || [], autos: r.autos || [] }; tLoadedOnce = true;
+          const all = T_TABS.flatMap(t => TCARDS[t]);
+          if (!tResumed && all.some(c => isStaleImp(c.imp))) { tResumed = true; try { await call('mutation', 'tabs:resumeStuck', {}); } catch (e) {} }
+          T_TABS.forEach(tRender);
+          clearTimeout(tPoll);
+          if (all.some(c => c.imp && c.imp.state === 'importing')) tPoll = setTimeout(() => loadTabs(true), 6000);
+          if (!quick || !PB_LOADED) await loadPlaybooks(); else pblRender();
+        } catch (e) { T_TABS.forEach(t => { const el = document.getElementById('tstat-' + t); if (el) el.textContent = 'Couldn’t load: ' + e.message; }); }
+      }
+
+      // =====================================================================
+      // Playbooks
+      // =====================================================================
+      const PB_TYPE_DEFS = [
+        { key: 'create', label: 'Write & present', icon: '✍️', color: '#2f6db3', sub: 'Documents, decks, posts and meeting notes.' },
+        { key: 'research', label: 'Research & decide', icon: '\u{1F50E}', color: '#0e7490', sub: 'Look into a company, a market or a pile of documents.' },
+        { key: 'learn', label: 'Learn & study', icon: '\u{1F393}', color: '#3d8b4f', sub: 'Turn lectures, books and courses into knowledge.' },
+        { key: 'career', label: 'Career & job hunt', icon: '\u{1F4BC}', color: '#b45309', sub: 'Interviews, CVs and applications.' },
+        { key: 'build', label: 'Build apps & sites', icon: '\u{1F6E0}️', color: '#7c5cbf', sub: 'From idea to a working, good-looking app or page.' },
+        { key: 'money', label: 'Data, money & stocks', icon: '\u{1F4CA}', color: '#15803d', sub: 'Analysis of numbers, stocks and businesses.' },
+        { key: 'automate', label: 'Automate & agents', icon: '⚙️', color: '#475569', sub: 'Set up agents and workflows that do the work for you.' },
+        { key: 'media', label: 'Video, images & audio', icon: '\u{1F3AC}', color: '#be4b7a', sub: 'Make videos, pictures, voice and music.' }
+      ];
+      const pbType = k => PB_TYPE_DEFS.find(t => t.key === k) || PB_TYPE_DEFS[0];
+      let PLAYBOOKS = [], PB_DEFAULTS = [], PB_LOADED = false;
+      const pbs = { q: '', type: 'all', topic: 'all', expanded: new Set() };
+      const pbx = { draft: null, editId: null, history: [], undo: [], dirty: false, editing: new Set(), adding: -1, addQ: '', changed: new Set(), busy: false, pre: null };
+
+      function pbPanelHTML() {
+        return '<p class="tab-intro">Step-by-step recipes for a goal, built from <b>your own library</b>: which tool, prompt, rule, agent or automation to use at each step, with ready prompts to copy. Tap any item to jump to its card.</p>' +
+          '<section class="pg-box" aria-labelledby="mk-h"><div class="pg-head"><div><h2 id="mk-h">&#10024; Make a playbook</h2><p class="pg-one">Say your goal in plain words (English or Hebrew). You get a draft to tweak by chat or by hand &mdash; nothing is saved until you press Save.</p></div></div>' +
+          '<div class="mk-row"><textarea id="mk-goal" dir="auto" rows="2" placeholder="e.g. prepare a pitch deck for seed investors, or: להכין מצגת למשקיעים"></textarea><button class="primary-btn" id="mk-btn" type="button">Make playbook</button></div>' +
+          '<div class="mk-defaults" id="mk-defaults"></div><div id="mk-out" aria-live="polite"></div></section>' +
+          '<section class="pbx" id="pbx" hidden aria-label="Playbook editor"></section>' +
+          '<p class="statline" id="pbl-stat" style="margin-top:22px"></p>' +
+          '<div class="controls" style="margin-top:22px"><div class="search-row"><div class="search-box">' + SEARCH_SVG + '<input id="pbl-q" type="search" placeholder="Search&hellip; e.g. pitch, NotebookLM, interview, n8n" aria-label="Search playbooks" /></div></div>' +
+          '<div class="toggle-row"><button class="showall-btn" type="button" id="pbl-clear">Show all</button></div></div>' +
+          '<section class="kindrow"><p class="kr-label">Type</p><div class="kindchips" id="pbl-types"></div></section>' +
+          '<section class="kindrow" style="margin-top:6px"><p class="kr-label">Topic</p><div class="kindchips" id="pbl-topics"></div></section>' +
+          '<div id="pbl-groups" style="margin-top:18px"><p class="p-empty">Loading&hellip;</p></div>';
+      }
+      function pbHay(p) {
+        return [p.title, p.goal, p.time, (p.topics || []).join(' '), pbType(p.type).label,
+          (p.steps || []).map(s => [s.title, s.do, s.tip, s.prompt, (s.use || []).map(refName).join(' ')].join(' ')).join(' ')].join(' ').toLowerCase();
+      }
+      function pbMatches(p, ignore) {
+        if (ignore !== 'type' && pbs.type !== 'all' && p.type !== pbs.type) return false;
+        if (ignore !== 'topic' && pbs.topic !== 'all' && !(p.topics || []).includes(pbs.topic)) return false;
+        if (pbs.q && !pbs.q.split(/\s+/).filter(Boolean).every(w => pbHay(p).includes(w))) return false;
+        return true;
+      }
+      function stepsHTML(steps, pid) {
+        return '<ol class="pb-steps">' + steps.map((s, i) =>
+          '<li><span class="st-t" dir="auto">' + esc(s.title) + '</span>' +
+          (s.do ? '<p class="st-d" dir="auto">' + esc(s.do) + '</p>' : '') +
+          (s.use && s.use.length ? '<div class="t-rel">' + s.use.map(u => refChip(u)).join('') + '</div>' : '') +
+          (s.prompt ? '<details class="st-p"><summary>Prompt for this step</summary><pre class="pf-pre" dir="auto">' + esc(s.prompt) + '</pre><div class="pf-actions"><button class="expand-btn" type="button" data-pbcopyprompt="' + esc(pid + ':' + i) + '">Copy prompt</button></div></details>' : '') +
+          (s.tip ? '<p class="st-tip" dir="auto">\u{1F4A1} ' + esc(s.tip) + '</p>' : '') + '</li>').join('') + '</ol>';
+      }
+      function pbCardHTML(p) {
+        const t = pbType(p.type), open = pbs.expanded.has(p.id), n = (p.steps || []).length;
+        const src = p.source === 'starter' ? 'Starter' : p.source === 'edited' ? 'Starter, edited' : 'Made by you';
+        const badges = '<span class="badge cat"><span class="dot" style="background:' + t.color + '"></span>' + t.icon + ' ' + t.label + '</span>' +
+          (p.topics || []).map(x => '<span class="badge">' + esc(x) + '</span>').join('') + '<span class="badge kind">' + src + '</span>';
+        const did = 'pbdetail-' + p.id;
+        return '<article class="card" id="pbcard-' + p.id + '">' +
+          '<div class="meta"><span>' + n + ' steps' + (p.time ? ' &middot; ' + esc(p.time) : '') + '</span><span class="effort">' + (p.updated ? esc(p.updated) : '') + '</span><button type="button" class="trash-btn" data-pbdelete="' + p.id + '" title="Delete" aria-label="Delete ' + esc(p.title) + '">' + TRASH_SVG + '</button></div>' +
+          '<h3 dir="auto">' + esc(p.title) + '</h3><p class="summary full" dir="auto">' + esc(p.goal) + '</p>' +
+          '<div class="badges">' + badges + '</div>' +
+          '<div class="btn-row"><button type="button" class="expand-btn" data-pbexpand="' + p.id + '" aria-expanded="' + open + '" aria-controls="' + did + '">' + (open ? 'Hide steps' : 'Show steps') + CHEV_SVG + '</button>' +
+          '<button type="button" class="expand-btn" data-pbtweak="' + p.id + '">Tweak</button><button type="button" class="expand-btn" data-pbcopyall="' + p.id + '">Copy as text</button></div>' +
+          '<div class="detail" id="' + did + '"' + (open ? '' : ' hidden') + '>' + stepsHTML(p.steps || [], p.id) +
+          '<div class="foot"><span class="manage"><button type="button" class="manage-btn danger" data-pbdelete="' + p.id + '">Delete</button></span></div></div></article>';
+      }
+      function pblRender() {
+        const stat = document.getElementById('pbl-stat'); if (!stat) return;
+        stat.innerHTML = '<b>' + PLAYBOOKS.length + '</b> playbooks &middot; <b>' + PLAYBOOKS.filter(p => p.source === 'made').length + '</b> made by you';
+        const chip = (attr, key, label, n, on) => '<button type="button" class="kindchip" ' + attr + '="' + esc(key) + '" aria-pressed="' + on + '"' + (n === 0 && !on ? ' style="opacity:.45"' : '') + '>' + label + ' <span class="kc-n">' + n + '</span></button>';
+        const tBase = PLAYBOOKS.filter(p => pbMatches(p, 'type'));
+        document.getElementById('pbl-types').innerHTML = chip('data-pbtype', 'all', 'All', tBase.length, pbs.type === 'all') +
+          PB_TYPE_DEFS.map(t => chip('data-pbtype', t.key, t.icon + ' ' + t.label, tBase.filter(p => p.type === t.key).length, pbs.type === t.key)).join('');
+        const topBase = PLAYBOOKS.filter(p => pbMatches(p, 'topic'));
+        const tc = new Map(); PLAYBOOKS.forEach(p => (p.topics || []).forEach(x => tc.set(x, (tc.get(x) || 0))));
+        topBase.forEach(p => (p.topics || []).forEach(x => tc.set(x, (tc.get(x) || 0) + 1)));
+        const topics = [...tc.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+        document.getElementById('pbl-topics').innerHTML = chip('data-pbtopic', 'all', 'All', topBase.length, pbs.topic === 'all') + topics.map(([x, n]) => chip('data-pbtopic', x, esc(x), n, pbs.topic === x)).join('');
+        const list = PLAYBOOKS.filter(p => pbMatches(p));
+        let html = '';
+        PB_TYPE_DEFS.forEach(t => {
+          const ps = list.filter(p => pbType(p.type).key === t.key).sort((a, b) => (a.source === 'made' ? 0 : 1) - (b.source === 'made' ? 0 : 1) || a.title.localeCompare(b.title));
+          if (!ps.length) return;
+          html += '<section class="pgroup"><h2 class="pgroup-h"><span class="dot" style="background:' + t.color + '"></span>' + t.icon + ' ' + t.label + ' <span class="pg-n">' + ps.length + '</span></h2><p class="pgroup-sub">' + t.sub + '</p><div class="grid">' + ps.map(pbCardHTML).join('') + '</div></section>';
+        });
+        document.getElementById('pbl-groups').innerHTML = !PB_LOADED ? '<p class="p-empty">Loading&hellip;</p>' : (html || '<p class="p-empty">Nothing matches. <button class="showall-btn" type="button" id="pbl-clear2">Show all</button></p>');
+      }
+      function pbClearFilters() { pbs.q = ''; pbs.type = 'all'; pbs.topic = 'all'; document.getElementById('pbl-q').value = ''; pblRender(); }
+      function renderDefaults(editing) {
+        const el = document.getElementById('mk-defaults'); if (!el) return;
+        if (editing) {
+          el.innerHTML = '<div style="width:100%"><p class="pf-why" style="margin:0 0 6px">One per line. These are followed whenever they apply, e.g. <i>Slides: always the a16z pitch style from SlideSpeak</i> or <i>Prefer free and open-source tools</i>.</p>' +
+            '<textarea id="mk-def-text" dir="auto" rows="3" style="width:100%;box-sizing:border-box;font:inherit;font-size:14px;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink)">' + esc(PB_DEFAULTS.join('\n')) + '</textarea>' +
+            '<div class="pf-actions" style="margin-top:6px"><button class="primary-btn" type="button" id="mk-def-save">Save defaults</button><button class="showall-btn" type="button" id="mk-def-cancel">Cancel</button></div></div>';
+          document.getElementById('mk-def-text').focus(); return;
+        }
+        el.innerHTML = '\u{1F4CC} <b style="color:var(--ink-2)">Pinned defaults:</b> ' + (PB_DEFAULTS.length ? PB_DEFAULTS.map(d => '<span class="pin" dir="auto">' + esc(d) + '</span>').join('') : '<span>none yet</span>') + ' <button class="mini-btn" type="button" id="mk-def-edit">' + (PB_DEFAULTS.length ? 'Edit' : 'Add') + '</button>';
+      }
+      async function loadPlaybooks() {
+        try {
+          let r = await call('query', 'playbooks:list', {});
+          if (!r.seeded) { await call('mutation', 'playbooks:ensureSeeded', {}); r = await call('query', 'playbooks:list', {}); }
+          PLAYBOOKS = r.playbooks || []; PB_DEFAULTS = r.defaults || []; PB_LOADED = true;
+          pblRender(); if (!document.getElementById('mk-def-text')) renderDefaults();
+        } catch (e) { const el = document.getElementById('pbl-stat'); if (el) el.textContent = 'Couldn’t load the playbooks: ' + e.message; }
+      }
+      function pbAsText(p) {
+        return '# ' + p.title + '\n' + (p.goal ? p.goal + '\n' : '') + (p.time ? 'Time: ' + p.time + '\n' : '') + '\n' + (p.steps || []).map((s, i) =>
+          (i + 1) + '. ' + s.title + '\n' + (s.do ? '   ' + s.do + '\n' : '') +
+          (s.use && s.use.length ? '   Use: ' + s.use.map(u => refName(u) || u.name).join(', ') + '\n' : '') +
+          (s.prompt ? '   Prompt:\n' + s.prompt.split('\n').map(l => '      ' + l).join('\n') + '\n' : '') +
+          (s.tip ? '   Tip: ' + s.tip + '\n' : '')).join('\n');
+      }
+
+      // ---------- editor (draft → tweak by chat or by hand → Save) ----------
+      const clone = o => JSON.parse(JSON.stringify(o));
+      function pbxOpen(draft, editId, history, note) {
+        Object.assign(pbx, { draft: clone(draft), editId: editId || null, history: history || [], undo: [], dirty: !editId, editing: new Set(), adding: -1, addQ: '', changed: new Set(), busy: false });
+        if (note) pbx.history.push({ role: 'assistant', text: note });
+        const box = document.getElementById('pbx'); box.hidden = false; pbxRender();
+        box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      function pbxClose() { document.getElementById('pbx').hidden = true; pbx.draft = null; }
+      function pushUndo(label) { pbx.undo.push(clone(pbx.draft)); if (pbx.undo.length > 50) pbx.undo.shift(); pbx.dirty = true; if (label) pbx.history.push({ role: 'user', text: '[I edited it by hand: ' + label + ']' }); }
+      function pbxRender() {
+        const d = pbx.draft, box = document.getElementById('pbx'); if (!d) return;
+        const L = libIndex();
+        const words = pbx.addQ.toLowerCase().split(/\s+/).filter(Boolean);
+        const found = words.length ? L.filter(x => words.every(w => (x.name + ' ' + x.info).toLowerCase().includes(w))).slice(0, 12) : [];
+        const step = (s, i) => {
+          const ed = pbx.editing.has(i), n = d.steps.length;
+          let h = '<li class="pbx-step' + (pbx.changed.has(i) ? ' changed' : '') + '"><div class="pbx-sh"><span class="n">' + (i + 1) + '</span><b dir="auto">' + esc(s.title) + '</b><span class="pbx-ctl">' +
+            '<button type="button" data-sx="up" data-i="' + i + '" title="Move up" aria-label="Move step ' + (i + 1) + ' up"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+            '<button type="button" data-sx="down" data-i="' + i + '" title="Move down" aria-label="Move step ' + (i + 1) + ' down"' + (i === n - 1 ? ' disabled' : '') + '>↓</button>' +
+            '<button type="button" data-sx="edit" data-i="' + i + '" title="' + (ed ? 'Done editing' : 'Edit') + '">' + (ed ? 'Done' : '✎ Edit') + '</button>' +
+            '<button type="button" class="del" data-sx="del" data-i="' + i + '" title="Delete step" aria-label="Delete step ' + (i + 1) + '">✕</button></span></div>';
+          if (ed) {
+            h += '<input type="text" data-sf="title" data-i="' + i + '" value="' + esc(s.title) + '" placeholder="Step name" dir="auto" />' +
+              '<textarea data-sf="do" data-i="' + i + '" rows="2" placeholder="What to do" dir="auto">' + esc(s.do || '') + '</textarea>' +
+              '<textarea data-sf="prompt" data-i="' + i + '" rows="3" placeholder="Optional: a prompt to copy for this step" dir="auto">' + esc(s.prompt || '') + '</textarea>' +
+              '<input type="text" data-sf="tip" data-i="' + i + '" value="' + esc(s.tip || '') + '" placeholder="Optional tip" dir="auto" />';
+          } else {
+            if (s.do) h += '<p dir="auto">' + esc(s.do) + '</p>';
+            if (s.prompt) h += '<details class="st-p"><summary>Prompt for this step</summary><pre class="pf-pre" dir="auto">' + esc(s.prompt) + '</pre></details>';
+            if (s.tip) h += '<p style="color:var(--muted)" dir="auto">\u{1F4A1} ' + esc(s.tip) + '</p>';
+          }
+          h += '<div class="t-rel">' + (s.use || []).map((u, j) => refChip(u, 'data-urm="' + i + ':' + j + '"')).join('') +
+            '<button type="button" class="mini-btn" data-sx="add" data-i="' + i + '">' + (pbx.adding === i ? 'Close' : '+ Item / swap') + '</button></div>';
+          if (pbx.adding === i) {
+            h += '<div class="pbx-find"><input type="text" id="pbx-find-q" placeholder="Search your library: tools, prompt libraries, rules, agents, automations&hellip;" value="' + esc(pbx.addQ) + '" />' +
+              (found.length ? '<div class="res">' + found.map(x => '<button type="button" data-pick="' + esc(i + '|' + x.k + '|' + x.id + '|' + (x.tab || '')) + '"><b dir="auto">' + esc(x.name) + '</b> <small>' + esc(x.info) + '</small></button>').join('') + '</div>'
+                : words.length ? '<p class="pf-why">Nothing in your library matches.</p>' : '<p class="pf-why">Type to search. Picking an item adds it to this step (remove the old one with its &times; to swap).</p>') + '</div>';
+          }
+          return h + '</li>';
+        };
+        const msgs = pbx.history.map(m => {
+          if (m.role === 'user' && /^\[(I edited it by hand|Undo)/.test(m.text)) return '<div class="pbx-msg n" dir="auto">' + esc(m.text.replace(/^\[|\]$/g, '')) + '</div>';
+          return '<div class="pbx-msg ' + (m.role === 'user' ? 'u' : 'a') + '" dir="auto">' + esc(m.text).replace(/\n- /g, '<br>• ') + '</div>';
+        }).join('');
+        box.innerHTML = '<div class="pbx-top"><h2>' + (pbx.editId ? 'Tweaking a saved playbook' : 'Draft playbook') + ' <span class="pg-n" style="font-weight:600;color:var(--muted)">&middot; ' + (pbx.dirty ? 'not saved yet' : 'no changes yet') + '</span></h2>' +
+          '<div class="pbx-bar"><button class="showall-btn" type="button" id="pbx-undo"' + (pbx.undo.length ? '' : ' disabled') + '>↶ Undo' + (pbx.undo.length ? ' (' + pbx.undo.length + ')' : '') + '</button><button class="primary-btn" type="button" id="pbx-save">Save</button><button class="showall-btn" type="button" id="pbx-discard">Discard</button></div></div>' +
+          '<input type="text" class="pbx-title" data-pf="title" value="' + esc(d.title) + '" dir="auto" aria-label="Playbook name" />' +
+          '<textarea data-pf="goal" rows="1" dir="auto" aria-label="Goal" placeholder="Goal">' + esc(d.goal || '') + '</textarea>' +
+          '<div class="pbx-meta"><select data-pf="type" aria-label="Type">' + PB_TYPE_DEFS.map(t => '<option value="' + t.key + '"' + (d.type === t.key ? ' selected' : '') + '>' + t.icon + ' ' + t.label + '</option>').join('') + '</select>' +
+          '<input type="text" data-pf="topics" value="' + esc((d.topics || []).join(', ')) + '" placeholder="Topics, comma-separated" aria-label="Topics" dir="auto" />' +
+          '<input type="text" data-pf="time" value="' + esc(d.time || '') + '" placeholder="Time, e.g. 1 hour" aria-label="Time" dir="auto" /></div>' +
+          '<ol class="pbx-steps">' + d.steps.map(step).join('') + '</ol>' +
+          '<div><button class="mini-btn" type="button" id="pbx-addstep">+ Add a step</button></div>' +
+          '<div class="pbx-chat"><p class="d-label" style="margin:0">Tweak by chat</p><div class="pbx-msgs" id="pbx-msgs">' + (msgs || '<div class="pbx-msg n">Tell me what to change, in your own words &mdash; e.g. &ldquo;make step 2 free tools only&rdquo;, &ldquo;add a step to rehearse&rdquo;, &ldquo;תחליף את הכלי בשלב 3&rdquo;.</div>') + '</div>' +
+          '<div class="ask-row"><textarea id="pbx-msg" dir="auto" rows="1" placeholder="What should change?"' + (pbx.busy ? ' disabled' : '') + '></textarea><button class="primary-btn" type="button" id="pbx-send"' + (pbx.busy ? ' disabled' : '') + '>' + (pbx.busy ? 'Thinking…' : 'Send') + '</button></div></div>';
+        const mbox = document.getElementById('pbx-msgs'); if (mbox) mbox.scrollTop = mbox.scrollHeight;
+        if (pbx.adding >= 0) { const q = document.getElementById('pbx-find-q'); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }
+      }
+      function pbxDiff(before, after) {
+        // Highlight steps that are new or changed after a chat tweak.
+        pbx.changed = new Set();
+        const key = s => JSON.stringify([s.title, s.do, s.prompt, s.tip, (s.use || []).map(u => u.k + u.id)]);
+        const old = new Set((before.steps || []).map(key));
+        (after.steps || []).forEach((s, i) => { if (!old.has(key(s))) pbx.changed.add(i); });
+      }
+      async function pbxSend() {
+        const ta = document.getElementById('pbx-msg'); const text = ta.value.trim(); if (!text || pbx.busy) return;
+        const prior = pbx.history.slice();
+        pbx.history.push({ role: 'user', text }); pbx.busy = true; pbxRender();
+        try {
+          const r = await call('action', 'playbookAi:tweak', { playbook: pbx.draft, history: prior, message: text, defaults: PB_DEFAULTS });
+          let reply = r.reply || (r.question ? r.question : 'Done.');
+          if (r.playbook) {
+            const before = pbx.draft; pbx.undo.push(clone(before)); pbx.draft = r.playbook; pbx.dirty = true; pbxDiff(before, r.playbook);
+            if (r.changes && r.changes.length) reply += '\n- ' + r.changes.join('\n- ');
+          }
+          pbx.history.push({ role: 'assistant', text: reply });
+        } catch (e) { pbx.history.push({ role: 'assistant', text: 'Couldn’t do that: ' + e.message }); }
+        pbx.busy = false; pbxRender();
+        const t2 = document.getElementById('pbx-msg'); if (t2) t2.focus();
+      }
+      async function pbMake() {
+        const ta = document.getElementById('mk-goal'), btn = document.getElementById('mk-btn'), out = document.getElementById('mk-out');
+        const goal = ta.value.trim(); if (!goal) { ta.focus(); return; }
+        if (pbx.draft && pbx.dirty && !confirm('You have an unsaved draft. Replace it with a new one?')) return;
+        btn.disabled = true; ta.disabled = true;
+        const started = Date.now(); const tick = () => { out.innerHTML = '<p class="pf-why">⏳ Building your playbook from your library… <span style="color:var(--muted)">' + Math.round((Date.now() - started) / 1000) + 's</span></p>'; };
+        tick(); const timer = setInterval(tick, 1000);
+        try {
+          const r = await call('action', 'playbookAi:make', { goal, defaults: PB_DEFAULTS });
+          out.innerHTML = '';
+          pbxOpen(r.playbook, null, [{ role: 'user', text: 'Make me a playbook for: ' + goal }], 'Here’s a draft: ' + r.playbook.title + '.' + (r.note ? ' ' + r.note : '') + ' Tell me what to change, or edit the steps directly.');
+        } catch (e) { out.innerHTML = '<p class="err" style="color:#b42318">' + esc(e.message) + '</p>'; }
+        clearInterval(timer); btn.disabled = false; ta.disabled = false;
+      }
+      async function pbxSave() {
+        const d = pbx.draft; if (!d) return;
+        if (!d.steps.length) { alert('Add at least one step first.'); return; }
+        const btn = document.getElementById('pbx-save'); btn.disabled = true; btn.textContent = 'Saving…';
+        try {
+          const r = await call('mutation', 'playbooks:save', { id: pbx.editId || undefined, playbook: d });
+          pbxClose(); document.getElementById('mk-goal').value = '';
+          await loadPlaybooks(); jumpTo('b', r.id);
+        } catch (e) { btn.disabled = false; btn.textContent = 'Save'; alert('Couldn’t save: ' + e.message); }
+      }
+      function pbxStepAction(act, i) {
+        const d = pbx.draft, s = d.steps;
+        if (act === 'up' && i > 0) { pushUndo('moved step ' + (i + 1) + ' up'); [s[i - 1], s[i]] = [s[i], s[i - 1]]; pbx.changed = new Set([i - 1]); }
+        else if (act === 'down' && i < s.length - 1) { pushUndo('moved step ' + (i + 1) + ' down'); [s[i + 1], s[i]] = [s[i], s[i + 1]]; pbx.changed = new Set([i + 1]); }
+        else if (act === 'del') { if (!confirm('Delete step ' + (i + 1) + ' “' + s[i].title + '”?')) return; pushUndo('deleted step ' + (i + 1) + ' "' + s[i].title + '"'); s.splice(i, 1); pbx.editing = new Set(); pbx.adding = -1; pbx.changed = new Set(); }
+        else if (act === 'edit') { pbx.editing.has(i) ? pbx.editing.delete(i) : pbx.editing.add(i); }
+        else if (act === 'add') { pbx.adding = pbx.adding === i ? -1 : i; pbx.addQ = ''; }
+        pbxRender();
+      }
+      document.addEventListener('click', e => {
+        const panel = e.target.closest('#tab-playbooks'); if (!panel) return;
+        if (e.target.id === 'mk-btn') { pbMake(); return; }
+        if (e.target.id === 'mk-def-edit') { renderDefaults(true); return; }
+        if (e.target.id === 'mk-def-cancel') { renderDefaults(); return; }
+        if (e.target.id === 'mk-def-save') {
+          const list = document.getElementById('mk-def-text').value.split('\n').map(x => x.trim()).filter(Boolean);
+          e.target.disabled = true;
+          call('mutation', 'playbooks:setDefaults', { defaults: list }).then(() => { PB_DEFAULTS = list; renderDefaults(); }).catch(err => { e.target.disabled = false; alert(err.message); });
+          return;
+        }
+        if (e.target.id === 'pbl-clear' || e.target.id === 'pbl-clear2') { pbClearFilters(); return; }
+        const ty = e.target.closest('[data-pbtype]'); if (ty) { pbs.type = ty.dataset.pbtype; pblRender(); return; }
+        const tp = e.target.closest('[data-pbtopic]'); if (tp) { pbs.topic = tp.dataset.pbtopic; pblRender(); return; }
+        const ex = e.target.closest('[data-pbexpand]'); if (ex) { const id = ex.dataset.pbexpand; pbs.expanded.has(id) ? pbs.expanded.delete(id) : pbs.expanded.add(id); pblRender(); return; }
+        const tw = e.target.closest('[data-pbtweak]');
+        if (tw) {
+          const p = PLAYBOOKS.find(x => x.id === tw.dataset.pbtweak); if (!p) return;
+          if (pbx.draft && pbx.dirty && !confirm('You have an unsaved draft. Replace it?')) return;
+          pbxOpen(p, p.id, [], null); return;
+        }
+        const ca = e.target.closest('[data-pbcopyall]'); if (ca) { const p = PLAYBOOKS.find(x => x.id === ca.dataset.pbcopyall); if (p) copyText(pbAsText(p)).then(() => flashCopied(ca)); return; }
+        const cp = e.target.closest('[data-pbcopyprompt]');
+        if (cp) { const [pid, i] = cp.dataset.pbcopyprompt.split(':'); const p = PLAYBOOKS.find(x => x.id === pid); const s = p && p.steps[Number(i)]; if (s && s.prompt) copyText(s.prompt).then(() => flashCopied(cp)); return; }
+        const del = e.target.closest('[data-pbdelete]');
+        if (del) {
+          const p = PLAYBOOKS.find(x => x.id === del.dataset.pbdelete); if (!p) return;
+          if (!confirm('Delete the playbook “' + p.title + '”? This can’t be undone.')) return;
+          PLAYBOOKS = PLAYBOOKS.filter(x => x.id !== p.id); pblRender();
+          call('mutation', 'playbooks:remove', { id: p.id }).catch(err => { alert('Couldn’t delete: ' + err.message); loadPlaybooks(); });
+          return;
+        }
+        // editor
+        if (!pbx.draft) return;
+        if (e.target.id === 'pbx-send') { pbxSend(); return; }
+        if (e.target.id === 'pbx-save') { pbxSave(); return; }
+        if (e.target.id === 'pbx-discard') { if (!pbx.dirty || confirm('Discard this draft? Nothing will be saved.')) pbxClose(); return; }
+        if (e.target.id === 'pbx-undo') { if (pbx.undo.length) { pbx.draft = pbx.undo.pop(); pbx.changed = new Set(); pbx.editing = new Set(); pbx.adding = -1; pbx.history.push({ role: 'user', text: '[Undo: went back one change]' }); pbxRender(); } return; }
+        if (e.target.id === 'pbx-addstep') { pushUndo('added a new step at the end'); pbx.draft.steps.push({ title: 'New step', do: '', use: [] }); const i = pbx.draft.steps.length - 1; pbx.editing.add(i); pbx.changed = new Set([i]); pbxRender(); return; }
+        const sx = e.target.closest('[data-sx]'); if (sx) { pbxStepAction(sx.dataset.sx, Number(sx.dataset.i)); return; }
+        const rm = e.target.closest('[data-urm]');
+        if (rm) { e.preventDefault(); e.stopPropagation(); const [i, j] = rm.dataset.urm.split(':').map(Number); const u = pbx.draft.steps[i].use[j]; pushUndo('removed "' + (refName(u) || u.name) + '" from step ' + (i + 1)); pbx.draft.steps[i].use.splice(j, 1); pbxRender(); return; }
+        const pk = e.target.closest('[data-pick]');
+        if (pk) {
+          const [i, k, id, tab] = pk.dataset.pick.split('|'); const st = pbx.draft.steps[Number(i)];
+          st.use = st.use || [];
+          if (!st.use.some(u => u.k === k && String(u.id) === id)) { const x = libIndex().find(y => y.k === k && y.id === id); pushUndo('added "' + (x ? x.name : id) + '" to step ' + (Number(i) + 1)); st.use.push({ k, id, name: x ? x.name : id, ...(tab ? { tab } : {}) }); }
+          pbx.adding = -1; pbx.addQ = ''; pbxRender();
+        }
+      }, true);
+      // Typing in the editor: playbook fields and step fields (one undo per field you change).
+      document.addEventListener('focusin', e => { if (pbx.draft && e.target.closest && e.target.closest('#pbx') && (e.target.dataset.pf || e.target.dataset.sf)) pbx.pre = clone(pbx.draft); });
+      document.addEventListener('input', e => {
+        if (!pbx.draft || !e.target.closest || !e.target.closest('#pbx')) return;
+        const t = e.target;
+        if (t.id === 'pbx-find-q') { pbx.addQ = t.value; pbxRender(); return; }
+        if (t.dataset.pf) {
+          const f = t.dataset.pf;
+          if (f === 'topics') pbx.draft.topics = t.value.split(',').map(x => x.trim()).filter(Boolean).slice(0, 4);
+          else pbx.draft[f] = t.value;
+        } else if (t.dataset.sf) pbx.draft.steps[Number(t.dataset.i)][t.dataset.sf] = t.value;
+        else return;
+        if (pbx.pre) { pbx.undo.push(pbx.pre); pbx.pre = null; pbx.dirty = true; const u = document.getElementById('pbx-undo'); if (u) { u.disabled = false; u.textContent = '↶ Undo (' + pbx.undo.length + ')'; } }
+      });
+      document.addEventListener('change', e => {
+        if (!pbx.draft || !e.target.closest || !e.target.closest('#pbx')) return;
+        const t = e.target;
+        if (t.dataset.sf === 'title' || t.dataset.pf === 'type') { if (t.dataset.pf === 'type') pbx.draft.type = t.value; pbx.history.push({ role: 'user', text: '[I edited it by hand: changed ' + (t.dataset.sf ? 'the name of step ' + (Number(t.dataset.i) + 1) : 'the type') + ']' }); }
+        else if (t.dataset.sf || t.dataset.pf) pbx.history.push({ role: 'user', text: '[I edited it by hand: changed the ' + (t.dataset.sf ? t.dataset.sf + ' of step ' + (Number(t.dataset.i) + 1) : t.dataset.pf) + ']' });
+      });
+      document.addEventListener('keydown', e => {
+        if (e.key !== 'Enter' || e.shiftKey) return;
+        if (e.target.id === 'pbx-msg') { e.preventDefault(); pbxSend(); }
+        else if (e.target.id === 'mk-goal') { e.preventDefault(); pbMake(); }
+        else if (e.target.id === 'pbx-find-q') { e.preventDefault(); const first = document.querySelector('#pbx [data-pick]'); if (first) first.click(); }
+      });
+
+      // ---------- build the panels ----------
+      T_TABS.forEach(t => {
+        document.getElementById('tab-' + t).innerHTML = tPanelHTML(t);
+        const q = document.getElementById('tq-' + t);
+        q.addEventListener('input', e => { tstate[t].q = e.target.value.trim().toLowerCase(); tRender(t); });
+        addClearX(q); addClearX(document.getElementById('tadd-text-' + t));
+      });
+      document.getElementById('tab-playbooks').innerHTML = pbPanelHTML();
+      document.getElementById('pbl-q').addEventListener('input', e => { pbs.q = e.target.value.trim().toLowerCase(); pblRender(); });
+      addClearX(document.getElementById('pbl-q')); addClearX(document.getElementById('mk-goal')); addClearX(document.getElementById('tb-q'));
+      renderDefaults();
+      // The Tools tab may have finished loading before this part of the page ran.
+      if (items.length && !window.__tabsStarted) { window.__tabsStarted = true; loadTabs(); }
     </script>
   </body>
 </html>

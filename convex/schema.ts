@@ -69,6 +69,29 @@ export default defineSchema({
     .index("by_lib", ["libId"])
     .index("by_pid", ["pid"]),
 
+  // Rules / Agents / Automations tabs: one row per card (tab = "rules" | "agents" | "autos").
+  // imp = copying the contents of an open-source repo (rule files, agent files, workflow files) into the app.
+  tcards: defineTable({
+    cid: v.string(),
+    tab: v.string(),
+    data: v.any(),
+    imp: v.optional(v.object({ state: v.string(), count: v.number(), note: v.string(), at: v.string(), run: v.optional(v.string()) })),
+    deleting: v.optional(v.boolean()),
+  })
+    .index("by_cid", ["cid"])
+    .index("by_tab", ["tab"]),
+  // The files copied from a card's repo (one agent / rule file / workflow each), for its "Browse" pop-up.
+  // Split in two (like the prompts) so listing a big collection reads only the small part.
+  tcItems: defineTable({ cid: v.string(), n: v.number(), title: v.string(), desc: v.string(), tag: v.string() })
+    .index("by_cid", ["cid"])
+    .index("by_cid_n", ["cid", "n"]),
+  tcText: defineTable({ cid: v.string(), n: v.number(), text: v.string(), url: v.string() })
+    .index("by_cid", ["cid"])
+    .index("by_cid_n", ["cid", "n"]),
+
+  // Playbooks tab: one row per saved playbook (goal, type, topics, steps that point at library items).
+  playbooks: defineTable({ pbId: v.string(), data: v.any() }).index("by_pbId", ["pbId"]),
+
   // Library-wide extras from the original page: clusters, attachments, unresolved links.
   meta: defineTable({
     key: v.string(),
