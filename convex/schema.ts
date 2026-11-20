@@ -49,6 +49,7 @@ export default defineSchema({
     ai: v.number(), // pages read with Gemini
     reader: v.number(), // pages read through the browser-rendering service
     fetched: v.optional(v.number()), // pages that could be opened
+    v2: v.optional(v.boolean()),
     seen: v.array(v.string()),
     visited: v.array(v.string()),
     prefix: v.string(),

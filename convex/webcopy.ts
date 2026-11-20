@@ -17,7 +17,7 @@ import { extractPrompts } from "./promptImport";
 const MAX_QUEUE = 400; // pages per library
 const MAX_AI_PAGES = 120; // pages per library read with Gemini (keeps cost around $0.20-0.30 per library)
 const MAX_READER = 25; // pages per library through the browser-rendering reader (free tier is rate-limited)
-const PER_STEP = 10; // pages per step (each step is a fresh action, well within time limits)
+const PER_STEP = 5; // pages per step (each step is a fresh action, well within time limits)
 const UA = { "User-Agent": "Mozilla/5.0 (compatible; ai-toolbox-copier)", Accept: "text/html,application/xhtml+xml,application/xml" };
 const LOGIN_SITES = /(^|\.)(facebook\.com|fb\.watch|instagram\.com|linkedin\.com|x\.com|twitter\.com|tiktok\.com)$/i;
 const NEVER_COPY = /github\.com\/x1xhlol\/system-prompts-and-models-of-ai-tools/i;
@@ -78,7 +78,7 @@ async function fetchHtml(url: string): Promise<{ url: string; html: string } | n
 // Browser-rendering reader: returns the page's HTML after its JavaScript has run.
 async function fetchRendered(url: string): Promise<{ url: string; html: string } | null> {
   try {
-    const r = await fetchWithTimeout("https://r.jina.ai/" + url, { headers: { "X-Return-Format": "html", Accept: "text/html" } }, 40000);
+    const r = await fetchWithTimeout("https://r.jina.ai/" + url, { headers: { "X-Return-Format": "html", Accept: "text/html" } }, 25000);
     if (!r.ok) return null;
     return { url, html: await r.text() };
   } catch { return null; }
@@ -185,11 +185,17 @@ function prefixOf(url: string) {
   if (parts.length <= 1) return "/" + (parts[0] || "");
   return "/" + parts.slice(0, -1).join("/");
 }
+// A page belongs to the library if it sits in the library's folder and that folder is about prompts
+// (e.g. /en/resources/prompt-library/…), or if its own address is about prompts.
+// So a single blog article doesn't pull in the whole blog.
+const PROMPTY = /prompt|template|rule|gallery|library|pattern|persona|skill/i;
 const inScope = (u: string, host: string, prefix: string) => {
   try {
     const x = new URL(u);
     if (hostOf(u) !== host || SKIP_PATH.test(x.pathname)) return false;
-    return prefix === "/" ? true : x.pathname.startsWith(prefix) || /prompt|template|rule|style|gallery|library/i.test(x.pathname);
+    const folderIsPrompty = prefix !== "/" && PROMPTY.test(prefix);
+    if (folderIsPrompty && x.pathname.startsWith(prefix)) return true;
+    return PROMPTY.test(x.pathname);
   } catch { return false; }
 };
 
@@ -262,6 +268,12 @@ export const step = internalAction({
     if (!job || job.runId !== runId) return;
     const progress = async (note: string): Promise<void> => { await ctx.runMutation(internal.promptLibs.progress, { libId, runId, note }); };
     try {
+      // Jobs planned with the earlier, looser rule: drop pages outside the library's part of the site.
+      if (!job.v2) {
+        const head = job.queue.slice(0, job.pos), rest = job.queue.slice(job.pos);
+        job.queue = [...head, ...rest.filter((q: string) => { const [d, ...u] = q.split("|"); return d === "0" || inScope(u.join("|"), job.host, job.prefix); })];
+        job.v2 = true;
+      }
       const seen = new Set<string>(job.seen);
       const visited = new Set<string>(job.visited);
       const batch = job.queue.slice(job.pos, job.pos + PER_STEP);
@@ -295,7 +307,8 @@ export const step = internalAction({
           forAi.push({ url: page.url, title: pageTitle(page.html, page.url), text: text.slice(0, 14000) });
         }
         // Go deeper: follow this page's links inside the library's part of the site (two levels from the start page).
-        if (depth < 2) {
+        // A start page that already showed its prompts is a self-contained article: don't wander off it.
+        if (depth < 2 && !(depth === 0 && found.length >= 3)) {
           for (const l of linksFrom(page.html, page.url)) {
             if (job.queue.length >= MAX_QUEUE) break;
             if (visited.has(l.url) || job.queue.some((q: string) => q.endsWith("|" + l.url))) continue;
