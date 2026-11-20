@@ -1,12 +1,13 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-20 17:34 UTC.
-Tools: 258 active, 0 archived. Prompt libraries: 45 (14 open source, 8,060 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-20 17:35 UTC.
+Tools: 259 active, 0 archived. Prompt libraries: 45 (14 open source, 8,060 prompts copied into Find a prompt).
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 258 | D4Vinci/Scrapling: adaptive Web Scraping framework from a single request to full-scale crawl | Developer tool | Productivity | yes | 88 | 20 Nov 2026 | https://github.com/D4Vinci/Scrapling | Scrapy, Firecrawl, Playwright |
 | 257 | Vancete/gitcraft: visual git client, simple to use yet powerful | Desktop / phone app | Productivity | yes | 38 | 20 Nov 2026 | https://github.com/Vancete/gitcraft | GitKraken, SourceTree, Fork |
 | 256 | mattpocock/skills: Skills for Real Engineers | Skill | Agent skills | yes | 88 | 20 Nov 2026 | https://github.com/mattpocock/skills | obra/superpowers, Cursor Rules, GitHub Copilot Instructions |
 | 255 | OpenCut-app/OpenCut: The open-source CapCut alternative | Desktop / phone app | Video | yes | 82 | 20 Nov 2026 | https://github.com/OpenCut-app/OpenCut | CapCut, Descript, Adobe Premiere Pro |
