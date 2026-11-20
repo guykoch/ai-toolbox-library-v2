@@ -122,11 +122,9 @@ export const markSavedAgain = internalMutation({
   args: { id: v.number(), date: v.string() },
   handler: async (ctx, { id, date }) => {
     const row = await getRow(ctx, id);
+    // Re-saving a tool no longer marks it "saved again"; it only brings it back if it was archived.
     const data = { ...row.data };
-    data.again = date;
-    const line = "You saved it again on " + date + " — a sign it kept circulating";
-    data.why = [...(data.why || []).filter((w: string) => !w.startsWith("You saved it again on")), line];
-    await ctx.db.patch(row._id, { data, status: "active", archivedAt: undefined });
+    await ctx.db.patch(row._id, { status: "active", archivedAt: undefined });
     return { item: data, wasArchived: row.status === "archived" };
   },
 });

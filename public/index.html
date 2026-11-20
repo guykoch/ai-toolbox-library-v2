@@ -732,7 +732,7 @@
       </section>
 
       <footer>
-        <p>Built from your WhatsApp export of the &ldquo;AI Content&rdquo; group (197 messages, 18 Jan &ndash; 12 Nov 2026), plus links added on 13 and 14 Nov 2026 and everything added since through the box above. Re-saving a link that&rsquo;s already here doesn&rsquo;t create a duplicate &mdash; the existing card is marked &ldquo;saved again&rdquo;. Each link is opened to identify what it actually points to; summaries are in fresh words, and tracking parameters are stripped from the links.</p>
+        <p>Built from your WhatsApp export of the &ldquo;AI Content&rdquo; group (197 messages, 18 Jan &ndash; 12 Nov 2026), plus links added on 13 and 14 Nov 2026 and everything added since through the box above. Re-saving a link that&rsquo;s already here doesn&rsquo;t create a duplicate. Each link is opened to identify what it actually points to; summaries are in fresh words, and tracking parameters are stripped from the links.</p>
         <p>Items marked <b>Private &mdash; do not share</b> are the DanielAI workshop links, which were shared in the group with a request not to distribute them. This map is for your personal use and is locked with your access key.</p>
       </footer>
       </div>
@@ -877,6 +877,8 @@
         if (pop >= 25) return 'Small / local';
         return 'Very niche';
       }
+      // Older cards may carry a "You saved it again on…" reason line; it's no longer shown.
+      const whyOf = it => (it.why || []).filter(w => !/^You saved it again on/.test(w));
       function hostOf(u) {
         try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return ''; }
       }
@@ -942,7 +944,7 @@
         if (state.q) {
           // Everything on the card counts, including the "Why a hype score" reasons and links.
           const hay = [
-            it.title, it.summary, it.author, (it.why || []).join(' '), (it.install || []).join(' '), (it.installAlt || []).join(' '), it.installNote,
+            it.title, it.summary, it.author, whyOf(it).join(' '), (it.install || []).join(' '), (it.installAlt || []).join(' '), it.installNote,
             CATS[it.cat] ? CATS[it.cat].label : '', (it.extra || []).map(c => CATS[c] ? CATS[c].label : c).join(' '),
             KINDS[kindOf(it)].label, KINDS[kindOf(it)].plural, TYPE_LABELS[it.type] || it.type,
             it.host, it.url, it.docs, it.mentioned, it.savedFrom, (it.alternativeTo || []).join(' ')
@@ -962,7 +964,6 @@
         if (it.os === true) badges += '<span class="badge os"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>Open source</span>';
         let moreBadges = '';
         if (it.priv) moreBadges += '<span class="badge priv">Private — do not share</span>';
-        if (it.again) moreBadges += '<span class="badge">Saved again ' + esc(it.again) + '</span>';
         const poprow = '<div class="poprow" role="img" aria-label="Hype score ' + it.pop + ' out of 100 — ' + tierFor(it.pop) + '">' +
           '<span class="pop-label">Hype</span>' +
           '<span class="pop-track"><span class="pop-fill' + (it.pop >= 85 ? ' hot' : '') + '" style="width:' + it.pop + '%"></span></span>' +
@@ -999,7 +1000,7 @@
           installHTML +
           '<div><p class="d-label">Before you click</p><dl class="facts">' + facts + '</dl></div>' +
           '<div><p class="d-label">Why a hype score of ' + it.pop + '</p><ul class="why-list">' +
-          (it.why || []).map(w => '<li>' + esc(w) + '</li>').join('') + '</ul></div>' +
+          whyOf(it).map(w => '<li>' + esc(w) + '</li>').join('') + '</ul></div>' +
           (inArchive ? '' : foot) +
           '</div>';
         return '<article class="card' + (it.id === state.justAdded && !inArchive ? ' just-added' : '') + (it.id === state.highlight && !inArchive ? ' highlight' : '') + '" id="' + (inArchive ? 'acard-' : 'card-') + it.id + '" data-id="' + it.id + '">' +
@@ -1854,8 +1855,8 @@
             const shelf = (CATS[it.cat] || CATS.other).label;
             if (res.status === 'again') {
               showResult('again', 'Already in your library',
-                '<b dir="auto">' + esc(it.title) + '</b> was first saved on ' + esc(it.date) + ', so no duplicate was added. It\u2019s now marked \u201CSaved again\u201D' +
-                (res.wasArchived ? ' and was brought back from the archive.' : '.') + shotNote, actionsFor(it));
+                '<b dir="auto">' + esc(it.title) + '</b> was first saved on ' + esc(it.date) + ', so no duplicate was added' +
+                (res.wasArchived ? '. It was brought back from the archive.' : '.') + shotNote, actionsFor(it));
             } else {
               showResult('ok', 'Tool added',
                 '<b dir="auto">' + esc(it.title) + '</b> is now on the <b>' + esc(shelf) + '</b> shelf' + (it.os === true ? ' (open source)' : '') + '. ' +
@@ -1868,7 +1869,7 @@
               const it = r.item || {};
               const tag = r.status === 'added' ? '\u2713 Added' : r.status === 'again' ? '\u21BA Already saved' : '! Couldn\u2019t add';
               const extra = r.status === 'added' ? ' \u2014 ' + esc((CATS[it.cat] || CATS.other).label) + ' shelf'
-                : r.status === 'again' ? ' \u2014 first saved ' + esc(it.date) + ', marked \u201CSaved again\u201D' : ' \u2014 no link found for it';
+                : r.status === 'again' ? ' \u2014 first saved ' + esc(it.date) : ' \u2014 no link found for it';
               const btn = r.status === 'failed' ? '' : ' <button type="button" class="mini-btn" style="min-height:26px;padding:2px 10px;font-size:12.5px" data-show="' + it.id + '">Show</button>';
               return '<span style="display:block;margin-top:6px"><b>' + tag + ':</b> <span dir="auto">' + esc(it.title || '') + '</span>' + extra + btn + '</span>';
             }).join('');
