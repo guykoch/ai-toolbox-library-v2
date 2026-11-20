@@ -1378,12 +1378,15 @@
       });
 
       // ---------- load the libraries from the database ----------
-      let pSeed = null, pPoll = null, pLoaded = false;
+      let pSeed = null, pPoll = null, pLoaded = false, pResumed = false;
       async function loadPrompts() {
         try {
           let res = await call('query', 'promptLibs:list', {});
           if (!res.seeded) { await call('mutation', 'promptLibs:ensureSeeded', { origin: location.origin }); res = await call('query', 'promptLibs:list', {}); }
           PROMPT_LIBS = res.libs; pSeed = res.seed; pLoaded = true;
+          // A copy that has said "Copying…" for over 11 minutes was interrupted: ask the server to restart it (once per page load).
+          const stale = PROMPT_LIBS.some(p => p.imp && p.imp.state === 'importing' && Date.now() - Date.parse(p.imp.at || 0) > 11 * 60 * 1000);
+          if (stale && !pResumed) { pResumed = true; try { await call('mutation', 'promptLibs:resumeStuck', {}); res = await call('query', 'promptLibs:list', {}); PROMPT_LIBS = res.libs; pSeed = res.seed; } catch (e) {} }
           renderPrompts();
           const busy = (pSeed && !pSeed.finished) || PROMPT_LIBS.some(p => p.imp && p.imp.state === 'importing');
           clearTimeout(pPoll); if (busy) pPoll = setTimeout(loadPrompts, 5000);

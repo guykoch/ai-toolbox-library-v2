@@ -59,7 +59,7 @@ export const seedStep = internalAction({
   args: { origin: v.string(), shard: v.number() },
   handler: async (ctx) => {
     const libs = (await ctx.runQuery(internal.promptLibs.libNames, {})) as { libId: string; repo: string; imported: boolean }[];
-    for (const l of libs) if (l.repo && !l.imported) await ctx.scheduler.runAfter(0, internal.promptImport.run, { libId: l.libId, repo: l.repo });
+    for (const l of libs) if (l.repo && !l.imported) await ctx.runMutation(internal.promptLibs.startImportFor, { libId: l.libId });
     await ctx.runMutation(internal.promptLibs.seedProgress, { shard: 0, shards: 0, finished: true });
   },
 });
@@ -73,34 +73,18 @@ export const seedProgress = internalMutation({
 });
 
 // ---------- storing prompts ----------
-export type PromptRow = { libId: string; title: string; desc: string; text: string; url: string };
-
-// Sends rows to the database in pieces small enough for one mutation.
-export async function addInBatches(ctx: any, rows: PromptRow[]) {
-  let batch: PromptRow[] = [], size = 0;
-  for (const r of rows) {
-    const s = r.text.length + r.title.length + r.desc.length + r.url.length + 100;
-    if (batch.length && (size + s > 900_000 || batch.length >= 300)) {
-      await ctx.runMutation(internal.promptLibs.addPrompts, { rows: batch });
-      batch = []; size = 0;
-    }
-    batch.push(r); size += s;
-  }
-  if (batch.length) await ctx.runMutation(internal.promptLibs.addPrompts, { rows: batch });
-}
-
 export const addPrompts = internalMutation({
-  args: { rows: v.array(v.object({ libId: v.string(), title: v.string(), desc: v.string(), text: v.string(), url: v.string() })) },
-  handler: async (ctx, { rows }) => {
+  args: { rows: v.array(v.object({ libId: v.string(), title: v.string(), desc: v.string(), text: v.string(), url: v.string() })), runId: v.optional(v.string()) },
+  handler: async (ctx, { rows, runId }) => {
     const seqRow = await getMeta(ctx, "plSeq");
     let pid: number = seqRow?.value || 0;
     const alive = new Map<string, boolean>();
     for (const r of rows) {
       if (!alive.has(r.libId)) {
         const lib = await ctx.db.query("plibs").withIndex("by_libId", (q) => q.eq("libId", r.libId)).first();
-        alive.set(r.libId, !!lib && !lib.deleting);
+        alive.set(r.libId, !!lib && !lib.deleting && (!runId || lib.imp?.run === runId));
       }
-      if (!alive.get(r.libId)) continue; // library was deleted meanwhile
+      if (!alive.get(r.libId)) continue; // library was deleted meanwhile, or this copy job was replaced
       pid++;
       await ctx.db.insert("plIndex", { libId: r.libId, pid, title: r.title.slice(0, 300), desc: r.desc.slice(0, 400) });
       await ctx.db.insert("plText", { libId: r.libId, pid, text: r.text, url: r.url });
@@ -115,10 +99,43 @@ export const countFor = internalQuery({
 });
 
 export const setImp = internalMutation({
-  args: { libId: v.string(), state: v.string(), count: v.number(), note: v.string() },
-  handler: async (ctx, { libId, state, count, note }) => {
+  args: { libId: v.string(), state: v.string(), count: v.number(), note: v.string(), runId: v.optional(v.string()) },
+  handler: async (ctx, { libId, state, count, note, runId }) => {
     const lib = await ctx.db.query("plibs").withIndex("by_libId", (q) => q.eq("libId", libId)).first();
-    if (lib && !lib.deleting) await ctx.db.patch(lib._id, { imp: { state, count, note, at: nowIso() } });
+    if (!lib || lib.deleting) return;
+    if (runId && lib.imp?.run !== runId) return; // an old copy job finishing late: ignore it
+    await ctx.db.patch(lib._id, { imp: { state, count, note, at: nowIso(), ...(lib.imp?.run ? { run: lib.imp.run } : {}) } });
+  },
+});
+
+// Starts (or restarts) copying one library's prompts. Each start gets a new job id.
+async function startImport(ctx: any, lib: any) {
+  const run = Math.random().toString(36).slice(2) + Date.now().toString(36);
+  await ctx.db.patch(lib._id, { imp: { state: "importing", count: 0, note: "Copying prompts…", at: nowIso(), run } });
+  await ctx.scheduler.runAfter(0, internal.promptImport.run, { libId: lib.libId, repo: lib.data.repo, runId: run });
+}
+export const startImportFor = internalMutation({
+  args: { libId: v.string() },
+  handler: async (ctx, { libId }) => {
+    const lib = await ctx.db.query("plibs").withIndex("by_libId", (q) => q.eq("libId", libId)).first();
+    if (lib && !lib.deleting && lib.data?.repo) await startImport(ctx, lib);
+  },
+});
+
+// A copy job can't run longer than 10 minutes, so one still "copying" after 11 was interrupted: restart it.
+const STALE_MS = 11 * 60 * 1000;
+const isStale = (imp: any) => imp?.state === "importing" && Date.now() - Date.parse(imp.at || 0) > STALE_MS;
+export const resumeStuck = mutation({
+  args: { key: v.string() },
+  handler: async (ctx, { key }) => {
+    checkKey(key);
+    let n = 0;
+    for (const lib of await ctx.db.query("plibs").collect()) {
+      if (!lib.deleting && lib.data?.repo && isStale(lib.imp)) { await startImport(ctx, lib); n++; }
+    }
+    const m = await getMeta(ctx, "plseed");
+    if (m && !m.value?.finished && Date.now() - Date.parse(m.value?.startedAt || 0) > STALE_MS) await setMeta(ctx, "plseed", { ...m.value, finished: true, finishedAt: nowIso() });
+    return { restarted: n };
   },
 });
 
@@ -182,11 +199,8 @@ export const insertLib = internalMutation({
     const rows = await ctx.db.query("plibs").collect();
     const n = Math.max(28, ...rows.map((r) => Number(String(r.libId).replace(/\D/g, "")) || 0)) + 1;
     const libId = "p" + n;
-    await ctx.db.insert("plibs", {
-      libId,
-      data,
-      imp: importing ? { state: "importing", count: 0, note: "Copying prompts…", at: nowIso() } : { state: "none", count: 0, note: "", at: "" },
-    });
+    const id = await ctx.db.insert("plibs", { libId, data, imp: { state: "none", count: 0, note: "", at: "" } });
+    if (importing) await startImport(ctx, { _id: id, libId, data });
     return libId;
   },
 });
@@ -198,9 +212,8 @@ export const reimport = mutation({
     checkKey(key);
     const lib = await ctx.db.query("plibs").withIndex("by_libId", (q) => q.eq("libId", libId)).first();
     if (!lib || lib.deleting || !lib.data?.repo) throw new ConvexError("This library has no open-source repo to copy prompts from.");
-    if (lib.imp?.state === "importing") return { ok: true };
-    await ctx.db.patch(lib._id, { imp: { state: "importing", count: 0, note: "Copying prompts…", at: nowIso() } });
-    await ctx.scheduler.runAfter(0, internal.promptImport.run, { libId, repo: lib.data.repo });
+    if (lib.imp?.state === "importing" && !isStale(lib.imp)) return { ok: true };
+    await startImport(ctx, lib);
     return { ok: true };
   },
 });

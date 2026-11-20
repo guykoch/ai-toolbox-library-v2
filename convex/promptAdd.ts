@@ -6,7 +6,7 @@ import { internal } from "./_generated/api";
 import { checkKey } from "./auth";
 import { norm, gatherUrl } from "./web";
 import { callGemini, parseJson, MODELS } from "./llm";
-import { parseRepoUrl } from "./promptImport";
+import { parseRepoUrl } from "./promptRows";
 
 const SECTIONS = ["general", "business", "coding", "design", "images", "patterns"];
 const KINDS = ["official", "open", "community", "academic", "free"];
@@ -74,7 +74,6 @@ export const add = action({
     };
     const importing = !!(repo && openSource);
     const libId: string = await ctx.runMutation(internal.promptLibs.insertLib, { data, importing });
-    if (importing) await ctx.scheduler.runAfter(0, internal.promptImport.run, { libId, repo });
     return { status: "added", libId, title: data.title, importing };
   },
 });

@@ -1,3 +1,4 @@
+"use node";
 // Copies the prompts out of an open-source GitHub repo into the finder.
 // It recognizes the common layouts of prompt libraries:
 //   1. a CSV / JSON file with a prompt column (e.g. prompts.chat)
@@ -8,7 +9,7 @@ import { internalAction } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { fetchWithTimeout } from "./web";
-import { addInBatches, PromptRow } from "./promptLibs";
+import { addInBatches, PromptRow, parseRepoUrl } from "./promptRows";
 
 const MAX_PROMPTS = 5000;
 const MAX_BYTES = 40_000_000;
@@ -62,14 +63,6 @@ function parseCsv(text: string): string[][] {
 
 const PROMPT_COLS = ["prompt", "content", "text", "system_prompt", "system", "instructions", "template"];
 const TITLE_COLS = ["act", "title", "name", "role", "task", "persona", "id"];
-
-type Repo = { owner: string; repo: string; branch: string; sub: string };
-
-export function parseRepoUrl(url: string): Repo | null {
-  const m = String(url || "").match(/github\.com\/([\w.-]+)\/([\w.-]+)(?:\/(?:tree|blob)\/([^/]+)\/?(.*))?/i);
-  if (!m) return null;
-  return { owner: m[1], repo: m[2].replace(/\.git$/, ""), branch: m[3] || "", sub: (m[4] || "").replace(/\/+$/, "") };
-}
 
 export async function extractPrompts(libId: string, repoUrl: string): Promise<{ rows: PromptRow[]; how: string }> {
   const r = parseRepoUrl(repoUrl);
@@ -204,21 +197,21 @@ export async function extractPrompts(libId: string, repoUrl: string): Promise<{ 
 }
 
 export const run = internalAction({
-  args: { libId: v.string(), repo: v.string() },
-  handler: async (ctx, { libId, repo }) => {
+  args: { libId: v.string(), repo: v.string(), runId: v.optional(v.string()) },
+  handler: async (ctx, { libId, repo, runId }) => {
     try {
       // Re-import: clear what this library had before.
       while ((await ctx.runMutation(internal.promptLibs.clearPrompts, { libId })) > 0) {}
       const { rows, how } = await extractPrompts(libId, repo);
       if (!rows.length) {
-        await ctx.runMutation(internal.promptLibs.setImp, { libId, state: "failed", count: 0, note: "Couldn't find prompts in this repo's files." });
+        await ctx.runMutation(internal.promptLibs.setImp, { libId, state: "failed", count: 0, note: "Couldn't find prompts in this repo's files.", runId });
         return;
       }
-      await addInBatches(ctx, rows);
+      await addInBatches(ctx, rows, runId);
       const count: number = await ctx.runQuery(internal.promptLibs.countFor, { libId });
-      await ctx.runMutation(internal.promptLibs.setImp, { libId, state: "done", count, note: how });
+      await ctx.runMutation(internal.promptLibs.setImp, { libId, state: "done", count, note: how, runId });
     } catch (e: any) {
-      await ctx.runMutation(internal.promptLibs.setImp, { libId, state: "failed", count: 0, note: String(e?.message || e).slice(0, 200) });
+      await ctx.runMutation(internal.promptLibs.setImp, { libId, state: "failed", count: 0, note: String(e?.message || e).slice(0, 200), runId });
     }
   },
 });

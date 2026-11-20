@@ -35,7 +35,7 @@ export default defineSchema({
   plibs: defineTable({
     libId: v.string(),
     data: v.any(),
-    imp: v.optional(v.object({ state: v.string(), count: v.number(), note: v.string(), at: v.string() })),
+    imp: v.optional(v.object({ state: v.string(), count: v.number(), note: v.string(), at: v.string(), run: v.optional(v.string()) })),
     deleting: v.optional(v.boolean()),
   }).index("by_libId", ["libId"]),
 
