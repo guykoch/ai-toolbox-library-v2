@@ -880,6 +880,18 @@
       }
       // Older cards may carry a "You saved it again on…" reason line; it's no longer shown.
       const whyOf = it => (it.why || []).filter(w => !/^You saved it again on/.test(w));
+      // All text in an object (strings and numbers, at any depth), lower-cased, for search.
+      function allText(obj, skip) {
+        const out = [];
+        const walk = (v, key) => {
+          if (v == null || (skip && skip.includes(key))) return;
+          if (typeof v === 'string' || typeof v === 'number') out.push(String(v));
+          else if (Array.isArray(v)) v.forEach(x => walk(x));
+          else if (typeof v === 'object') for (const k of Object.keys(v)) walk(v[k], k);
+        };
+        walk(obj);
+        return out.join(' ').toLowerCase();
+      }
       function hostOf(u) {
         try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return ''; }
       }
@@ -944,11 +956,11 @@
         if (state.osOnly && it.os !== true) return false;
         if (state.q) {
           // Everything on the card counts, including the "Why a hype score" reasons and links.
-          const hay = [
-            it.title, it.summary, it.author, whyOf(it).join(' '), (it.install || []).join(' '), (it.installAlt || []).join(' '), it.installNote,
+          // Every field of the card counts (title, summary, reasons, install steps, links, alternatives…), plus its labels.
+          const hay = allText(it, ['why']) + ' ' + [
+            whyOf(it).join(' '),
             CATS[it.cat] ? CATS[it.cat].label : '', (it.extra || []).map(c => CATS[c] ? CATS[c].label : c).join(' '),
-            KINDS[kindOf(it)].label, KINDS[kindOf(it)].plural, TYPE_LABELS[it.type] || it.type,
-            it.host, it.url, it.docs, it.mentioned, it.savedFrom, (it.alternativeTo || []).join(' ')
+            KINDS[kindOf(it)].label, KINDS[kindOf(it)].plural, TYPE_LABELS[it.type] || it.type
           ].filter(Boolean).join(' ').toLowerCase();
           // Several words match in any order ("higgsfield video" = both words somewhere on the card).
           if (!state.q.split(/\s+/).filter(Boolean).every(w => hay.includes(w))) return false;
@@ -1273,7 +1285,8 @@
         if (pstate.os && !isOpenLib(p)) return false;
         if (pstate.q) {
           const s = P_SECTIONS.find(x => x.key === p.sec);
-          const hay = [p.title, p.summary, p.bestFor, p.how, p.license, p.format, p.sources, s.label, P_KINDS[p.kind].label, p.links.map(l => l.join(' ')).join(' ')].filter(Boolean).join(' ').toLowerCase();
+          // Every field of the card counts (name, summary, best for, how to browse, found in, links…), plus its labels.
+          const hay = allText(p, ['imp']) + ' ' + [s.label, P_KINDS[p.kind] ? P_KINDS[p.kind].label : ''].join(' ').toLowerCase();
           if (!pstate.q.split(/\s+/).filter(Boolean).every(w => hay.includes(w))) return false;
         }
         return true;
