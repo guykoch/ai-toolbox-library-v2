@@ -597,6 +597,7 @@
       <header class="hero">
         <h1>AI Toolbox</h1>
         <p class="deployed" id="deployed" hidden></p>
+        <p class="deployed" id="snapline" hidden></p>
         <div class="subtabs" role="tablist" aria-label="Sections">
           <button class="subtab" role="tab" id="tabbtn-tools" data-tab="tools" aria-controls="tab-tools" type="button">Tools</button>
           <button class="subtab" role="tab" id="tabbtn-prompts" data-tab="prompts" aria-controls="tab-prompts" type="button">Prompts</button>
@@ -1681,7 +1682,7 @@
       showTab((function () { try { return localStorage.getItem(TAB_STORE); } catch (e) { return ''; } })());
 
       // ---------- loading ----------
-      let altsAsked = false;
+      let altsAsked = false, snapAsked = false;
       async function load() {
         let res = await call('query', 'items:list', {});
         if (!res.seeded) {
@@ -1712,6 +1713,18 @@
         render();
         renderHype();
         loadPrompts();
+        if (!snapAsked) {
+          snapAsked = true;
+          call('mutation', 'snapshot:ensure', {}).catch(() => {});
+          // Small grey line: when Claude's copy of the lists was last updated (or why it couldn't be).
+          call('query', 'snapshot:status', {}).then(s => {
+            const el = document.getElementById('snapline');
+            if (s.ok === false && s.error) { el.innerHTML = 'Snapshot for Claude couldn\u2019t update: ' + esc(s.error); el.style.color = '#b42318'; }
+            else if (s.at) el.innerHTML = 'Snapshot for Claude updated ' + esc(new Date(s.at).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }));
+            else return;
+            el.hidden = false;
+          }).catch(() => {});
+        }
         if (res.altsMissing > 0 && !altsAsked) {
           // Some cards still lack "Alternative for": ask the server to fill them, then pick up the result quietly.
           altsAsked = true;

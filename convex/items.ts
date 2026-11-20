@@ -4,6 +4,7 @@ import { checkKey } from "./auth";
 import { internal } from "./_generated/api";
 import { SEED_ITEMS, SEED_META } from "./seedData";
 import { PREPARED, PREPARED_VERSION, PREPARED_NEW, PREPARED_KINDS, PREPARED_ALTS } from "./preparedData";
+import { snapshotSoon } from "./snapshot";
 
 const SOCIAL = ["Facebook", "LinkedIn", "linkedin.com"];
 
@@ -71,6 +72,7 @@ async function getRow(ctx: any, id: number) {
 export const archive = mutation({
   args: { key: v.string(), id: v.number(), today: v.string() },
   handler: async (ctx, { key, id, today }) => {
+    await snapshotSoon(ctx);
     checkKey(key);
     const row = await getRow(ctx, id);
     await ctx.db.patch(row._id, { status: "archived", archivedAt: today });
@@ -80,6 +82,7 @@ export const archive = mutation({
 export const restore = mutation({
   args: { key: v.string(), id: v.number() },
   handler: async (ctx, { key, id }) => {
+    await snapshotSoon(ctx);
     checkKey(key);
     const row = await getRow(ctx, id);
     await ctx.db.patch(row._id, { status: "active", archivedAt: undefined });
@@ -89,6 +92,7 @@ export const restore = mutation({
 export const remove = mutation({
   args: { key: v.string(), id: v.number() },
   handler: async (ctx, { key, id }) => {
+    await snapshotSoon(ctx);
     checkKey(key);
     const row = await getRow(ctx, id);
     await ctx.db.delete(row._id);
@@ -109,6 +113,7 @@ export const allForIngest = internalQuery({
 export const insertItem = internalMutation({
   args: { data: v.any() },
   handler: async (ctx, { data }) => {
+    await snapshotSoon(ctx);
     // Pick the next free id at write time so two adds can never collide.
     const last = await ctx.db.query("items").withIndex("by_itemId").order("desc").first();
     const nextId = Math.max(last ? last.itemId : -1, 207) + 1;
@@ -121,6 +126,7 @@ export const insertItem = internalMutation({
 export const markSavedAgain = internalMutation({
   args: { id: v.number(), date: v.string() },
   handler: async (ctx, { id, date }) => {
+    await snapshotSoon(ctx);
     const row = await getRow(ctx, id);
     // Re-saving a tool no longer marks it "saved again"; it only brings it back if it was archived.
     const data = { ...row.data };
@@ -168,6 +174,7 @@ export const activeForAdvisor = internalQuery({
 export const replaceData = internalMutation({
   args: { id: v.number(), data: v.any() },
   handler: async (ctx, { id, data }) => {
+    await snapshotSoon(ctx);
     const row = await getRow(ctx, id);
     await ctx.db.patch(row._id, { data: { ...data, id } });
   },

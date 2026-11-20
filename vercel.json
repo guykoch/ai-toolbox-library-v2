@@ -2,5 +2,6 @@
   "buildCommand": "npx convex deploy --cmd 'node scripts/write-config.mjs' --cmd-url-env-var-name CONVEX_URL",
   "outputDirectory": "public",
   "installCommand": "npm install",
-  "framework": null
+  "framework": null,
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude)library-snapshot.md'"
 }

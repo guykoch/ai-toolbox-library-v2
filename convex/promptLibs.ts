@@ -4,6 +4,7 @@ import { v, ConvexError } from "convex/values";
 import { checkKey } from "./auth";
 import { internal } from "./_generated/api";
 import { PROMPT_LIB_SEED, BEST_FOR } from "./promptLibSeed";
+import { snapshotSoon } from "./snapshot";
 
 const nowIso = () => new Date().toISOString();
 
@@ -100,6 +101,7 @@ export const fillBestFor = mutation({
 export const setRepo = internalMutation({
   args: { libId: v.string(), repo: v.string(), license: v.string() },
   handler: async (ctx, { libId, repo, license }) => {
+    await snapshotSoon(ctx);
     const lib = await ctx.db.query("plibs").withIndex("by_libId", (q) => q.eq("libId", libId)).first();
     if (!lib || lib.deleting) return;
     const data = { ...lib.data, repo, license, kind: lib.data?.kind === "official" ? "official" : "open" };
@@ -116,6 +118,7 @@ export const missingBestFor = internalQuery({
 export const setBestFor = internalMutation({
   args: { libId: v.string(), bestFor: v.string() },
   handler: async (ctx, { libId, bestFor }) => {
+    await snapshotSoon(ctx);
     const lib = await ctx.db.query("plibs").withIndex("by_libId", (q) => q.eq("libId", libId)).first();
     if (lib && !lib.data?.bestFor && bestFor) await ctx.db.patch(lib._id, { data: { ...lib.data, bestFor } });
   },
@@ -150,6 +153,7 @@ export const countFor = internalQuery({
 export const setImp = internalMutation({
   args: { libId: v.string(), state: v.string(), count: v.number(), note: v.string(), runId: v.optional(v.string()) },
   handler: async (ctx, { libId, state, count, note, runId }) => {
+    await snapshotSoon(ctx);
     const lib = await ctx.db.query("plibs").withIndex("by_libId", (q) => q.eq("libId", libId)).first();
     if (!lib || lib.deleting) return;
     if (runId && lib.imp?.run !== runId) return; // an old copy job finishing late: ignore it
@@ -237,6 +241,7 @@ export const promptText = query({
 export const remove = mutation({
   args: { key: v.string(), libId: v.string() },
   handler: async (ctx, { key, libId }) => {
+    await snapshotSoon(ctx);
     checkKey(key);
     const lib = await ctx.db.query("plibs").withIndex("by_libId", (q) => q.eq("libId", libId)).first();
     if (!lib) return { ok: true };
@@ -266,6 +271,7 @@ export const purge = internalMutation({
 export const insertLib = internalMutation({
   args: { data: v.any(), importing: v.boolean() },
   handler: async (ctx, { data, importing }) => {
+    await snapshotSoon(ctx);
     const rows = await ctx.db.query("plibs").collect();
     const n = Math.max(28, ...rows.map((r) => Number(String(r.libId).replace(/\D/g, "")) || 0)) + 1;
     const libId = "p" + n;

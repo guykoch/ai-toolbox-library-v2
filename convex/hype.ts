@@ -4,6 +4,7 @@ import { v } from "convex/values";
 import { checkKey } from "./auth";
 import { callGemini, parseJson, MODELS } from "./llm";
 import { fetchWithTimeout } from "./web";
+import { snapshotSoon } from "./snapshot";
 
 // ---------------------------------------------------------------------------
 // "Update hype scores": re-checks every tool's buzz in the background.
@@ -112,6 +113,7 @@ export const nextBatch = internalQuery({
 export const record = internalMutation({
   args: { runId: v.string(), id: v.number(), pop: v.optional(v.number()), why: v.optional(v.array(v.string())), failed: v.optional(v.string()) },
   handler: async (ctx, { runId, id, pop, why, failed }) => {
+    await snapshotSoon(ctx);
     const row = await ctx.db.query("items").withIndex("by_itemId", (q) => q.eq("itemId", id)).first();
     const m = await ctx.db.query("meta").withIndex("by_key", (q) => q.eq("key", "hype")).first();
     if (!m || m.value.runId !== runId) return;
