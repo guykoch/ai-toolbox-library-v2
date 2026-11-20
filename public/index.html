@@ -103,6 +103,8 @@
       .pf-other .t { font-weight: 650; font-size: 14.5px; }
       .pf-other .w { font-size: 13px; color: var(--muted); }
       .pf-try { margin: 0; font-size: 14px; color: var(--ink-2); }
+      #padd-out { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+      .padd-status { font-weight: 600; color: var(--ink); }
       #pf-out .err { color: #b42318; margin: 0; font-size: 14px; }
       :root[data-theme="dark"] #pf-out .err { color: #ff8a7a; }
       .pgroup { margin: 0 0 30px; }
@@ -737,12 +739,12 @@
         </section>
         <section class="addbox" aria-labelledby="padd-h">
           <h2 id="padd-h">Add a prompt library</h2>
-          <p class="sub">Paste a GitHub repo or website of a prompt library. It gets a card below; if it&rsquo;s <b>open source on GitHub</b>, its prompts are copied into &ldquo;Find a prompt&rdquo; automatically. Deleting a library removes its prompts too.</p>
+          <p class="sub">Paste a GitHub repo or website of a prompt library &mdash; or several links separated by commas or spaces. Each gets a card below; if it&rsquo;s <b>open source on GitHub</b>, its prompts are copied into &ldquo;Find a prompt&rdquo; automatically. Deleting a library removes its prompts too.</p>
           <div class="ask-row">
             <textarea id="padd-text" dir="auto" rows="1" placeholder="e.g. https://github.com/owner/awesome-prompts"></textarea>
             <button class="primary-btn" id="padd-btn" type="button">Add</button>
           </div>
-          <p class="pf-why" id="padd-out" aria-live="polite" hidden></p>
+          <div class="pf-why" id="padd-out" aria-live="polite" hidden></div>
         </section>
         <p class="statline" id="p-statline" style="margin-top:22px"></p>
         <div class="controls" style="margin-top:22px">
@@ -1538,19 +1540,47 @@
           clearTimeout(pPoll); if (busy) pPoll = setTimeout(loadPrompts, 5000);
         } catch (e) { document.getElementById('p-statline').textContent = 'Couldn\u2019t load the prompt libraries: ' + e.message; }
       }
+      // Splits the box into separate libraries when it holds several links (separated by commas, spaces or new lines).
+      function pAddItems(text) {
+        const links = text.split(/[\s,]+/).map(t => t.replace(/[.;]+$/, '')).filter(t => /^(https?:\/\/)?([\w-]+\.)+[a-z]{2,}(\/\S*)?$/i.test(t));
+        const full = t => /^https?:\/\//i.test(t) ? t : 'https://' + t;
+        if (links.length > 1) return [...new Set(links.map(full))];
+        if (links.length === 1 && text.trim().replace(/[.;,]+$/, '') === links[0]) return [full(links[0])];
+        return [text];
+      }
+      const pAddLabel = s => { const u = s.match(/^(?:https?:\/\/)?(?:www\.)?([^\s]+)/i); return u && /^https?:\/\/|^[\w-]+\./.test(s) ? u[1].replace(/\/$/, '').slice(0, 60) : (s.length > 50 ? s.slice(0, 50) + '\u2026' : s); };
       async function pAdd() {
         const ta = document.getElementById('padd-text'), btn = document.getElementById('padd-btn'), out = document.getElementById('padd-out');
         const text = ta.value.trim(); if (!text) { ta.focus(); return; }
-        btn.disabled = true; out.hidden = false; out.textContent = 'Reading the library\u2026';
-        try {
-          const r = await call('action', 'promptAdd:add', { text });
-          if (r.status === 'exists') out.innerHTML = '\u2139\ufe0f <b>' + esc(r.title) + '</b> is already in your list.';
-          else { out.innerHTML = '\u2713 Added <b>' + esc(r.title) + '</b>.' + (r.importing ? ' Copying its prompts into Find a prompt now \u2014 this usually takes under a minute.' : ' It isn\u2019t an open-source repo, so its prompts stay on its website.'); ta.value = ''; }
-          pClear(); pstate.expanded.add(r.libId);
-          await loadPrompts();
-          const el = document.getElementById('pcard-' + r.libId); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } catch (e) { out.innerHTML = '<span style="color:#b42318">' + esc(e.message) + '</span>'; }
-        finally { btn.disabled = false; }
+        const list = pAddItems(text), results = [];
+        btn.disabled = true; ta.disabled = true; out.hidden = false;
+        const STEPS = ['reading the page', 'checking for duplicates', 'writing the card', 'checking the license'];
+        let n = 0, started = 0, timer = null;
+        const status = () => {
+          const secs = Math.round((Date.now() - started) / 1000);
+          const done = results.map(r => '<div>' + r + '</div>').join('');
+          out.innerHTML = done + '<div class="padd-status">\u23F3 ' + (list.length > 1 ? 'Adding <b>' + (n + 1) + ' of ' + list.length + '</b>: ' : 'Adding ') + '<b>' + esc(pAddLabel(list[n])) + '</b> \u00b7 ' + STEPS[Math.min(STEPS.length - 1, Math.floor(secs / 5))] + '\u2026 <span style="color:var(--muted)">' + secs + 's</span></div>';
+        };
+        let lastId = null, anyAdded = false;
+        for (n = 0; n < list.length; n++) {
+          started = Date.now(); status(); clearInterval(timer); timer = setInterval(status, 1000);
+          const label = '<b>' + esc(pAddLabel(list[n])) + '</b>';
+          try {
+            const r = await call('action', 'promptAdd:add', { text: list[n] });
+            lastId = r.libId;
+            if (r.status === 'exists') results.push('\u2139\ufe0f ' + esc(r.title) + ' is already in your list.');
+            else { anyAdded = true; results.push('\u2713 Added <b>' + esc(r.title) + '</b>.' + (r.importing ? ' Copying its prompts into Find a prompt now.' : ' Not an open-source repo, so its prompts stay on its website.')); }
+          } catch (e) { results.push('<span style="color:#b42318">\u2715 ' + label + ': ' + esc(e.message) + '</span>'); }
+        }
+        clearInterval(timer);
+        out.innerHTML = results.map(r => '<div>' + r + '</div>').join('') + (list.length > 1 ? '<div style="color:var(--muted);margin-top:4px">Done: ' + list.length + ' links processed.</div>' : '');
+        if (anyAdded) ta.value = '';
+        btn.disabled = false; ta.disabled = false;
+        await loadPrompts();
+        if (lastId) {
+          pClear(); if (list.length === 1) pstate.expanded.add(lastId); renderPrompts();
+          if (list.length === 1) { const el = document.getElementById('pcard-' + lastId); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        }
       }
       document.getElementById('padd-btn').addEventListener('click', pAdd);
       document.getElementById('padd-text').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); pAdd(); } });
