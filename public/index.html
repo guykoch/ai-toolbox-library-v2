@@ -730,7 +730,7 @@
       <div id="tab-prompts" role="tabpanel" aria-labelledby="tabbtn-prompts" hidden>
         <section class="askbox" aria-labelledby="pf-h">
           <h2 id="pf-h">Find a prompt</h2>
-          <p class="sub">Say what you need in your own words &mdash; you&rsquo;ll get the actual prompt, ready to copy, or be told nothing fits. <b>Searches only the open-source libraries</b> whose prompts are copied into the app<span id="pf-libs"></span>. The other libraries below are websites: open them directly.</p>
+          <p class="sub">Say what you need in your own words &mdash; you&rsquo;ll get the actual prompt, ready to copy, or be told nothing fits. <b>Searches only the open-source libraries</b> whose prompts are copied into the app<span id="pf-libs"></span>. If nothing fits, it also searches your <b>website libraries</b> live and shows the prompt with a link to its page.</p>
           <div class="ask-row">
             <textarea id="pf-text" dir="auto" rows="1" placeholder="e.g. I want a marketing specialist prompt"></textarea>
             <button class="primary-btn" id="pf-btn" type="button">Find</button>
@@ -1355,10 +1355,33 @@
             '<a class="expand-btn" style="text-decoration:none" href="' + esc(p.url) + '" target="_blank" rel="noopener">Source \u2197</a><span class="pf-copied" id="pf-copied-' + i + '"></span></div>';
         } catch (e) { box.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; }
       }
+      let pfTryHTML = '', pfWebRes = null, pfQuery = '';
+      async function pfWeb(q) {
+        const box = document.getElementById('pf-web'); if (!box) return;
+        const n = PROMPT_LIBS.filter(p => !(p.imp && p.imp.state === 'done')).length;
+        const t0 = Date.now();
+        const tick = () => { box.innerHTML = '<p class="padd-status">\uD83C\uDF10 Searching your ' + n + ' website libraries for a matching prompt\u2026 <span style="color:var(--muted)">' + Math.round((Date.now() - t0) / 1000) + 's</span></p>'; };
+        tick(); const timer = setInterval(tick, 1000);
+        try {
+          const res = await call('action', 'promptFinder:web', { query: q });
+          clearInterval(timer);
+          pfWebRes = res;
+          if (!res.results.length) { box.innerHTML = '<p class="pf-why">\uD83C\uDF10 Nothing matching found on your website libraries either.</p>' + pfTryHTML; return; }
+          box.innerHTML = '<p class="d-label" style="margin:6px 0 0">Found on your website libraries</p>' + res.results.map((r, i) => '<div class="pf-best">' +
+            '<div style="display:flex;gap:10px;align-items:baseline;justify-content:space-between"><h3 dir="auto"><span style="font-family:\'IBM Plex Mono\',monospace;color:var(--muted);margin-right:6px">' + (i + 1) + '</span>' + esc(r.title || 'Prompt') + '</h3>' +
+            (r.prompt ? '<button class="expand-btn" type="button" data-pfwshow="' + i + '">Show prompt</button>' : '') + '</div>' +
+            '<div class="badges"><span class="badge kind">\uD83C\uDF10 ' + esc(r.libTitle) + ' \u00b7 Not open source \u00b7 read live from its site</span></div>' +
+            (r.why ? '<p class="pf-why" dir="auto">' + esc(r.why) + '</p>' : '') +
+            '<div id="pf-wbody-' + i + '" hidden><pre class="pf-pre" dir="auto">' + esc(r.prompt) + '</pre></div>' +
+            '<div class="pf-actions">' + (r.prompt ? '<button class="primary-btn" type="button" data-pfwcopy="' + i + '">Copy prompt</button>' : '<span class="pf-why">The prompt couldn\u2019t be read automatically \u2014 open the page to copy it.</span>') +
+            '<a class="expand-btn" style="text-decoration:none" href="' + esc(r.url) + '" target="_blank" rel="noopener">Open page \u2197</a><span class="pf-copied" id="pf-wcopied-' + i + '"></span></div></div>').join('');
+          if (res.results[0] && res.results[0].prompt) { document.getElementById('pf-wbody-0').hidden = false; const b = box.querySelector('[data-pfwshow="0"]'); if (b) b.textContent = 'Hide prompt'; }
+        } catch (e) { clearInterval(timer); box.innerHTML = '<p class="err">Website search failed: ' + esc(e.message) + '</p>' + pfTryHTML; }
+      }
       async function pfFind() {
         const ta = document.getElementById('pf-text'), btn = document.getElementById('pf-btn'), out = document.getElementById('pf-out');
         const q = ta.value.trim(); if (!q) { ta.focus(); return; }
-        btn.disabled = true;
+        btn.disabled = true; pfQuery = q; pfWebRes = null; pfTryHTML = '';
         out.innerHTML = '<p class="pf-why">Searching the open-source libraries\u2026</p>';
         try {
           const res = await call('action', 'promptFinder:find', { query: q });
@@ -1369,15 +1392,19 @@
             res.matches.map((m, i) => '<div class="pf-best">' +
               '<div style="display:flex;gap:10px;align-items:baseline;justify-content:space-between"><h3 dir="auto"><span class="pg-n" style="font-family:\'IBM Plex Mono\',monospace;color:var(--muted);margin-right:6px">' + (i + 1) + '</span>' + esc(m.title) + '</h3>' +
               '<button class="expand-btn" type="button" data-pfshow="' + i + '">Show prompt</button></div>' +
-              '<div class="badges"><span class="badge kind">\uD83D\uDD13 ' + esc(m.libName) + '</span>' + (m.fit === 'partial' ? '<span class="pf-tag partial">\u2248 Partly</span>' : '') + '</div>' +
+              '<div class="badges"><span class="badge kind">\uD83D\uDD13 ' + esc(m.libName) + ' \u00b7 Open source</span>' + (m.fit === 'partial' ? '<span class="pf-tag partial">\u2248 Partly</span>' : '') + '</div>' +
               (m.why ? '<p class="pf-why" dir="auto">' + esc(m.why) + '</p>' : '') +
               '<div id="pf-body-' + i + '" hidden></div></div>').join('');
-          if (res.trySites && res.trySites.length) html += '<div class="pf-others"><p class="d-label">' + (res.matches.length ? 'Also worth checking in your library' : 'Try these libraries from your list') + '</p>' +
+          html += '<div id="pf-web"></div>';
+          pfTryHTML = !(res.trySites && res.trySites.length) ? '' : '<div class="pf-others"><p class="d-label">' + (res.matches.length ? 'Also worth checking in your library' : 'Try these libraries from your list') + '</p>' +
             res.trySites.map(s => '<div class="pf-other"><span><span class="t">' + esc(s.title) + '</span>' + (s.why ? ' <span class="w">\u2014 ' + esc(s.why) + '</span>' : '') + '</span>' +
               '<span style="display:flex;gap:6px;flex:none">' + (s.url ? '<a class="expand-btn" style="text-decoration:none" href="' + esc(s.url) + '" target="_blank" rel="noopener">Open \u2197</a>' : '') +
               '<button class="expand-btn" type="button" data-pfcard="' + esc(s.libId) + '">Card</button></span></div>').join('') + '</div>';
           out.innerHTML = html;
           if (res.matches.length) pfToggle(0, true);
+          // Nothing (or only partial) in the open-source copies: look on the website libraries too.
+          if (res.coverage !== 'full') pfWeb(q);
+          else document.getElementById('pf-web').innerHTML = '<button class="expand-btn" type="button" data-pfweb>\uD83C\uDF10 Also search my website libraries</button>';
         } catch (e) {
           out.innerHTML = '<p class="err">' + esc(e.message) + '</p>';
         } finally { btn.disabled = false; }
@@ -1386,6 +1413,17 @@
       document.getElementById('pf-text').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); pfFind(); } });
       document.getElementById('pf-out').addEventListener('click', async e => {
         const sh = e.target.closest('[data-pfshow]'); if (sh) { pfToggle(Number(sh.dataset.pfshow)); return; }
+        if (e.target.closest('[data-pfweb]')) { pfWeb(pfQuery); return; }
+        const ws = e.target.closest('[data-pfwshow]');
+        if (ws) { const b = document.getElementById('pf-wbody-' + ws.dataset.pfwshow); b.hidden = !b.hidden; ws.textContent = b.hidden ? 'Show prompt' : 'Hide prompt'; return; }
+        const wc = e.target.closest('[data-pfwcopy]');
+        if (wc && pfWebRes) {
+          const text = pfWebRes.results[Number(wc.dataset.pfwcopy)].prompt || '';
+          try { await navigator.clipboard.writeText(text); }
+          catch (err) { const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
+          const c = document.getElementById('pf-wcopied-' + wc.dataset.pfwcopy); if (c) { c.textContent = 'Copied \u2713'; setTimeout(() => { c.textContent = ''; }, 2500); }
+          return;
+        }
         const cd = e.target.closest('[data-pfcard]');
         if (cd) { pClear(); pstate.expanded.add(cd.dataset.pfcard); renderPrompts(); const el = document.getElementById('pcard-' + cd.dataset.pfcard); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
         const cp = e.target.closest('[data-pfcopy]');

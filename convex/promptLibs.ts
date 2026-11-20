@@ -210,7 +210,7 @@ export const indexPage = internalQuery({
 
 export const libNames = internalQuery({
   args: {},
-  handler: async (ctx) => (await ctx.db.query("plibs").collect()).filter((r) => !r.deleting).map((r) => ({ libId: r.libId, title: r.data?.title || r.libId, links: r.data?.links || [], repo: r.data?.repo || "", summary: r.data?.summary || "", imported: r.imp?.state === "done", sec: r.data?.sec || "" })),
+  handler: async (ctx) => (await ctx.db.query("plibs").collect()).filter((r) => !r.deleting).map((r) => ({ libId: r.libId, title: r.data?.title || r.libId, links: r.data?.links || [], repo: r.data?.repo || "", summary: r.data?.summary || "", bestFor: r.data?.bestFor || "", imported: r.imp?.state === "done", sec: r.data?.sec || "" })),
 });
 
 // Titles (and one-line descriptions) of one library's prompts, for the "Browse prompts" pop-up.

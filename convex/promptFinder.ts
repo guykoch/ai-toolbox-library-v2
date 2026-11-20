@@ -5,6 +5,7 @@ import { action } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { checkKey } from "./auth";
 import { callGemini, MODELS, parseJson } from "./llm";
+import { fetchWithTimeout } from "./web";
 import { internal } from "./_generated/api";
 
 type Row = { pid: number; libId: string; title: string; desc: string };
@@ -130,5 +131,117 @@ export const find = action({
       matches,
       trySites,
     };
+  },
+});
+
+// ---------- Live lookup on the website libraries (prompts that aren't copied into the app) ----------
+// 1. Gemini + Google Search finds candidate pages, only on those libraries' sites.
+// 2. The pages are read here directly.
+// 3. Gemini picks out the matching prompt from each page's real text; the text is checked against the page before it's shown.
+function hostOf(u: string) {
+  try { return new URL(u).hostname.replace(/^www\./, "").toLowerCase(); } catch { return ""; }
+}
+function pageText(html: string) {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ")
+    .replace(/<(br|p|div|li|h\d|pre|tr|section|article)[^>]*>/gi, "\n")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#0?39;|&rsquo;|&lsquo;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&ldquo;|&rdquo;/g, '"')
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n\s*\n+/g, "\n")
+    .trim();
+}
+const squash = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "");
+
+export const web = action({
+  args: { key: v.string(), query: v.string() },
+  handler: async (ctx, { key, query }): Promise<{ results: { libId: string; libTitle: string; url: string; title: string; why: string; prompt: string; verified: boolean }[]; searched: number }> => {
+    checkKey(key);
+    const q = query.trim().slice(0, 500);
+    if (!q) throw new ConvexError("Type what kind of prompt you're looking for first.");
+    const libs = ((await ctx.runQuery(internal.promptLibs.libNames, {})) as { libId: string; title: string; summary: string; bestFor: string; imported: boolean; links: [string, string][] }[])
+      .filter((l) => !l.imported && l.links.length);
+    if (!libs.length) return { results: [], searched: 0 };
+    // Which sites belong to which library (GitHub repos only match their own repo path).
+    const sites = libs.map((l) => ({ ...l, hosts: [...new Set(l.links.map((x) => x[1]))] }));
+    const ownerOf = (u: string) => {
+      const h = hostOf(u);
+      if (!h) return null;
+      for (const l of sites) for (const s of l.hosts) {
+        const sh = hostOf(s);
+        if (sh === "github.com") { const m = s.match(/github\.com\/[\w.-]+\/[\w.-]+/i); if (m && u.toLowerCase().includes(m[0].toLowerCase())) return l; }
+        else if (h === sh || h.endsWith("." + sh)) return l;
+      }
+      return null;
+    };
+
+    // 1. Find candidate pages.
+    const siteList = sites.map((l) => `${l.libId} | ${l.title} | ${l.bestFor || l.summary} | ${l.hosts.join(" ")}`).join("\n");
+    const r1 = await callGemini({
+      model: MODELS.advisor(),
+      system:
+        "Find web pages that contain a ready-made prompt matching the user's REQUEST, ONLY on the LIBRARIES' websites listed (use Google Search with site: queries on their domains). " +
+        "Return up to 4 pages, best first. For each: libId, url (the exact page address you found), title of the prompt or page. Never invent addresses. " +
+        'Reply with JSON only (no other text): {"pages":[{"libId":"p1","url":"https://...","title":"..."}]}',
+      turns: [{ role: "user", text: `REQUEST: ${q}\n\nLIBRARIES (libId | name | what it has | site):\n${siteList}` }],
+      search: true,
+      thinking: "low",
+      maxTokens: 2048,
+    });
+    let pages: { url: string; title: string }[] = [];
+    try {
+      const j = parseJson(r1.text);
+      pages = (Array.isArray(j?.pages) ? j.pages : []).map((p: any) => ({ url: String(p?.url || ""), title: String(p?.title || "") }));
+    } catch { /* fall back to the search sources below */ }
+    // Add the pages Google actually returned (redirect links), resolved to their real address.
+    for (const s of r1.sources.slice(0, 6)) pages.push({ url: s.url, title: s.title });
+
+    // 2. Read the pages (only ones on the libraries' sites).
+    const seen = new Set<string>();
+    const read: { lib: (typeof sites)[number]; url: string; title: string; text: string }[] = [];
+    for (const p of pages) {
+      if (read.length >= 4) break;
+      if (!/^https?:\/\//.test(p.url)) continue;
+      try {
+        const res = await fetchWithTimeout(p.url, { headers: { "User-Agent": "Mozilla/5.0 (compatible; ai-toolbox)" } }, 12000);
+        const finalUrl = res.url || p.url;
+        const lib = ownerOf(finalUrl);
+        if (!lib || seen.has(finalUrl)) continue;
+        seen.add(finalUrl);
+        if (!res.ok) continue;
+        const text = pageText(await res.text()).slice(0, 30000);
+        read.push({ lib, url: finalUrl, title: p.title, text });
+      } catch { /* unreachable page: skip */ }
+    }
+    if (!read.length) return { results: [], searched: libs.length };
+
+    // 3. Pull the matching prompt out of each page's real text.
+    const r2 = await callGemini({
+      model: MODELS.advisor(),
+      system:
+        "You get a REQUEST and the text of web PAGES. For each page that contains a ready-made prompt matching the request, copy that prompt EXACTLY as written on the page (do not rewrite or shorten it; if it is longer than 4000 characters, copy the first 4000). " +
+        'If a page only describes prompts without showing one, set prompt to "". Skip pages that don\'t match. Return best first. ' +
+        'Reply JSON only: {"results":[{"page":0,"title":"short name of the prompt","why":"one short sentence: what it does for this request","prompt":"..."}]}',
+      turns: [{ role: "user", text: `REQUEST: ${q}\n\n` + read.map((r, i) => `PAGE ${i} (${r.url}):\n${r.text}`).join("\n\n=====\n\n") }],
+      json: true,
+      thinking: "low",
+      maxTokens: 8192,
+    });
+    const out = parseJson(r2.text) || {};
+    const results = (Array.isArray(out.results) ? out.results : [])
+      .map((x: any) => {
+        const r = read[Number(x?.page)];
+        if (!r) return null;
+        let prompt = String(x?.prompt || "").trim();
+        // Show the prompt only if it really is on the page.
+        const verified = !!prompt && squash(r.text).includes(squash(prompt.slice(0, 300)).slice(0, 120));
+        if (!verified) prompt = "";
+        return { libId: r.lib.libId, libTitle: r.lib.title, url: r.url, title: String(x?.title || r.title || "").trim(), why: String(x?.why || "").trim(), prompt, verified };
+      })
+      .filter(Boolean)
+      .slice(0, 3) as { libId: string; libTitle: string; url: string; title: string; why: string; prompt: string; verified: boolean }[];
+    return { results, searched: libs.length };
   },
 });
