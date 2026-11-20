@@ -8,6 +8,13 @@ import { norm, gatherUrl } from "./web";
 import { callGemini, parseJson, MODELS } from "./llm";
 import { parseRepoUrl } from "./promptRows";
 
+// Open licenses that allow copying the prompts into the app.
+export function isOpenLicense(id: string) {
+  return /^(MIT|Apache|CC0|CC-BY|BSD|GPL|AGPL|LGPL|MPL|Unlicense|ISC|0BSD|WTFPL|Zlib)/i.test(String(id || "").trim());
+}
+// Repos whose content isn't really theirs to license (e.g. other companies' system prompts): card only, never copied.
+const NEVER_COPY = /github\.com\/x1xhlol\/system-prompts-and-models-of-ai-tools/i;
+
 const SECTIONS = ["general", "business", "coding", "design", "images", "patterns"];
 const KINDS = ["official", "open", "community", "academic", "free"];
 
@@ -25,14 +32,17 @@ If it isn't a prompt library at all, reply {"notALibrary": true, "why": "..."}. 
 
 export const add = action({
   args: { key: v.string(), text: v.string() },
-  handler: async (ctx, { key, text }): Promise<{ status: "added" | "exists"; libId: string; title: string; importing: boolean }> => {
+  handler: async (ctx, { key, text }): Promise<{ status: "added" | "exists"; libId: string; title: string; importing: boolean; why?: string }> => {
     checkKey(key);
     const input = text.trim();
     if (!input) throw new ConvexError("Paste a link to a prompt library (a GitHub repo or a website) first.");
     const urls = Array.from(new Set((input.match(/https?:\/\/[^\s<>"')\]]+/g) || []).map((u) => u.replace(/[.,;]+$/, "")))).slice(0, 4);
 
-    const libs: { libId: string; title: string; links: [string, string][]; repo: string }[] = await ctx.runQuery(internal.promptLibs.libNames, {});
-    const findDup = (u: string) => libs.find((l) => [l.repo, ...l.links.map((x) => x[1])].filter(Boolean).some((x) => norm(x) === norm(u)));
+    const libs: { libId: string; title: string; links: [string, string][]; repo: string; sec: string }[] = await ctx.runQuery(internal.promptLibs.libNames, {});
+    // A library is a duplicate only if the link is that card's own main link or its repo —
+    // not a secondary link (e.g. a repo mentioned on a mixed "pattern" card).
+    // "Thinking patterns" cards are mixes of several sources, so they never count as the same library.
+    const findDup = (u: string) => libs.find((l) => l.sec !== "patterns" && [l.repo, l.links[0] && l.links[0][1]].filter(Boolean).some((x) => norm(x as string) === norm(u)));
     for (const u of urls) {
       const d = findDup(u);
       if (d) return { status: "exists", libId: d.libId, title: d.title, importing: false };
@@ -56,17 +66,23 @@ export const add = action({
     const ghFromInput = urls.find((u) => parseRepoUrl(u));
     const repo = str(c.repo) && parseRepoUrl(str(c.repo)) ? str(c.repo) : ghFromInput || "";
     if (repo && !links.some((l) => norm(l[1]) === norm(repo))) links.push(["GitHub", repo]);
-    for (const l of links) {
-      const d = findDup(l[1]);
+    for (const u of [links[0][1], repo].filter(Boolean)) {
+      const d = findDup(u);
       if (d) return { status: "exists", libId: d.libId, title: d.title, importing: false };
     }
-    const openSource = c.openSource === true || /MIT|Apache|CC0|CC-BY|BSD|GPL|Unlicense/i.test(str(c.license));
+    // The repo's own license on GitHub decides whether its prompts may be copied (not the AI's guess).
+    const ghInfo = repo ? fetched.find((f) => norm(f.finalUrl) === norm(repo) || norm(f.input) === norm(repo))?.github : undefined;
+    const ghLicense = ghInfo ? ghInfo.license : "";
+    let openSource = repo ? (ghInfo ? isOpenLicense(ghLicense) : c.openSource === true || isOpenLicense(str(c.license))) : false;
+    if (repo && NEVER_COPY.test(repo)) openSource = false;
+    if (ghInfo && !ghLicense) c.license = "No license on GitHub";
+    else if (ghLicense) c.license = ghLicense;
     const data = {
       title: str(c.title) || links[0][0],
       summary: str(c.summary),
       bestFor: str(c.bestFor).slice(0, 200),
       sec: SECTIONS.includes(c.sec) ? c.sec : "general",
-      kind: KINDS.includes(c.kind) ? c.kind : repo && openSource ? "open" : "free",
+      kind: repo && openSource && c.kind !== "official" ? "open" : KINDS.includes(c.kind) && c.kind !== "open" ? c.kind : repo && openSource ? "open" : "community",
       license: str(c.license) || (openSource ? "Open source" : "Not stated"),
       format: str(c.format) || (repo ? "GitHub" : "Website"),
       how: str(c.how),
@@ -76,7 +92,8 @@ export const add = action({
     };
     const importing = !!(repo && openSource);
     const libId: string = await ctx.runMutation(internal.promptLibs.insertLib, { data, importing });
-    return { status: "added", libId, title: data.title, importing };
+    const why = importing ? "" : repo && NEVER_COPY.test(repo) ? "excluded" : repo ? "nolicense" : "website";
+    return { status: "added", libId, title: data.title, importing, why };
   },
 });
 
@@ -101,5 +118,24 @@ export const bestForMissing = internalAction({
     } catch (e) {
       console.log("bestFor fill failed", String(e));
     }
+  },
+});
+
+// "Check again": re-reads a GitHub repo's license; if it's now open, the prompts get copied.
+export const recheck = action({
+  args: { key: v.string(), libId: v.string() },
+  handler: async (ctx, { key, libId }): Promise<{ open: boolean; license: string }> => {
+    checkKey(key);
+    const libs: { libId: string; links: [string, string][]; repo: string }[] = await ctx.runQuery(internal.promptLibs.libNames, {});
+    const lib = libs.find((l) => l.libId === libId);
+    const gh = lib && lib.links.map((x) => x[1]).find((u) => parseRepoUrl(u));
+    if (!lib || !gh) throw new ConvexError("This library has no GitHub repo.");
+    if (NEVER_COPY.test(gh)) return { open: false, license: "Not copied: this repo collects other companies' prompts" };
+    const f = await gatherUrl(gh);
+    const license = f.github?.license || "";
+    if (!isOpenLicense(license)) return { open: false, license: license || "No license on GitHub" };
+    const r = parseRepoUrl(gh)!;
+    await ctx.runMutation(internal.promptLibs.setRepo, { libId, repo: `https://github.com/${r.owner}/${r.repo}`, license });
+    return { open: true, license };
   },
 });

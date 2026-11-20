@@ -96,6 +96,18 @@ export const fillBestFor = mutation({
   },
 });
 
+// A repo turned out to have an open license: remember it and start copying its prompts.
+export const setRepo = internalMutation({
+  args: { libId: v.string(), repo: v.string(), license: v.string() },
+  handler: async (ctx, { libId, repo, license }) => {
+    const lib = await ctx.db.query("plibs").withIndex("by_libId", (q) => q.eq("libId", libId)).first();
+    if (!lib || lib.deleting) return;
+    const data = { ...lib.data, repo, license, kind: lib.data?.kind === "official" ? "official" : "open" };
+    await ctx.db.patch(lib._id, { data });
+    await startImport(ctx, { ...lib, data });
+  },
+});
+
 export const missingBestFor = internalQuery({
   args: {},
   handler: async (ctx) => (await ctx.db.query("plibs").collect()).filter((r) => !r.deleting && !r.data?.bestFor).map((r) => ({ libId: r.libId, title: r.data?.title || "", summary: r.data?.summary || "", links: r.data?.links || [] })),
@@ -198,7 +210,7 @@ export const indexPage = internalQuery({
 
 export const libNames = internalQuery({
   args: {},
-  handler: async (ctx) => (await ctx.db.query("plibs").collect()).filter((r) => !r.deleting).map((r) => ({ libId: r.libId, title: r.data?.title || r.libId, links: r.data?.links || [], repo: r.data?.repo || "", summary: r.data?.summary || "", imported: r.imp?.state === "done" })),
+  handler: async (ctx) => (await ctx.db.query("plibs").collect()).filter((r) => !r.deleting).map((r) => ({ libId: r.libId, title: r.data?.title || r.libId, links: r.data?.links || [], repo: r.data?.repo || "", summary: r.data?.summary || "", imported: r.imp?.state === "done", sec: r.data?.sec || "" })),
 });
 
 // Titles (and one-line descriptions) of one library's prompts, for the "Browse prompts" pop-up.

@@ -1284,7 +1284,10 @@
         const impText = imp.state === 'done' ? 'Yes &mdash; <b>' + imp.count.toLocaleString() + '</b> prompts copied'
           : imp.state === 'importing' ? esc(imp.note || 'Copying prompts\u2026') + (Date.now() - Date.parse(imp.at || 0) > 4 * 60 * 1000 && p.repo ? ' <button class="mini-btn" type="button" data-preimport="' + p.id + '">Restart copy</button>' : '')
           : imp.state === 'failed' ? 'Couldn&rsquo;t copy: ' + esc(imp.note) + (p.repo ? ' <button class="mini-btn" type="button" data-preimport="' + p.id + '">Try again</button>' : '')
-          : 'No &mdash; website, open it directly';
+          : /system-prompts-and-models-of-ai-tools/i.test(JSON.stringify(p.links || [])) && p.sec !== 'patterns' ? 'No &mdash; not copied: this repo collects other companies&rsquo; system prompts'
+          : (p.links || []).some(l => /github\.com\/[\w.-]+\/[\w.-]+/i.test(l[1])) && p.sec !== 'patterns'
+            ? 'No &mdash; no open license found on GitHub <button class="mini-btn" type="button" data-precheck="' + p.id + '">Check again</button>'
+            : 'No &mdash; website, open it directly';
         facts += '<dt>In &ldquo;Find a prompt&rdquo;</dt><dd>' + impText + '</dd>';
         if (p.bestFor) facts += '<dt>Best for</dt><dd>' + esc(p.bestFor) + '</dd>';
         facts += '<dt>How to browse</dt><dd>' + esc(p.how) + '</dd>' +
@@ -1412,6 +1415,14 @@
           if (!confirm('Delete \u201c' + p.title + '\u201d' + (n ? ' and its ' + n.toLocaleString() + ' prompts from Find a prompt' : '') + '? This can\u2019t be undone.')) return;
           PROMPT_LIBS = PROMPT_LIBS.filter(x => x.id !== p.id); renderPrompts();
           call('mutation', 'promptLibs:remove', { libId: p.id }).catch(err => { alert('Couldn\u2019t delete: ' + err.message); loadPrompts(); });
+          return;
+        }
+        const rc = e.target.closest('[data-precheck]');
+        if (rc) {
+          rc.disabled = true; rc.textContent = 'Checking\u2026';
+          call('action', 'promptAdd:recheck', { libId: rc.dataset.precheck })
+            .then(r => { if (r.open) { loadPrompts(); } else { rc.textContent = 'Still: ' + r.license; } })
+            .catch(err => { rc.textContent = 'Check again'; rc.disabled = false; alert(err.message); });
           return;
         }
         const ri = e.target.closest('[data-preimport]');
@@ -1569,7 +1580,7 @@
             const r = await call('action', 'promptAdd:add', { text: list[n] });
             lastId = r.libId;
             if (r.status === 'exists') results.push('\u2139\ufe0f ' + esc(r.title) + ' is already in your list.');
-            else { anyAdded = true; results.push('\u2713 Added <b>' + esc(r.title) + '</b>.' + (r.importing ? ' Copying its prompts into Find a prompt now.' : ' Not an open-source repo, so its prompts stay on its website.')); }
+            else { anyAdded = true; results.push('\u2713 Added <b>' + esc(r.title) + '</b>.' + (r.importing ? ' Copying its prompts into Find a prompt now.' : r.why === 'nolicense' ? ' Its GitHub repo has no open license, so its prompts weren\u2019t copied (the card has a Check again button).' : r.why === 'excluded' ? ' Card only: this repo collects other companies\u2019 system prompts, so they aren\u2019t copied.' : ' It\u2019s a website, so its prompts stay there.')); }
           } catch (e) { results.push('<span style="color:#b42318">\u2715 ' + label + ': ' + esc(e.message) + '</span>'); }
         }
         clearInterval(timer);
