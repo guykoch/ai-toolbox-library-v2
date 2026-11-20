@@ -107,3 +107,20 @@ export async function gatherUrl(raw: string): Promise<Fetched> {
   return out;
 }
 
+
+// Bare host name (no www), for matching links to a site.
+export function hostOf(u: string) {
+  try { return new URL(u).hostname.replace(/^www\./, "").toLowerCase(); } catch { return ""; }
+}
+export function pageText(html: string) {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ")
+    .replace(/<(br|p|div|li|h\d|pre|tr|section|article)[^>]*>/gi, "\n")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#0?39;|&rsquo;|&lsquo;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&ldquo;|&rdquo;/g, '"')
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n\s*\n+/g, "\n")
+    .trim();
+}

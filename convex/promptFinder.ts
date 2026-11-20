@@ -5,7 +5,7 @@ import { action, internalQuery, internalMutation } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { checkKey } from "./auth";
 import { callGemini, MODELS, parseJson } from "./llm";
-import { fetchWithTimeout } from "./web";
+import { fetchWithTimeout, hostOf, pageText } from "./web";
 import { internal } from "./_generated/api";
 
 type Row = { pid: number; libId: string; title: string; desc: string };
@@ -138,21 +138,6 @@ export const find = action({
 // 1. Gemini + Google Search finds candidate pages, only on those libraries' sites.
 // 2. The pages are read here directly.
 // 3. Gemini picks out the matching prompt from each page's real text; the text is checked against the page before it's shown.
-export function hostOf(u: string) {
-  try { return new URL(u).hostname.replace(/^www\./, "").toLowerCase(); } catch { return ""; }
-}
-export function pageText(html: string) {
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ")
-    .replace(/<(br|p|div|li|h\d|pre|tr|section|article)[^>]*>/gi, "\n")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#0?39;|&rsquo;|&lsquo;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&ldquo;|&rdquo;/g, '"')
-    .replace(/[ \t]+/g, " ")
-    .replace(/\n\s*\n+/g, "\n")
-    .trim();
-}
 const squash = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "");
 
 export const web = action({

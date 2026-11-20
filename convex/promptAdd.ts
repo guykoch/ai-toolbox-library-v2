@@ -93,6 +93,8 @@ export const add = action({
     const importing = !!(repo && openSource);
     const libId: string = await ctx.runMutation(internal.promptLibs.insertLib, { data, importing });
     if (!importing) await ctx.scheduler.runAfter(0, internal.siteCheck.run, { libIds: [libId] });
+    // xyz: website libraries (and repos without an open license) get their prompts copied from the website.
+    if (!importing) await ctx.runMutation(internal.webjobs.enqueueLibs, { libIds: [libId] });
     const why = importing ? "" : repo && NEVER_COPY.test(repo) ? "excluded" : repo ? "nolicense" : "website";
     return { status: "added", libId, title: data.title, importing, why };
   },

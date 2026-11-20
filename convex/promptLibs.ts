@@ -201,8 +201,16 @@ export const progress = internalMutation({
 // Starts (or restarts) copying one library's prompts. Each start gets a new job id.
 async function startImport(ctx: any, lib: any) {
   const run = Math.random().toString(36).slice(2) + Date.now().toString(36);
-  await ctx.db.patch(lib._id, { imp: { state: "importing", count: 0, note: "Copying prompts…", at: nowIso(), run } });
-  await ctx.scheduler.runAfter(0, internal.promptImport.run, { libId: lib.libId, repo: lib.data.repo, runId: run });
+  if (lib.data?.repo) {
+    await ctx.db.patch(lib._id, { imp: { state: "importing", count: 0, note: "Copying prompts…", at: nowIso(), run } });
+    await ctx.scheduler.runAfter(0, internal.promptImport.run, { libId: lib.libId, repo: lib.data.repo, runId: run });
+  } else {
+    // Website library: copy it from the website (xyz).
+    const old = await ctx.db.query("webjobs").withIndex("by_lib", (q: any) => q.eq("libId", lib.libId)).first();
+    if (old) await ctx.db.delete(old._id);
+    await ctx.db.patch(lib._id, { imp: { state: "importing", count: 0, note: "Looking for prompt pages…", at: nowIso(), run } });
+    await ctx.scheduler.runAfter(0, internal.webcopy.discover, { libId: lib.libId, runId: run });
+  }
 }
 export const startImportFor = internalMutation({
   args: { libId: v.string() },
@@ -273,6 +281,8 @@ export const remove = mutation({
     const lib = await ctx.db.query("plibs").withIndex("by_libId", (q) => q.eq("libId", libId)).first();
     if (!lib) return { ok: true };
     await ctx.db.patch(lib._id, { deleting: true });
+    const job = await ctx.db.query("webjobs").withIndex("by_lib", (q) => q.eq("libId", libId)).first();
+    if (job) { await ctx.db.delete(job._id); await ctx.scheduler.runAfter(0, internal.webjobs.kickNext, {}); }
     await ctx.scheduler.runAfter(0, internal.promptLibs.purge, { libId });
     return { ok: true };
   },
@@ -314,7 +324,7 @@ export const reimport = mutation({
   handler: async (ctx, { key, libId }) => {
     checkKey(key);
     const lib = await ctx.db.query("plibs").withIndex("by_libId", (q) => q.eq("libId", libId)).first();
-    if (!lib || lib.deleting || !lib.data?.repo) throw new ConvexError("This library has no open-source repo to copy prompts from.");
+    if (!lib || lib.deleting) throw new ConvexError("That library is no longer in your list.");
     if (lib.imp?.state === "importing" && !isStale(lib.imp)) return { ok: true };
     await startImport(ctx, lib);
     return { ok: true };

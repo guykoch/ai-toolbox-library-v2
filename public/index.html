@@ -83,6 +83,21 @@
       .subtab[aria-selected="true"] { background: var(--ink); color: var(--bg); }
       .empty-tab { padding: 60px 0 120px; text-align: center; color: var(--ink-2); }
       .empty-tab h2 { margin: 0 0 6px; color: var(--ink); }
+      .pg-box { margin: 18px 0 0; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+      .pg-head { display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+      .pg-head h2 { margin: 0; font-size: 17px; }
+      .pg-one { margin: 2px 0 0; font-size: 13.5px; color: var(--muted); }
+      #pg-panel { margin-top: 12px; }
+      #pg-panel .sub { margin: 0 0 10px; }
+      .pg-opts { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 10px; font-size: 14px; }
+      .pg-opts .sort-sel { margin-left: 6px; }
+      .pg-mode { display: inline-flex; gap: 12px; }
+      .pg-mode label { display: inline-flex; gap: 5px; align-items: center; cursor: pointer; }
+      #pg-out:empty { display: none; }
+      #pg-out { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+      .pg-list { margin: 0; padding-left: 18px; font-size: 14px; color: var(--ink-2); }
+      .pg-q { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+      .pg-q input { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: inherit; font-size: 15px; }
       #pf-out:empty { display: none; }
       #pf-out { margin-top: 14px; display: flex; flex-direction: column; gap: 12px; }
       .pf-msg { margin: 0; font-size: 15px; color: var(--ink); }
@@ -738,9 +753,30 @@
       </footer>
       </div>
       <div id="tab-prompts" role="tabpanel" aria-labelledby="tabbtn-prompts" hidden>
+        <section class="pg-box" aria-labelledby="pg-h">
+          <div class="pg-head">
+            <div><h2 id="pg-h">&#10024; Prompt Generator</h2><p class="pg-one">Turn a rough idea into a polished, ready-to-use prompt.</p></div>
+            <button class="primary-btn" id="pg-toggle" type="button" aria-expanded="false" aria-controls="pg-panel">Prompt Generator</button>
+          </div>
+          <div id="pg-panel" hidden>
+            <p class="sub">Write what you want the AI to do, in plain words &mdash; e.g. &ldquo;make the chat a marketing specialist&rdquo; or &ldquo;help me write a cold email to a VC&rdquo;. You&rsquo;ll get back a complete prompt with a role, context, steps and output format, ready to copy. Fill in any <b>[brackets]</b>, then paste it into your AI.</p>
+            <div class="ask-row">
+              <textarea id="pg-text" dir="auto" rows="2" placeholder="e.g. make the chat a marketing specialist"></textarea>
+            </div>
+            <div class="pg-opts">
+              <label>For <select id="pg-target" class="sort-sel"><option value="any">Any AI</option><option value="chatgpt">ChatGPT</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="image">Image generator</option></select></label>
+              <span class="pg-mode" role="radiogroup" aria-label="Mode">
+                <label><input type="radio" name="pg-mode" value="quick" checked /> Quick</label>
+                <label title="Also asks 2-3 questions to make it even better"><input type="radio" name="pg-mode" value="detailed" /> Detailed</label>
+              </span>
+              <button class="primary-btn" id="pg-btn" type="button">Generate</button>
+            </div>
+            <div id="pg-out" aria-live="polite"></div>
+          </div>
+        </section>
         <section class="askbox" aria-labelledby="pf-h">
           <h2 id="pf-h">Find a prompt</h2>
-          <p class="sub">Say what you need in your own words &mdash; you&rsquo;ll get the actual prompt, ready to copy, or be told nothing fits. <b>Searches only the open-source libraries</b> whose prompts are copied into the app<span id="pf-libs"></span>. After the results, a button lets you also search your <b>website libraries</b> live (slower, uses a bit more Gemini credit).</p>
+          <p class="sub">Say what you need in your own words &mdash; you&rsquo;ll get the actual prompt, ready to copy, or be told nothing fits. <b>Searches the libraries whose prompts are copied into the app</b> (open-source ones, and websites the app could copy)<span id="pf-libs"></span>. After the results, a button lets you also search your <b>website libraries</b> live (slower, uses a bit more Gemini credit).</p>
           <div class="ask-row">
             <textarea id="pf-text" dir="auto" rows="1" placeholder="e.g. I want a marketing specialist prompt"></textarea>
             <button class="primary-btn" id="pf-btn" type="button">Find</button>
@@ -1300,6 +1336,7 @@
         let badges = '<span class="badge cat"><span class="dot" style="background:' + s.color + '"></span>' + s.label + '</span>' +
           '<span class="badge kind">' + k.icon + ' ' + k.label + '</span>';
         if (p.imp && p.imp.state === 'done') badges += '<span class="badge" title="Searchable in Find a prompt">&#128269; ' + p.imp.count.toLocaleString() + ' prompts</span>';
+        if (p.imp && p.imp.state === 'queued') badges += '<span class="badge">&#8987; Waiting to copy</span>';
         if (p.imp && p.imp.state === 'importing') badges += '<span class="badge" title="' + esc(p.imp.note || '') + '">&#8987; ' + esc(p.imp.note || 'Copying prompts\u2026') + '</span>';
         let facts = '<dt>Section</dt><dd>' + s.label + '</dd>' +
           '<dt>Source</dt><dd>' + k.label + '</dd>' +
@@ -1307,9 +1344,10 @@
           '<dt>Format</dt><dd>' + esc(p.format) + '</dd>';
         if (p.sources) facts += '<dt>Found in</dt><dd>' + esc(p.sources) + '</dd>';
         const imp = p.imp || { state: 'none', count: 0 };
-        const impText = imp.state === 'done' ? 'Yes &mdash; <b>' + imp.count.toLocaleString() + '</b> prompts copied'
+        const impText = imp.state === 'done' ? 'Yes &mdash; <b>' + imp.count.toLocaleString() + '</b> prompts copied' + (p.copiedFrom === 'website' ? ' from the website (not open source)' : '')
+          : imp.state === 'queued' ? 'Waiting in line to be copied from the website&hellip;'
           : imp.state === 'importing' ? esc(imp.note || 'Copying prompts\u2026') + (Date.now() - Date.parse(imp.at || 0) > 4 * 60 * 1000 && p.repo ? ' <button class="mini-btn" type="button" data-preimport="' + p.id + '">Restart copy</button>' : '')
-          : imp.state === 'failed' ? 'Couldn&rsquo;t copy: ' + esc(imp.note) + (p.repo ? ' <button class="mini-btn" type="button" data-preimport="' + p.id + '">Try again</button>' : '')
+          : imp.state === 'failed' ? (p.repo ? 'Couldn&rsquo;t copy: ' : 'Couldn&rsquo;t copy from the website: ') + esc(imp.note) + ' <button class="mini-btn" type="button" data-preimport="' + p.id + '">Try again</button>'
           : /system-prompts-and-models-of-ai-tools/i.test(JSON.stringify(p.links || [])) && p.sec !== 'patterns' ? 'No &mdash; not copied: this repo collects other companies&rsquo; system prompts'
           : (p.links || []).some(l => /github\.com\/[\w.-]+\/[\w.-]+/i.test(l[1])) && p.sec !== 'patterns'
             ? 'No &mdash; no open license found on GitHub <button class="mini-btn" type="button" data-precheck="' + p.id + '">Check again</button>'
@@ -1345,7 +1383,7 @@
         const nPrompts = inFinder.reduce((n, p) => n + p.imp.count, 0);
         document.getElementById('p-statline').innerHTML = '<b>' + total + '</b> prompt libraries &middot; <b>' + openN + '</b> open source &middot; <b>' + nPrompts.toLocaleString() + '</b> prompts searchable in Find a prompt';
         document.getElementById('pf-libs').innerHTML = inFinder.length ? ' (<b>' + nPrompts.toLocaleString() + '</b> prompts)' : '';
-        const copying = PROMPT_LIBS.filter(p => p.imp && p.imp.state === 'importing');
+        const copying = PROMPT_LIBS.filter(p => p.imp && (p.imp.state === 'importing' || p.imp.state === 'queued'));
         if (copying.length || (pSeed && !pSeed.finished)) document.getElementById('pf-libs').innerHTML += ' <b>(&#8987; copying ' + (copying.length ? copying.length + ' librar' + (copying.length > 1 ? 'ies' : 'y') : 'prompts') + ' now&hellip;)</b>';
         const chip = (attr, key, label, n, on) => '<button type="button" class="kindchip" ' + attr + '="' + key + '" aria-pressed="' + on + '"' + (n === 0 && !on ? ' style="opacity:.45"' : '') + '>' + label + ' <span class="kc-n">' + n + '</span></button>';
         const secBase = PROMPT_LIBS.filter(p => pMatches(p, 'sec'));
@@ -1365,6 +1403,52 @@
         if (!PROMPT_LIBS.length && !pLoaded) { document.getElementById('pgroups').innerHTML = '<p class="p-empty">Loading the libraries&hellip;</p>'; return; }
         document.getElementById('pgroups').innerHTML = html || '<p class="p-empty">Nothing matches. <button class="showall-btn" type="button" data-pclear>Show all</button></p>';
       }
+      // ---------- Prompt Generator ----------
+      let pgLast = null;
+      document.getElementById('pg-toggle').addEventListener('click', e => {
+        const p = document.getElementById('pg-panel'), b = e.currentTarget;
+        p.hidden = !p.hidden; b.setAttribute('aria-expanded', String(!p.hidden)); b.textContent = p.hidden ? 'Prompt Generator' : 'Close';
+        if (!p.hidden) document.getElementById('pg-text').focus();
+      });
+      async function pgRun(answers) {
+        const ta = document.getElementById('pg-text'), btn = document.getElementById('pg-btn'), out = document.getElementById('pg-out');
+        const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+        const mode = document.querySelector('input[name="pg-mode"]:checked').value;
+        const target = document.getElementById('pg-target').value;
+        btn.disabled = true;
+        const t0 = Date.now(); const tick = () => { out.innerHTML = '<p class="padd-status">\u2728 Writing your prompt\u2026 <span style="color:var(--muted)">' + Math.round((Date.now() - t0) / 1000) + 's</span></p>'; };
+        tick(); const timer = setInterval(tick, 1000);
+        try {
+          const r = await call('action', 'promptGen:generate', { text, target, mode, ...(answers ? { answers } : {}) });
+          pgLast = r;
+          let html = '<div class="pf-best"><h3>Your optimized prompt</h3><pre class="pf-pre" dir="auto" style="max-height:420px">' + esc(r.prompt) + '</pre>' +
+            '<div class="pf-actions"><button class="primary-btn" type="button" data-pgcopy>Copy prompt</button><span class="pf-copied" id="pg-copied"></span></div></div>';
+          if (r.whatChanged.length) html += '<div><p class="d-label" style="margin:0 0 4px">What changed</p><ul class="pg-list">' + r.whatChanged.map(x => '<li dir="auto">' + esc(x) + '</li>').join('') + '</ul></div>';
+          if (r.techniques.length) html += '<p class="pf-why" style="margin:0"><b>Techniques:</b> ' + r.techniques.map(esc).join(' \u00b7 ') + '</p>';
+          if (r.proTip) html += '<p class="pf-why" style="margin:0" dir="auto"><b>Pro tip:</b> ' + esc(r.proTip) + '</p>';
+          if (r.questions.length) html += '<div class="pf-best"><p class="d-label" style="margin:0">Answer for an even better prompt (optional)</p>' +
+            r.questions.map((q, i) => '<label class="pg-q"><span dir="auto">' + esc(q) + '</span><input type="text" dir="auto" data-pgq="' + i + '" /></label>').join('') +
+            '<div class="pf-actions"><button class="primary-btn" type="button" data-pgimprove>Improve with my answers</button></div></div>';
+          out.innerHTML = html;
+        } catch (e) { out.innerHTML = '<p class="err" style="color:#b42318;margin:0">' + esc(e.message) + '</p>'; }
+        finally { clearInterval(timer); btn.disabled = false; }
+      }
+      document.getElementById('pg-btn').addEventListener('click', () => pgRun());
+      document.getElementById('pg-text').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); pgRun(); } });
+      document.getElementById('pg-out').addEventListener('click', async e => {
+        if (e.target.closest('[data-pgcopy]') && pgLast) {
+          try { await navigator.clipboard.writeText(pgLast.prompt); }
+          catch (err) { const t = document.createElement('textarea'); t.value = pgLast.prompt; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
+          const c = document.getElementById('pg-copied'); if (c) { c.textContent = 'Copied \u2713'; setTimeout(() => { c.textContent = ''; }, 2500); }
+          return;
+        }
+        if (e.target.closest('[data-pgimprove]') && pgLast) {
+          const answers = pgLast.questions.map((q, i) => ({ q, a: (document.querySelector('[data-pgq="' + i + '"]') || {}).value || '' }));
+          if (!answers.some(a => a.a.trim())) { const f = document.querySelector('[data-pgq="0"]'); if (f) f.focus(); return; }
+          pgRun(answers);
+        }
+      });
+
       // ---------- Find a prompt ----------
       const pfCache = new Map();
       async function pfText(hit) {
@@ -1425,7 +1509,7 @@
             res.matches.map((m, i) => '<div class="pf-best">' +
               '<div style="display:flex;gap:10px;align-items:baseline;justify-content:space-between"><h3 dir="auto"><span class="pg-n" style="font-family:\'IBM Plex Mono\',monospace;color:var(--muted);margin-right:6px">' + (i + 1) + '</span>' + esc(m.title) + '</h3>' +
               '<button class="expand-btn" type="button" data-pfshow="' + i + '">Show prompt</button></div>' +
-              '<div class="badges"><span class="badge kind">\uD83D\uDD13 ' + esc(m.libName) + ' \u00b7 Open source</span>' + (m.fit === 'partial' ? '<span class="pf-tag partial">\u2248 Partly</span>' : '') + '</div>' +
+              '<div class="badges">' + (() => { const L = PROMPT_LIBS.find(x => x.id === m.libId); return L && L.kind !== 'open' && !L.repo ? '<span class="badge kind">\uD83C\uDF10 ' + esc(m.libName) + ' \u00b7 Copied from website, not open source</span>' : '<span class="badge kind">\uD83D\uDD13 ' + esc(m.libName) + ' \u00b7 Open source</span>'; })() + (m.fit === 'partial' ? '<span class="pf-tag partial">\u2248 Partly</span>' : '') + '</div>' +
               (m.why ? '<p class="pf-why" dir="auto">' + esc(m.why) + '</p>' : '') +
               '<div id="pf-body-' + i + '" hidden></div></div>').join('');
           html += '<div id="pf-web"></div>';
@@ -1608,7 +1692,7 @@
       document.addEventListener('keydown', e => { if (e.key === 'Escape' && !document.getElementById('pb').hidden) pbClose(); });
 
       // ---------- load the libraries from the database ----------
-      let pSeed = null, pPoll = null, pLoaded = false, pResumed = false, pBestAsked = false, pSiteAsked = false, pAddsAsked = false;
+      let pSeed = null, pPoll = null, pLoaded = false, pResumed = false, pBestAsked = false, pSiteAsked = false, pAddsAsked = false, pXyzAsked = false;
       async function loadPrompts() {
         try {
           let res = await call('query', 'promptLibs:list', {});
@@ -1621,7 +1705,9 @@
           const stale = PROMPT_LIBS.some(p => p.imp && p.imp.state === 'importing' && Date.now() - Date.parse(p.imp.at || 0) > 4 * 60 * 1000);
           if (stale && !pResumed) { pResumed = true; try { await call('mutation', 'promptLibs:resumeStuck', {}); res = await call('query', 'promptLibs:list', {}); PROMPT_LIBS = res.libs; pSeed = res.seed; } catch (e) {} }
           renderPrompts();
-          const busy = (pSeed && !pSeed.finished) || PROMPT_LIBS.some(p => p.imp && p.imp.state === 'importing');
+          const busy = (pSeed && !pSeed.finished) || PROMPT_LIBS.some(p => p.imp && (p.imp.state === 'importing' || p.imp.state === 'queued'));
+          // xyz: copy website libraries' prompts (first time: all of them; later: keep the line moving).
+          if (!pXyzAsked) { pXyzAsked = true; call('mutation', 'webjobs:ensure', {}).then(r => { if (r.started) setTimeout(loadPrompts, 3000); }).catch(() => {}); }
           clearTimeout(pPoll); if (busy) pPoll = setTimeout(loadPrompts, 5000);
         } catch (e) { document.getElementById('p-statline').textContent = 'Couldn\u2019t load the prompt libraries: ' + e.message; }
       }
@@ -1673,7 +1759,7 @@
 
       // ---------- "x" to clear each text box ----------
       (function () {
-        const ids = ['ask-text', 'add-text', 'q', 'pf-text', 'padd-text', 'pq', 'pb-q'];
+        const ids = ['ask-text', 'add-text', 'q', 'pg-text', 'pf-text', 'padd-text', 'pq', 'pb-q'];
         const boxes = [];
         for (const id of ids) {
           const el = document.getElementById(id); if (!el) continue;

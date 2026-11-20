@@ -5,8 +5,7 @@ import { internalAction, internalQuery, internalMutation, mutation } from "./_ge
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { checkKey } from "./auth";
-import { fetchWithTimeout } from "./web";
-import { pageText } from "./promptFinder";
+import { fetchWithTimeout, pageText } from "./web";
 
 const NEEDS_JS = /enable javascript|javascript is (required|disabled)|please turn on javascript|you need to enable|requires javascript|checking your browser|just a moment\.\.\.|access denied|captcha/i;
 

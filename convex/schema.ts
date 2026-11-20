@@ -39,6 +39,24 @@ export default defineSchema({
     deleting: v.optional(v.boolean()),
   }).index("by_libId", ["libId"]),
 
+  // xyz: one copy job per website library being copied (pages still to read, prompts seen so far).
+  webjobs: defineTable({
+    libId: v.string(),
+    runId: v.string(),
+    queue: v.array(v.string()), // "depth|url"
+    pos: v.number(),
+    found: v.number(),
+    ai: v.number(), // pages read with Gemini
+    reader: v.number(), // pages read through the browser-rendering service
+    fetched: v.optional(v.number()), // pages that could be opened
+    seen: v.array(v.string()),
+    visited: v.array(v.string()),
+    prefix: v.string(),
+    host: v.string(),
+    disallow: v.array(v.string()),
+    note: v.string(),
+  }).index("by_lib", ["libId"]),
+
   // Cached page lists (sitemaps) of website libraries, for the live website search. Refreshed weekly.
   sitemaps: defineTable({ host: v.string(), at: v.number(), urls: v.array(v.string()) }).index("by_host", ["host"]),
 
