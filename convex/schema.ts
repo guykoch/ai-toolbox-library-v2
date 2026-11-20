@@ -39,6 +39,9 @@ export default defineSchema({
     deleting: v.optional(v.boolean()),
   }).index("by_libId", ["libId"]),
 
+  // Cached page lists (sitemaps) of website libraries, for the live website search. Refreshed weekly.
+  sitemaps: defineTable({ host: v.string(), at: v.number(), urls: v.array(v.string()) }).index("by_host", ["host"]),
+
   // Prompts copied from open-source libraries, for "Find a prompt". Split in two so search reads only the small part.
   plIndex: defineTable({ libId: v.string(), pid: v.number(), title: v.string(), desc: v.string() })
     .index("by_lib", ["libId"])

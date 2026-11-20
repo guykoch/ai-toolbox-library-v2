@@ -1,7 +1,7 @@
 // "Find a prompt": searches the prompts inside the open-source prompt libraries (see promptCatalog.ts).
 // Step 1: Gemini turns the request into search words. Step 2: a fast word search picks ~40 candidates.
 // Step 3: Gemini reads the candidates and picks the best one — or says nothing fits.
-import { action } from "./_generated/server";
+import { action, internalQuery, internalMutation } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { checkKey } from "./auth";
 import { callGemini, MODELS, parseJson } from "./llm";
@@ -177,79 +177,145 @@ export const web = action({
       return null;
     };
 
-    // Words to look for (the request plus synonyms, e.g. "stress test" -> pre-mortem, devil's advocate).
-    let keywords: string[] = words(q);
+    // Words and phrases to look for (the request plus synonyms, e.g. "stress test" -> pre-mortem, devil's advocate).
+    const norm = (s: string) => s.toLowerCase().replace(/%20/g, " ").replace(/[’']/g, "").replace(/[-_/.+]+/g, " ").replace(/\s+/g, " ").trim();
+    let keywords: string[] = norm(q).split(" ").filter((w) => w.length >= 4 && !STOP.has(w));
     try {
       const rk = await callGemini({
         model: MODELS.advisor(),
-        system: 'Someone is looking for a ready-made AI prompt. Give 10-15 short English keywords and synonyms likely to appear in the title or text of a matching prompt (e.g. "stress test" -> pre-mortem, premortem, devil\'s advocate, red team, risk). Reply JSON only: {"keywords": ["..."]}',
+        system: 'Someone is looking for a ready-made AI prompt. Give 10-15 short English keywords or 2-word phrases, including synonyms, likely to appear in the title, web address or text of a matching prompt (e.g. "stress test" -> pre-mortem, premortem, devil\'s advocate, red team, risk, failure). Reply JSON only: {"keywords": ["..."]}',
         turns: [{ role: "user", text: q }],
         json: true,
         thinking: "low",
         maxTokens: 512,
       });
       const k = parseJson(rk.text)?.keywords;
-      if (Array.isArray(k)) keywords = [...new Set([...keywords, ...k.flatMap((x: any) => words(String(x)))])];
+      if (Array.isArray(k)) keywords = [...keywords, ...k.map((x: any) => norm(String(x)))];
     } catch { /* use the request's own words */ }
-    const hits = (s: string) => { const t = s.toLowerCase(); return keywords.reduce((n, k) => n + (t.includes(k) ? 1 : 0), 0); };
+    keywords = [...new Set(keywords.filter((k) => k.length >= 4 && !STOP.has(k)))].slice(0, 30);
+    const hits = (s: string) => { const t = " " + norm(s) + " "; return keywords.reduce((n, k) => n + (t.includes(k) ? 1 : 0), 0); };
 
-    const UA = { "User-Agent": "Mozilla/5.0 (compatible; ai-toolbox)", Accept: "text/html" };
-    const getPage = async (url: string) => {
-      const res = await fetchWithTimeout(url, { headers: UA }, 12000);
+    const UA = { "User-Agent": "Mozilla/5.0 (compatible; ai-toolbox)", Accept: "text/html,application/xml" };
+    const getRaw = async (url: string, ms = 12000) => {
+      const res = await fetchWithTimeout(url, { headers: UA }, ms);
       if (!res.ok) return null;
-      const html = await res.text();
-      return { finalUrl: res.url || url, html, text: pageText(html) };
+      return { finalUrl: res.url || url, body: await res.text() };
+    };
+    const getPage = async (url: string) => {
+      const r = await getRaw(url);
+      return r ? { finalUrl: r.finalUrl, html: r.body, text: pageText(r.body) } : null;
     };
     // Keeps the parts of a long page around the matching words, so the important bits fit.
     const focus = (text: string) => {
       if (text.length <= 30000) return text;
-      const low = text.toLowerCase(), spans: [number, number][] = [];
-      for (const k of keywords) { let at = low.indexOf(k); let n = 0; while (at >= 0 && n++ < 6) { spans.push([Math.max(0, at - 1500), at + 2500]); at = low.indexOf(k, at + k.length); } }
+      const low = text.toLowerCase();
+      const spans: [number, number][] = [];
+      for (const k of keywords) for (const variant of [k, k.replace(/ /g, "-"), k.replace(/ /g, "")]) { let at = low.indexOf(variant); let n = 0; while (at >= 0 && n++ < 6) { spans.push([Math.max(0, at - 1500), at + 2500]); at = low.indexOf(variant, at + variant.length); } }
       if (!spans.length) return text.slice(0, 30000);
       spans.sort((a, b) => a[0] - b[0]);
       const merged: [number, number][] = [];
       for (const s of spans) { const last = merged[merged.length - 1]; if (last && s[0] <= last[1]) last[1] = Math.max(last[1], s[1]); else merged.push([...s]); }
       return merged.map(([a, b]) => text.slice(a, b)).join("\n…\n").slice(0, 30000);
     };
+    // Links on a page that stay on the same library's site, scored by their words and address.
+    const NEXT = /^(next|older|more|load more|›|»|→|>|\d+)$/i;
+    const linksOf = (html: string, base: string, lib: (typeof sites)[number]) => {
+      const out: { url: string; title: string; score: number; next: boolean }[] = [];
+      const seen = new Set<string>();
+      for (const m of html.matchAll(/<a\b[^>]*href=["']([^"'#]+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
+        let href = m[1];
+        try { href = new URL(href, base).toString(); } catch { continue; }
+        if (seen.has(href) || href === base || !/^https?:/.test(href)) continue;
+        seen.add(href);
+        if (ownerOf(href) !== lib && hostOf(href) !== hostOf(base)) continue;
+        if (/\.(png|jpe?g|gif|svg|webp|pdf|zip|mp4|css|js)(\?|$)/i.test(href)) continue;
+        const label = pageText(m[2]).slice(0, 200);
+        const next = NEXT.test(label.trim()) || /[?&]page=\d+|\/page\/\d+/i.test(href);
+        out.push({ url: href, title: label || href, score: hits(label) * 2 + hits(decodeURIComponent(href)), next });
+      }
+      return out;
+    };
 
-    // 1. Open each website library's own page(s) and follow its links whose names match the request.
-    type Cand = { lib: (typeof sites)[number]; url: string; title: string; score: number; text?: string };
+    // A site's list of all its pages (sitemap), cached for a week. Lets the search reach pages deep inside big sites.
+    const sitemapUrls = async (startUrl: string): Promise<string[]> => {
+      const host = hostOf(startUrl);
+      if (!host || host === "github.com") return [];
+      const cached: { at: number; urls: string[] } | null = await ctx.runQuery(internal.promptFinder.getSitemap, { host });
+      if (cached && Date.now() - cached.at < 7 * 24 * 3600 * 1000) return cached.urls;
+      const origin = new URL(startUrl).origin;
+      const urls: string[] = [];
+      try {
+        const robots = await getRaw(origin + "/robots.txt", 8000).catch(() => null);
+        const listed = robots ? [...robots.body.matchAll(/^sitemap:\s*(\S+)/gim)].map((m) => m[1]) : [];
+        const queue = listed.length ? listed : [origin + "/sitemap.xml", origin + "/sitemap_index.xml"];
+        let opened = 0;
+        while (queue.length && opened < 8 && urls.length < 8000) {
+          const sm = queue.shift()!;
+          opened++;
+          const r = await getRaw(sm, 10000).catch(() => null);
+          if (!r || !/<(urlset|sitemapindex)/i.test(r.body)) continue;
+          const locs = [...r.body.matchAll(/<loc>\s*(?:<!\[CDATA\[)?([^<\]]+?)(?:\]\]>)?\s*<\/loc>/gi)].map((m) => m[1].trim());
+          if (/<sitemapindex/i.test(r.body)) {
+            // Child sitemaps: prefer ones that sound like content (posts, prompts, pages).
+            locs.sort((a, b) => Number(/prompt|post|page|blog|article|library|resource/i.test(b)) - Number(/prompt|post|page|blog|article|library|resource/i.test(a)));
+            queue.push(...locs.slice(0, 6));
+          } else urls.push(...locs.filter((u) => hostOf(u) === host));
+        }
+      } catch { /* no sitemap */ }
+      const keep = [...new Set(urls)].slice(0, 8000);
+      await ctx.runMutation(internal.promptFinder.saveSitemap, { host, urls: keep });
+      return keep;
+    };
+
+    // 1. Open each website library's own page(s); score the page, its links, and its sitemap's page addresses.
+    type Cand = { lib: (typeof sites)[number]; url: string; title: string; score: number; text?: string; depth: number; list?: boolean };
     const cands: Cand[] = [];
-    const opened = await Promise.all(sites.map(async (l) => {
-      const out: Cand[] = [];
+    const deeper: Cand[] = []; // linked pages worth opening to look one level further (categories, list pages)
+    await Promise.all(sites.map(async (l) => {
       for (const start of l.hosts.slice(0, 2)) {
         if (/github\.com/i.test(start) && l.hosts.length > 1) continue; // mixed cards: their GitHub links are covered elsewhere
         try {
-          const pg = await getPage(start);
-          if (!pg) continue;
-          const own = ownerOf(start);
-          out.push({ lib: l, url: pg.finalUrl, title: l.title, score: hits(pg.text), text: pg.text });
-          // Links on the page (same site), scored by their words and address.
-          const seenLink = new Set<string>();
-          for (const m of pg.html.matchAll(/<a\b[^>]*href=["']([^"'#]+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
-            let href = m[1];
-            try { href = new URL(href, pg.finalUrl).toString(); } catch { continue; }
-            if (seenLink.has(href) || href === pg.finalUrl) continue;
-            seenLink.add(href);
-            if (!(own && (ownerOf(href) === own || hostOf(href) === hostOf(pg.finalUrl)))) continue;
-            const label = pageText(m[2]).slice(0, 200);
-            const score = hits(label) * 2 + hits(decodeURIComponent(href).replace(/[-_/]+/g, " "));
-            if (score > 0) out.push({ lib: l, url: href, title: label || href, score });
+          const [pg, sm] = await Promise.all([getPage(start).catch(() => null), sitemapUrls(start).catch(() => [] as string[])]);
+          if (pg) {
+            cands.push({ lib: l, url: pg.finalUrl, title: l.title, score: hits(pg.text), text: pg.text, depth: 0 });
+            const links = linksOf(pg.html, pg.finalUrl, l);
+            for (const k of links) if (k.score > 0) cands.push({ lib: l, url: k.url, title: k.title, score: k.score, depth: 1 });
+            // Next pages of a list, and the best-matching links, get opened to look one level deeper.
+            for (const k of links.filter((x) => x.next).slice(0, 2)) deeper.push({ lib: l, url: k.url, title: k.title, score: 0.5, depth: 1 });
           }
+          for (const u of sm) { const s = hits(decodeURIComponent(u)); if (s > 0) cands.push({ lib: l, url: u, title: decodeURIComponent(u.split("/").filter(Boolean).pop() || u).replace(/[-_]+/g, " "), score: s, depth: 1 }); }
         } catch { /* site unreachable: skip */ }
       }
-      return out;
     }));
-    for (const o of opened) cands.push(...o);
 
-    // 2. Pick the most promising pages: matching library pages and matching links (a few per library).
-    const ranked = cands.filter((c) => c.score > 0).sort((a, b) => b.score - a.score);
+    // 2. Go one level deeper: open the best few linked pages (and next pages of lists), and score the links found on them.
+    const level1 = [...cands.filter((c) => c.depth === 1 && c.score > 0).sort((a, b) => b.score - a.score).slice(0, 6), ...deeper.slice(0, 6)];
+    const seenDeep = new Set<string>();
+    await Promise.all(level1.map(async (c) => {
+      if (seenDeep.has(c.url)) return;
+      seenDeep.add(c.url);
+      try {
+        const pg = await getPage(c.url);
+        if (!pg) return;
+        const pageScore = hits(pg.text);
+        const sub = linksOf(pg.html, pg.finalUrl, c.lib).filter((k) => k.score > 0);
+        // A short page whose matches are just links (a category or list page) is a stepping stone, not a prompt.
+        const list = sub.length > 0 && pg.text.length < 400;
+        for (const x of cands.filter((x) => x.url === c.url)) { x.text = pg.text; x.score = Math.max(x.score, pageScore); x.list = list; }
+        if (!cands.some((x) => x.url === c.url) && pageScore > 0) cands.push({ ...c, text: pg.text, score: pageScore, depth: 1, list });
+        for (const k of sub) cands.push({ lib: c.lib, url: k.url, title: k.title, score: k.score, depth: 2 });
+      } catch { /* skip */ }
+    }));
+
+    // 3. Pick the most promising pages overall (a few per library).
+    // Category/list pages (already followed above) and empty pages are skipped.
+    const ranked = cands.filter((c) => c.score > 0 && !c.list && !(c.text !== undefined && c.text.trim().length < 40)).sort((a, b) => b.score - a.score || b.depth - a.depth);
     const perLib = new Map<string, number>();
     const chosen: Cand[] = [];
     for (const c of ranked) {
-      if (chosen.length >= 8) break;
+      if (chosen.length >= 10) break;
       const n = perLib.get(c.lib.libId) || 0;
-      if (n >= 3 || chosen.some((x) => x.url === c.url)) continue;
+      if (n >= 4 || chosen.some((x) => x.url === c.url)) continue;
       perLib.set(c.lib.libId, n + 1);
       chosen.push(c);
     }
@@ -257,7 +323,7 @@ export const web = action({
     await Promise.all(chosen.map(async (c) => {
       try {
         const text = c.text ?? (await getPage(c.url))?.text;
-        if (text && text.length > 200) read.push({ lib: c.lib, url: c.url, title: c.title, text: focus(text) });
+        if (text && text.trim().length > 40) read.push({ lib: c.lib, url: c.url, title: c.title, text: focus(text) });
       } catch { /* skip */ }
     }));
     if (!read.length) return { results: [], searched: libs.length };
@@ -288,5 +354,22 @@ export const web = action({
       .filter(Boolean)
       .slice(0, 3) as { libId: string; libTitle: string; url: string; title: string; why: string; prompt: string; verified: boolean }[];
     return { results, searched: libs.length };
+  },
+});
+
+export const getSitemap = internalQuery({
+  args: { host: v.string() },
+  handler: async (ctx, { host }) => {
+    const r = await ctx.db.query("sitemaps").withIndex("by_host", (q) => q.eq("host", host)).first();
+    return r ? { at: r.at, urls: r.urls } : null;
+  },
+});
+
+export const saveSitemap = internalMutation({
+  args: { host: v.string(), urls: v.array(v.string()) },
+  handler: async (ctx, { host, urls }) => {
+    const r = await ctx.db.query("sitemaps").withIndex("by_host", (q) => q.eq("host", host)).first();
+    if (r) await ctx.db.patch(r._id, { at: Date.now(), urls });
+    else await ctx.db.insert("sitemaps", { host, at: Date.now(), urls });
   },
 });
