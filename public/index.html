@@ -730,7 +730,7 @@
       <div id="tab-prompts" role="tabpanel" aria-labelledby="tabbtn-prompts" hidden>
         <section class="askbox" aria-labelledby="pf-h">
           <h2 id="pf-h">Find a prompt</h2>
-          <p class="sub">Say what you need in your own words &mdash; you&rsquo;ll get the actual prompt, ready to copy, or be told nothing fits. <b>Searches only the open-source libraries</b> whose prompts are copied into the app<span id="pf-libs"></span>. If nothing fits, it also searches your <b>website libraries</b> live and shows the prompt with a link to its page.</p>
+          <p class="sub">Say what you need in your own words &mdash; you&rsquo;ll get the actual prompt, ready to copy, or be told nothing fits. <b>Searches only the open-source libraries</b> whose prompts are copied into the app<span id="pf-libs"></span>. After the results, a button lets you also search your <b>website libraries</b> live (slower, uses a bit more Gemini credit).</p>
           <div class="ask-row">
             <textarea id="pf-text" dir="auto" rows="1" placeholder="e.g. I want a marketing specialist prompt"></textarea>
             <button class="primary-btn" id="pf-btn" type="button">Find</button>
@@ -1366,7 +1366,7 @@
           const res = await call('action', 'promptFinder:web', { query: q });
           clearInterval(timer);
           pfWebRes = res;
-          if (!res.results.length) { box.innerHTML = '<p class="pf-why">\uD83C\uDF10 Nothing matching found on your website libraries either.</p>' + pfTryHTML; return; }
+          if (!res.results.length) { box.innerHTML = pfTryHTML + '<p class="pf-why">\uD83C\uDF10 Nothing matching found on your website libraries either.</p>'; return; }
           box.innerHTML = '<p class="d-label" style="margin:6px 0 0">Found on your website libraries</p>' + res.results.map((r, i) => '<div class="pf-best">' +
             '<div style="display:flex;gap:10px;align-items:baseline;justify-content:space-between"><h3 dir="auto"><span style="font-family:\'IBM Plex Mono\',monospace;color:var(--muted);margin-right:6px">' + (i + 1) + '</span>' + esc(r.title || 'Prompt') + '</h3>' +
             (r.prompt ? '<button class="expand-btn" type="button" data-pfwshow="' + i + '">Show prompt</button>' : '') + '</div>' +
@@ -1402,9 +1402,8 @@
               '<button class="expand-btn" type="button" data-pfcard="' + esc(s.libId) + '">Card</button></span></div>').join('') + '</div>';
           out.innerHTML = html;
           if (res.matches.length) pfToggle(0, true);
-          // Nothing (or only partial) in the open-source copies: look on the website libraries too.
-          if (res.coverage !== 'full') pfWeb(q);
-          else document.getElementById('pf-web').innerHTML = '<button class="expand-btn" type="button" data-pfweb>\uD83C\uDF10 Also search my website libraries</button>';
+          // The website search costs more, so it only runs when you ask for it.
+          document.getElementById('pf-web').innerHTML = pfTryHTML + '<button class="expand-btn" type="button" data-pfweb style="margin-top:8px">\uD83C\uDF10 Search my website libraries too</button>';
         } catch (e) {
           out.innerHTML = '<p class="err">' + esc(e.message) + '</p>';
         } finally { btn.disabled = false; }
