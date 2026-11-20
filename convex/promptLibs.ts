@@ -3,7 +3,7 @@ import { query, mutation, internalQuery, internalMutation, internalAction } from
 import { v, ConvexError } from "convex/values";
 import { checkKey } from "./auth";
 import { internal } from "./_generated/api";
-import { PROMPT_LIB_SEED, BEST_FOR } from "./promptLibSeed";
+import { PROMPT_LIB_SEED, BEST_FOR, PROMPT_LIB_ADDITIONS, PROMPT_LIB_ADDITIONS_VERSION } from "./promptLibSeed";
 import { snapshotSoon } from "./snapshot";
 
 const nowIso = () => new Date().toISOString();
@@ -28,7 +28,8 @@ export const list = query({
       .filter((r) => !r.deleting)
       .map((r) => ({ ...r.data, id: r.libId, imp: r.imp || { state: "none", count: 0, note: "", at: "" } }));
     const bestForMissing = libs.filter((l: any) => !l.bestFor).length;
-    return { libs, bestForMissing, seeded: rows.length > 0 || !!seed, seed, prompts: libs.reduce((n, l) => n + (l.imp.state === "done" ? l.imp.count : 0), 0) };
+    const additionsPending = rows.length > 0 && (await getMeta(ctx, "plAdditions"))?.value !== PROMPT_LIB_ADDITIONS_VERSION;
+    return { libs, bestForMissing, additionsPending, seeded: rows.length > 0 || !!seed, seed, prompts: libs.reduce((n, l) => n + (l.imp.state === "done" ? l.imp.count : 0), 0) };
   },
 });
 
@@ -71,6 +72,32 @@ export const seedProgress = internalMutation({
   handler: async (ctx, a) => {
     const m = await getMeta(ctx, "plseed");
     await setMeta(ctx, "plseed", { ...(m?.value || {}), shard: a.shard, shards: a.shards, finished: !!a.finished, ...(a.finished ? { finishedAt: nowIso() } : {}) });
+  },
+});
+
+// ---------- one-time additions shipped with the code (see PROMPT_LIB_ADDITIONS) ----------
+const normLink = (u: string) => String(u || "").toLowerCase().replace(/^https?:\/\/(www\.)?/, "").replace(/[?#].*$/, "").replace(/\/+$/, "");
+export const applyAdditions = mutation({
+  args: { key: v.string() },
+  handler: async (ctx, { key }) => {
+    checkKey(key);
+    if ((await getMeta(ctx, "plAdditions"))?.value === PROMPT_LIB_ADDITIONS_VERSION) return { added: 0 };
+    const rows = await ctx.db.query("plibs").collect();
+    const have = new Set(rows.flatMap((r) => [r.data?.repo, r.data?.links?.[0]?.[1]].filter(Boolean).map((u: string) => normLink(u))));
+    let n = Math.max(28, ...rows.map((r) => Number(String(r.libId).replace(/\D/g, "")) || 0));
+    const added: string[] = [];
+    for (const card of PROMPT_LIB_ADDITIONS) {
+      if (have.has(normLink(card.links[0][1]))) continue;
+      const libId = "p" + ++n;
+      await ctx.db.insert("plibs", { libId, data: { ...card, added: new Date().toISOString().slice(0, 10) }, imp: { state: "none", count: 0, note: "", at: "" } });
+      added.push(libId);
+    }
+    await setMeta(ctx, "plAdditions", PROMPT_LIB_ADDITIONS_VERSION);
+    if (added.length) {
+      await ctx.scheduler.runAfter(0, internal.siteCheck.run, { libIds: added });
+      await snapshotSoon(ctx);
+    }
+    return { added: added.length };
   },
 });
 

@@ -1606,12 +1606,13 @@
       document.addEventListener('keydown', e => { if (e.key === 'Escape' && !document.getElementById('pb').hidden) pbClose(); });
 
       // ---------- load the libraries from the database ----------
-      let pSeed = null, pPoll = null, pLoaded = false, pResumed = false, pBestAsked = false, pSiteAsked = false;
+      let pSeed = null, pPoll = null, pLoaded = false, pResumed = false, pBestAsked = false, pSiteAsked = false, pAddsAsked = false;
       async function loadPrompts() {
         try {
           let res = await call('query', 'promptLibs:list', {});
           if (!res.seeded) { await call('mutation', 'promptLibs:ensureSeeded', { origin: location.origin }); res = await call('query', 'promptLibs:list', {}); }
           PROMPT_LIBS = res.libs; pSeed = res.seed; pLoaded = true;
+          if (res.additionsPending && !pAddsAsked) { pAddsAsked = true; try { const r = await call('mutation', 'promptLibs:applyAdditions', {}); if (r.added) { res = await call('query', 'promptLibs:list', {}); PROMPT_LIBS = res.libs; } } catch (e) {} }
           if (!pSiteAsked && PROMPT_LIBS.some(p => !(p.imp && p.imp.state === 'done') && !p.live)) { pSiteAsked = true; call('mutation', 'siteCheck:ensure', {}).then(r => { if (r.started) setTimeout(loadPrompts, 30000); }).catch(() => {}); }
           if (res.bestForMissing > 0 && !pBestAsked) { pBestAsked = true; try { const r = await call('mutation', 'promptLibs:fillBestFor', {}); res = await call('query', 'promptLibs:list', {}); PROMPT_LIBS = res.libs; if (r.needAi) setTimeout(loadPrompts, 20000); } catch (e) {} }
           // A copy with no progress for over 4 minutes was interrupted: ask the server to restart it (once per page load).
