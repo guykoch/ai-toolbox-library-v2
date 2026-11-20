@@ -5,12 +5,14 @@ export type PromptRow = { libId: string; title: string; desc: string; text: stri
 
 // Sends rows to the database in pieces small enough for one mutation.
 // runId: only the current copy job for a library may write (an old, abandoned job is ignored).
-export async function addInBatches(ctx: any, rows: PromptRow[], runId?: string) {
-  let batch: PromptRow[] = [], size = 0;
+export async function addInBatches(ctx: any, rows: PromptRow[], runId?: string, onBatch?: (done: number) => Promise<void>) {
+  let batch: PromptRow[] = [], size = 0, done = 0;
   for (const r of rows) {
     const s = r.text.length + r.title.length + r.desc.length + r.url.length + 100;
     if (batch.length && (size + s > 900_000 || batch.length >= 300)) {
       await ctx.runMutation(internal.promptLibs.addPrompts, { rows: batch, runId });
+      done += batch.length;
+      if (onBatch) await onBatch(done);
       batch = []; size = 0;
     }
     batch.push(r); size += s;

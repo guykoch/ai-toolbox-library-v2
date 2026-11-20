@@ -1244,7 +1244,7 @@
         let badges = '<span class="badge cat"><span class="dot" style="background:' + s.color + '"></span>' + s.label + '</span>' +
           '<span class="badge kind">' + k.icon + ' ' + k.label + '</span>';
         if (p.imp && p.imp.state === 'done') badges += '<span class="badge" title="Searchable in Find a prompt">&#128269; ' + p.imp.count.toLocaleString() + ' prompts</span>';
-        if (p.imp && p.imp.state === 'importing') badges += '<span class="badge">&#8987; Copying prompts&hellip;</span>';
+        if (p.imp && p.imp.state === 'importing') badges += '<span class="badge" title="' + esc(p.imp.note || '') + '">&#8987; ' + esc(p.imp.note || 'Copying prompts\u2026') + '</span>';
         let facts = '<dt>Section</dt><dd>' + s.label + '</dd>' +
           '<dt>Source</dt><dd>' + k.label + '</dd>' +
           '<dt>License</dt><dd>' + esc(p.license) + '</dd>' +
@@ -1252,7 +1252,7 @@
         if (p.sources) facts += '<dt>Found in</dt><dd>' + esc(p.sources) + '</dd>';
         const imp = p.imp || { state: 'none', count: 0 };
         const impText = imp.state === 'done' ? 'Yes &mdash; <b>' + imp.count.toLocaleString() + '</b> prompts copied'
-          : imp.state === 'importing' ? 'Copying prompts&hellip;'
+          : imp.state === 'importing' ? esc(imp.note || 'Copying prompts\u2026') + (Date.now() - Date.parse(imp.at || 0) > 4 * 60 * 1000 && p.repo ? ' <button class="mini-btn" type="button" data-preimport="' + p.id + '">Restart copy</button>' : '')
           : imp.state === 'failed' ? 'Couldn&rsquo;t copy: ' + esc(imp.note) + (p.repo ? ' <button class="mini-btn" type="button" data-preimport="' + p.id + '">Try again</button>' : '')
           : 'No &mdash; website, open it directly';
         facts += '<dt>In &ldquo;Find a prompt&rdquo;</dt><dd>' + impText + '</dd>';
@@ -1384,8 +1384,8 @@
           let res = await call('query', 'promptLibs:list', {});
           if (!res.seeded) { await call('mutation', 'promptLibs:ensureSeeded', { origin: location.origin }); res = await call('query', 'promptLibs:list', {}); }
           PROMPT_LIBS = res.libs; pSeed = res.seed; pLoaded = true;
-          // A copy that has said "Copying…" for over 11 minutes was interrupted: ask the server to restart it (once per page load).
-          const stale = PROMPT_LIBS.some(p => p.imp && p.imp.state === 'importing' && Date.now() - Date.parse(p.imp.at || 0) > 11 * 60 * 1000);
+          // A copy with no progress for over 4 minutes was interrupted: ask the server to restart it (once per page load).
+          const stale = PROMPT_LIBS.some(p => p.imp && p.imp.state === 'importing' && Date.now() - Date.parse(p.imp.at || 0) > 4 * 60 * 1000);
           if (stale && !pResumed) { pResumed = true; try { await call('mutation', 'promptLibs:resumeStuck', {}); res = await call('query', 'promptLibs:list', {}); PROMPT_LIBS = res.libs; pSeed = res.seed; } catch (e) {} }
           renderPrompts();
           const busy = (pSeed && !pSeed.finished) || PROMPT_LIBS.some(p => p.imp && p.imp.state === 'importing');

@@ -108,6 +108,16 @@ export const setImp = internalMutation({
   },
 });
 
+// Progress note while copying (also proves the job is alive).
+export const progress = internalMutation({
+  args: { libId: v.string(), runId: v.optional(v.string()), note: v.string() },
+  handler: async (ctx, { libId, runId, note }) => {
+    const lib = await ctx.db.query("plibs").withIndex("by_libId", (q) => q.eq("libId", libId)).first();
+    if (!lib || lib.deleting || lib.imp?.state !== "importing" || (runId && lib.imp?.run !== runId)) return;
+    await ctx.db.patch(lib._id, { imp: { ...lib.imp, note, at: nowIso() } });
+  },
+});
+
 // Starts (or restarts) copying one library's prompts. Each start gets a new job id.
 async function startImport(ctx: any, lib: any) {
   const run = Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -122,8 +132,9 @@ export const startImportFor = internalMutation({
   },
 });
 
-// A copy job can't run longer than 10 minutes, so one still "copying" after 11 was interrupted: restart it.
-const STALE_MS = 11 * 60 * 1000;
+// A live copy job reports progress every few seconds; one silent for 4 minutes was interrupted: restart it.
+// (Restarting is safe: the old job's writes are ignored because it no longer holds the library's job id.)
+const STALE_MS = 4 * 60 * 1000;
 const isStale = (imp: any) => imp?.state === "importing" && Date.now() - Date.parse(imp.at || 0) > STALE_MS;
 export const resumeStuck = mutation({
   args: { key: v.string() },
@@ -219,8 +230,12 @@ export const reimport = mutation({
 });
 
 export const clearPrompts = internalMutation({
-  args: { libId: v.string() },
-  handler: async (ctx, { libId }) => {
+  args: { libId: v.string(), runId: v.optional(v.string()) },
+  handler: async (ctx, { libId, runId }) => {
+    if (runId) {
+      const lib = await ctx.db.query("plibs").withIndex("by_libId", (q) => q.eq("libId", libId)).first();
+      if (!lib || lib.imp?.run !== runId) return 0; // replaced by a newer copy job
+    }
     const idx = await ctx.db.query("plIndex").withIndex("by_lib", (q) => q.eq("libId", libId)).take(400);
     for (const r of idx) await ctx.db.delete(r._id);
     const txt = await ctx.db.query("plText").withIndex("by_lib", (q) => q.eq("libId", libId)).take(200);

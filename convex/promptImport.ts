@@ -64,9 +64,10 @@ function parseCsv(text: string): string[][] {
 const PROMPT_COLS = ["prompt", "content", "text", "system_prompt", "system", "instructions", "template"];
 const TITLE_COLS = ["act", "title", "name", "role", "task", "persona", "id"];
 
-export async function extractPrompts(libId: string, repoUrl: string): Promise<{ rows: PromptRow[]; how: string }> {
+export async function extractPrompts(libId: string, repoUrl: string, progress: (note: string) => Promise<void> = async () => {}): Promise<{ rows: PromptRow[]; how: string }> {
   const r = parseRepoUrl(repoUrl);
   if (!r) throw new Error("Not a GitHub repo link.");
+  await progress("Reading the repo on GitHub…");
   const info = await fetchWithTimeout(`https://api.github.com/repos/${r.owner}/${r.repo}`, { headers: ghHeaders() }, 15000);
   if (!info.ok) throw new Error(info.status === 404 ? "GitHub repo not found (or it's private)." : `GitHub said ${info.status}.`);
   const meta = await info.json();
@@ -101,6 +102,7 @@ export async function extractPrompts(libId: string, repoUrl: string): Promise<{ 
   // 1. CSV / JSON with a prompt column.
   const tables = files.filter((f) => /\.(csv|json)$/i.test(f.name) && f.size > 2000 && f.size < 30_000_000 && !/package(-lock)?\.json|tsconfig|composer|manifest|schema|config|\.lock/i.test(f.name)).sort((a, b) => b.size - a.size).slice(0, 3);
   for (const f of tables) {
+    await progress(`Downloading ${f.name} (${(f.size / 1e6).toFixed(1)} MB)…`);
     let text = "";
     try { text = await get(f.path); } catch { continue; }
     const rows: PromptRow[] = [];
@@ -157,6 +159,7 @@ export async function extractPrompts(libId: string, repoUrl: string): Promise<{ 
   const flatCount = flatDirs.slice(0, 5).reduce((n, [, l]) => n + l.length, 0);
 
   if (perFolder && (rank(perFolder[0]) > 0 || perFolder[1].length >= flatCount)) {
+    await progress(`Downloading ${Math.min(perFolder[1].length, MAX_PROMPTS)} prompt files…`);
     const got = await fetchMany(perFolder[1].slice(0, MAX_PROMPTS));
     const rows = got
       .map(({ f, text }) => {
@@ -168,6 +171,7 @@ export async function extractPrompts(libId: string, repoUrl: string): Promise<{ 
   }
   if (flatCount >= 5) {
     const list = flatDirs.slice(0, 5).flatMap(([, l]) => l).slice(0, MAX_PROMPTS);
+    await progress(`Downloading ${list.length} prompt files…`);
     const got = await fetchMany(list);
     const rows = got.map(({ f, text }) => row(frontmatter(text, "title") || frontmatter(text, "name") || pretty(f.name), text, page(f.path), frontmatter(text, "description") || undefined)).filter((x) => ok(x.title, x.text));
     if (rows.length >= 3) return { rows, how: `${rows.length} prompt files` };
@@ -201,16 +205,23 @@ export const run = internalAction({
   handler: async (ctx, { libId, repo, runId }) => {
     try {
       // Re-import: clear what this library had before.
-      while ((await ctx.runMutation(internal.promptLibs.clearPrompts, { libId })) > 0) {}
-      const { rows, how } = await extractPrompts(libId, repo);
+      const progress = async (note: string) => {
+        console.log(`[prompt copy ${libId}] ${note}`);
+        await ctx.runMutation(internal.promptLibs.progress, { libId, runId, note });
+      };
+      await progress("Clearing old copy…");
+      while ((await ctx.runMutation(internal.promptLibs.clearPrompts, { libId, runId })) > 0) {}
+      const { rows, how } = await extractPrompts(libId, repo, progress);
       if (!rows.length) {
         await ctx.runMutation(internal.promptLibs.setImp, { libId, state: "failed", count: 0, note: "Couldn't find prompts in this repo's files.", runId });
         return;
       }
-      await addInBatches(ctx, rows, runId);
+      await progress(`Found ${rows.length.toLocaleString()} prompts — saving…`);
+      await addInBatches(ctx, rows, runId, (done) => progress(`Saved ${done.toLocaleString()} of ${rows.length.toLocaleString()}…`));
       const count: number = await ctx.runQuery(internal.promptLibs.countFor, { libId });
       await ctx.runMutation(internal.promptLibs.setImp, { libId, state: "done", count, note: how, runId });
     } catch (e: any) {
+      console.log(`[prompt copy ${libId}] failed: ${String(e?.message || e)}`);
       await ctx.runMutation(internal.promptLibs.setImp, { libId, state: "failed", count: 0, note: String(e?.message || e).slice(0, 200), runId });
     }
   },
