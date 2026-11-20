@@ -83,6 +83,28 @@
       .subtab[aria-selected="true"] { background: var(--ink); color: var(--bg); }
       .empty-tab { padding: 60px 0 120px; text-align: center; color: var(--ink-2); }
       .empty-tab h2 { margin: 0 0 6px; color: var(--ink); }
+      #pf-out:empty { display: none; }
+      #pf-out { margin-top: 14px; display: flex; flex-direction: column; gap: 12px; }
+      .pf-msg { margin: 0; font-size: 15px; color: var(--ink); }
+      .pf-msg .pf-tag { display: inline-block; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 2px 9px; margin-right: 6px; border: 1px solid var(--line); vertical-align: 1px; }
+      .pf-tag.full { background: var(--accent-soft); color: var(--accent-ink); border-color: transparent; }
+      .pf-tag.partial { background: #fdf0d5; color: #8a5a00; border-color: transparent; }
+      .pf-tag.none { background: #fde4e1; color: #a1281b; border-color: transparent; }
+      :root[data-theme="dark"] .pf-tag.partial { background: #3a2e12; color: #f2c46d; }
+      :root[data-theme="dark"] .pf-tag.none { background: #3d1c18; color: #ff9a8b; }
+      .pf-best { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--bg); display: flex; flex-direction: column; gap: 8px; }
+      .pf-best h3 { margin: 0; font-size: 16.5px; }
+      .pf-why { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+      .pf-pre { margin: 0; max-height: 340px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12.8px; line-height: 1.55; color: var(--ink); background: var(--surface-2); border-radius: 8px; padding: 10px 12px; }
+      .pf-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+      .pf-copied { font-size: 13px; color: var(--accent-ink); }
+      .pf-others p.d-label { margin: 0 0 6px; }
+      .pf-other { display: flex; gap: 10px; align-items: baseline; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--line); }
+      .pf-other .t { font-weight: 650; font-size: 14.5px; }
+      .pf-other .w { font-size: 13px; color: var(--muted); }
+      .pf-try { margin: 0; font-size: 14px; color: var(--ink-2); }
+      #pf-out .err { color: #b42318; margin: 0; font-size: 14px; }
+      :root[data-theme="dark"] #pf-out .err { color: #ff8a7a; }
       .pgroup { margin: 0 0 30px; }
       .pgroup-h { display: flex; align-items: baseline; gap: 10px; margin: 0 0 4px; font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
       .pgroup-h .dot { width: 11px; height: 11px; border-radius: 50%; flex: none; align-self: center; }
@@ -676,7 +698,16 @@
       </footer>
       </div>
       <div id="tab-prompts" role="tabpanel" aria-labelledby="tabbtn-prompts" hidden>
-        <p class="statline" id="p-statline"></p>
+        <section class="askbox" aria-labelledby="pf-h">
+          <h2 id="pf-h">Find a prompt</h2>
+          <p class="sub">Say what you need in your own words &mdash; you&rsquo;ll get the actual prompt, ready to copy, or be told nothing fits. <b>Searches only the open-source libraries</b> (prompts.chat, Fabric, awesome-claude-prompts, SlideSpeak, awesome-design-md, awesome-design-skills &mdash; <span id="pf-count">3,700+</span> prompts). The other libraries below are websites: open them directly.</p>
+          <div class="ask-row">
+            <textarea id="pf-text" dir="auto" rows="1" placeholder="e.g. I want a marketing specialist prompt"></textarea>
+            <button class="primary-btn" id="pf-btn" type="button">Find</button>
+          </div>
+          <div id="pf-out" aria-live="polite"></div>
+        </section>
+        <p class="statline" id="p-statline" style="margin-top:22px"></p>
         <div class="controls" style="margin-top:22px">
           <div class="search-row">
             <div class="search-box">
@@ -1277,6 +1308,64 @@
         });
         document.getElementById('pgroups').innerHTML = html || '<p class="p-empty">Nothing matches. <button class="showall-btn" type="button" data-pclear>Show all</button></p>';
       }
+      // ---------- Find a prompt ----------
+      const pfShards = new Map();
+      async function pfText(hit) {
+        if (!pfShards.has(hit.shard)) pfShards.set(hit.shard, fetch('pl/' + hit.shard + '.json').then(r => { if (!r.ok) throw new Error('Could not load the prompt text.'); return r.json(); }).catch(e => { pfShards.delete(hit.shard); throw e; }));
+        const shard = await pfShards.get(hit.shard);
+        return shard[hit.id];
+      }
+      let pfLast = null, pfShown = null;
+      async function pfShow(hit) {
+        const box = document.getElementById('pf-best');
+        box.innerHTML = '<p class="pf-why">Loading the prompt…</p>';
+        try {
+          const p = await pfText(hit);
+          pfShown = p;
+          box.innerHTML = '<h3 dir="auto">' + esc(hit.title) + '</h3>' +
+            '<div class="badges"><span class="badge kind">🔓 ' + esc(hit.libName) + '</span></div>' +
+            (hit.why ? '<p class="pf-why" dir="auto">' + esc(hit.why) + '</p>' : '') +
+            '<pre class="pf-pre" dir="auto">' + esc(p.x) + '</pre>' +
+            '<div class="pf-actions"><button class="primary-btn" type="button" data-pfcopy>Copy prompt</button>' +
+            '<a class="expand-btn" style="text-decoration:none" href="' + esc(p.u) + '" target="_blank" rel="noopener">Source ↗</a><span class="pf-copied" id="pf-copied"></span></div>';
+        } catch (e) { box.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; }
+      }
+      async function pfFind() {
+        const ta = document.getElementById('pf-text'), btn = document.getElementById('pf-btn'), out = document.getElementById('pf-out');
+        const q = ta.value.trim(); if (!q) { ta.focus(); return; }
+        btn.disabled = true;
+        out.innerHTML = '<p class="pf-why">Searching the open-source libraries…</p>';
+        try {
+          const res = await call('action', 'promptFinder:find', { query: q });
+          pfLast = res;
+          const tag = { full: '✓ Found', partial: '≈ Close match', none: '✕ No match' }[res.coverage];
+          let html = '<p class="pf-msg"><span class="pf-tag ' + res.coverage + '">' + tag + '</span>' + esc(res.message) + '</p>';
+          if (res.best) html += '<div class="pf-best" id="pf-best"></div>';
+          else html += '<div class="pf-best" id="pf-best" hidden></div>';
+          if (res.others.length) html += '<div class="pf-others"><p class="d-label">' + (res.best ? 'Other close matches' : 'Closest prompts') + '</p>' +
+            res.others.map((o, i) => '<div class="pf-other"><span><span class="t" dir="auto">' + esc(o.title) + '</span> <span class="w">· ' + esc(o.libName) + (o.why ? ' — ' + esc(o.why) : '') + '</span></span><button class="expand-btn" type="button" data-pfother="' + i + '">Show</button></div>').join('') + '</div>';
+          if (res.tryWebsite) {
+            const lib = PROMPT_LIBS.find(p => p.title.toLowerCase().startsWith(res.tryWebsite.toLowerCase().split(' (')[0].slice(0, 14)));
+            html += '<p class="pf-try">Also try the website <b>' + esc(res.tryWebsite) + '</b>' + (lib ? ' &mdash; <a href="' + esc(lib.links[0][1]) + '" target="_blank" rel="noopener">open it ↗</a>' : '') + '.</p>';
+          }
+          out.innerHTML = html;
+          if (res.best) pfShow(res.best);
+        } catch (e) {
+          out.innerHTML = '<p class="err">' + esc(e.message) + '</p>';
+        } finally { btn.disabled = false; }
+      }
+      document.getElementById('pf-btn').addEventListener('click', pfFind);
+      document.getElementById('pf-text').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); pfFind(); } });
+      document.getElementById('pf-out').addEventListener('click', async e => {
+        const o = e.target.closest('[data-pfother]');
+        if (o && pfLast) { const box = document.getElementById('pf-best'); box.hidden = false; await pfShow(pfLast.others[Number(o.dataset.pfother)]); box.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return; }
+        if (e.target.closest('[data-pfcopy]') && pfShown) {
+          try { await navigator.clipboard.writeText(pfShown.x); }
+          catch (err) { const t = document.createElement('textarea'); t.value = pfShown.x; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
+          const c = document.getElementById('pf-copied'); if (c) { c.textContent = 'Copied ✓'; setTimeout(() => { c.textContent = ''; }, 2500); }
+        }
+      });
+
       function pClear() { pstate.q = ''; pstate.sec = 'all'; pstate.kind = 'all'; pstate.os = false; document.getElementById('pq').value = ''; document.getElementById('p-os-only').checked = false; renderPrompts(); }
       document.getElementById('pq').addEventListener('input', e => { pstate.q = e.target.value.trim().toLowerCase(); renderPrompts(); });
       document.getElementById('p-os-only').addEventListener('change', e => { pstate.os = e.target.checked; renderPrompts(); });
