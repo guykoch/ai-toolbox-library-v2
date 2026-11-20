@@ -1,6 +1,6 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-20 16:38 UTC.
+Updated automatically by the app: 2026-11-20 16:59 UTC.
 Tools: 258 active, 0 archived. Prompt libraries: 45 (14 open source, 4,497 prompts copied into Find a prompt).
 
 ## Tools (active)
@@ -274,7 +274,7 @@ None.
 
 | id | Name | Section | Source | Open source | Prompts in Find a prompt | Best for | Link |
 |---|---|---|---|---|---|---|---|
-| p1 | OpenAI Academy & Examples | All-purpose libraries | Official | no | — | Everyday office work by role (marketing, sales, finance, ops), plus examples of getting structured JSON answers. | https://academy.openai.com/public/clubs/work-users-ynjqu/resources/chatgpt-for-any-role |
+| p1 | OpenAI Academy & Examples | All-purpose libraries | Official | no | copying… | Everyday office work by role (marketing, sales, finance, ops), plus examples of getting structured JSON answers. | https://academy.openai.com/public/clubs/work-users-ynjqu/resources/chatgpt-for-any-role |
 | p2 | Anthropic Prompt Library | All-purpose libraries | Official | no | — | Polished Claude prompts for writing, summarizing and pulling data out of text; good templates to learn from. | https://docs.anthropic.com/en/resources/prompt-library/library |
 | p3 | prompts.chat (Awesome ChatGPT Prompts) | All-purpose libraries | Open source | yes | 3058 | Turning the AI into any expert ("act as…"): 3,000+ role prompts across business, writing, coding and images. | https://prompts.chat |
 | p4 | Fabric Patterns | All-purpose libraries | Open source | yes | 266 | Repeatable one-job tasks: summarize a talk, extract key ideas, check claims, threat-model. About 270 sharp patterns. | https://github.com/danielmiessler/fabric/tree/main/data/patterns |
