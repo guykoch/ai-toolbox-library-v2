@@ -1276,7 +1276,9 @@
         const inFinder = PROMPT_LIBS.filter(p => p.imp && p.imp.state === 'done');
         const nPrompts = inFinder.reduce((n, p) => n + p.imp.count, 0);
         document.getElementById('p-statline').innerHTML = '<b>' + total + '</b> prompt libraries &middot; <b>' + openN + '</b> open source &middot; <b>' + nPrompts.toLocaleString() + '</b> prompts searchable in Find a prompt';
-        document.getElementById('pf-libs').innerHTML = inFinder.length ? ': ' + inFinder.map(p => esc(p.title.split(' (')[0])).join(', ') + ' &mdash; <b>' + nPrompts.toLocaleString() + '</b> prompts' : (pSeed && !pSeed.finished ? ' (copying them now&hellip;)' : '');
+        document.getElementById('pf-libs').innerHTML = inFinder.length ? ': ' + inFinder.map(p => esc(p.title.split(' (')[0])).join(', ') + ' &mdash; <b>' + nPrompts.toLocaleString() + '</b> prompts' : '';
+        const copying = PROMPT_LIBS.filter(p => p.imp && p.imp.state === 'importing');
+        if (copying.length || (pSeed && !pSeed.finished)) document.getElementById('pf-libs').innerHTML += ' <b>(&#8987; copying ' + (copying.length ? copying.length + ' librar' + (copying.length > 1 ? 'ies' : 'y') : 'prompts') + ' now&hellip;)</b>';
         const chip = (attr, key, label, n, on) => '<button type="button" class="kindchip" ' + attr + '="' + key + '" aria-pressed="' + on + '"' + (n === 0 && !on ? ' style="opacity:.45"' : '') + '>' + label + ' <span class="kc-n">' + n + '</span></button>';
         const secBase = PROMPT_LIBS.filter(p => pMatches(p, 'sec'));
         document.getElementById('psecchips').innerHTML = chip('data-psec', 'all', 'All', secBase.length, pstate.sec === 'all') +
