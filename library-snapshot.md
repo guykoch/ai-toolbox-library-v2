@@ -1,7 +1,7 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-20 17:14 UTC.
-Tools: 258 active, 0 archived. Prompt libraries: 45 (14 open source, 4,838 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-20 17:17 UTC.
+Tools: 258 active, 0 archived. Prompt libraries: 45 (14 open source, 6,162 prompts copied into Find a prompt).
 
 ## Tools (active)
 
@@ -292,8 +292,8 @@ None.
 | p40 | Lovable Israel prompts (פרומפטים \| Lovable Israel) | Coding | Community | no | — | Building apps in Lovable: ready-made prompts, including a detailed accessibility-toolbar prompt (Hebrew). | https://lovable-ai.co.il/prompts |
 | p44 | OpenClaw security hardening prompt | Coding | Community | no | — | Protecting an OpenClaw agent: a system prompt that refuses to leak secrets and resists manipulation. | https://facebook.com/100002717045940/posts/pfbid02jwe8ahZx9zBd9HCPAi35agyCPWzwDPH3crgwhuex234QGQceW5WdtZQWH3p6ukvil/ |
 | p13 | SlideSpeak Slide Design Prompts | Slides, web & app design | Open source | yes | 128 | Making decks look designed: 120+ slide styles (pitch, consulting, finance) with colors, fonts and a ready prompt. | https://slidespeak.co/slide-design-prompts |
-| p14 | OpenDesign | Slides, web & app design | Open source | yes | copying… | Starting a deck, website or app screen from a ready design system, previewed live and exportable. | https://open-design.ai/ |
-| p15 | Superdesign Prompt Library | Slides, web & app design | Free | no | — | Picking a website or UI look fast: thousands of styles (bento, minimal, editorial) with live previews. | https://superdesign.dev/library |
+| p14 | OpenDesign | Slides, web & app design | Open source | yes | 1324 | Starting a deck, website or app screen from a ready design system, previewed live and exportable. | https://open-design.ai/ |
+| p15 | Superdesign Prompt Library | Slides, web & app design | Free | no | copying… | Picking a website or UI look fast: thousands of styles (bento, minimal, editorial) with live previews. | https://superdesign.dev/library |
 | p16 | awesome-design-md (VoltAgent) | Slides, web & app design | Open source | yes | 84 | Making your site look like a famous brand (Stripe, Linear, Apple…): drop-in DESIGN.md files for AI coding tools. | https://github.com/voltagent/awesome-design-md |
 | p17 | awesome-design-skills (TypeUI) | Slides, web & app design | Open source | yes | 67 | Giving AI-built apps a distinct look: 67 visual styles (glassmorphism, editorial, corporate) as design files. | https://github.com/bergside/awesome-design-skills |
 | p32 | UI UX Pro Max | Slides, web & app design | Open source | yes | copy failed | Leveling up AI-generated frontends: 80+ searchable UI styles, design system generation, and 190+ UX reasoning rules. | https://uupm.cc |
