@@ -3,7 +3,7 @@ import { query, mutation, internalQuery, internalMutation, internalAction } from
 import { v, ConvexError } from "convex/values";
 import { checkKey } from "./auth";
 import { internal } from "./_generated/api";
-import { PROMPT_LIB_SEED } from "./promptLibSeed";
+import { PROMPT_LIB_SEED, BEST_FOR } from "./promptLibSeed";
 
 const nowIso = () => new Date().toISOString();
 
@@ -26,7 +26,8 @@ export const list = query({
     const libs = rows
       .filter((r) => !r.deleting)
       .map((r) => ({ ...r.data, id: r.libId, imp: r.imp || { state: "none", count: 0, note: "", at: "" } }));
-    return { libs, seeded: rows.length > 0 || !!seed, seed, prompts: libs.reduce((n, l) => n + (l.imp.state === "done" ? l.imp.count : 0), 0) };
+    const bestForMissing = libs.filter((l: any) => !l.bestFor).length;
+    return { libs, bestForMissing, seeded: rows.length > 0 || !!seed, seed, prompts: libs.reduce((n, l) => n + (l.imp.state === "done" ? l.imp.count : 0), 0) };
   },
 });
 
@@ -69,6 +70,42 @@ export const seedProgress = internalMutation({
   handler: async (ctx, a) => {
     const m = await getMeta(ctx, "plseed");
     await setMeta(ctx, "plseed", { ...(m?.value || {}), shard: a.shard, shards: a.shards, finished: !!a.finished, ...(a.finished ? { finishedAt: nowIso() } : {}) });
+  },
+});
+
+// ---------- "Best for" on cards made before that field existed ----------
+// The original 28 get the written lines; any others get one short Gemini call (at most every 10 minutes).
+export const fillBestFor = mutation({
+  args: { key: v.string() },
+  handler: async (ctx, { key }) => {
+    checkKey(key);
+    let needAi = false;
+    for (const lib of await ctx.db.query("plibs").collect()) {
+      if (lib.deleting || lib.data?.bestFor) continue;
+      if (BEST_FOR[lib.libId]) await ctx.db.patch(lib._id, { data: { ...lib.data, bestFor: BEST_FOR[lib.libId] } });
+      else needAi = true;
+    }
+    if (needAi) {
+      const m = await getMeta(ctx, "bestForAt");
+      if (!m || Date.now() - (m.value || 0) > 10 * 60 * 1000) {
+        await setMeta(ctx, "bestForAt", Date.now());
+        await ctx.scheduler.runAfter(0, internal.promptAdd.bestForMissing, {});
+      }
+    }
+    return { needAi };
+  },
+});
+
+export const missingBestFor = internalQuery({
+  args: {},
+  handler: async (ctx) => (await ctx.db.query("plibs").collect()).filter((r) => !r.deleting && !r.data?.bestFor).map((r) => ({ libId: r.libId, title: r.data?.title || "", summary: r.data?.summary || "", links: r.data?.links || [] })),
+});
+
+export const setBestFor = internalMutation({
+  args: { libId: v.string(), bestFor: v.string() },
+  handler: async (ctx, { libId, bestFor }) => {
+    const lib = await ctx.db.query("plibs").withIndex("by_libId", (q) => q.eq("libId", libId)).first();
+    if (lib && !lib.data?.bestFor && bestFor) await ctx.db.patch(lib._id, { data: { ...lib.data, bestFor } });
   },
 });
 

@@ -1260,7 +1260,7 @@
         if (pstate.os && !isOpenLib(p)) return false;
         if (pstate.q) {
           const s = P_SECTIONS.find(x => x.key === p.sec);
-          const hay = [p.title, p.summary, p.how, p.license, p.format, p.sources, s.label, P_KINDS[p.kind].label, p.links.map(l => l.join(' ')).join(' ')].filter(Boolean).join(' ').toLowerCase();
+          const hay = [p.title, p.summary, p.bestFor, p.how, p.license, p.format, p.sources, s.label, P_KINDS[p.kind].label, p.links.map(l => l.join(' ')).join(' ')].filter(Boolean).join(' ').toLowerCase();
           if (!pstate.q.split(/\s+/).filter(Boolean).every(w => hay.includes(w))) return false;
         }
         return true;
@@ -1284,6 +1284,7 @@
           : imp.state === 'failed' ? 'Couldn&rsquo;t copy: ' + esc(imp.note) + (p.repo ? ' <button class="mini-btn" type="button" data-preimport="' + p.id + '">Try again</button>' : '')
           : 'No &mdash; website, open it directly';
         facts += '<dt>In &ldquo;Find a prompt&rdquo;</dt><dd>' + impText + '</dd>';
+        if (p.bestFor) facts += '<dt>Best for</dt><dd>' + esc(p.bestFor) + '</dd>';
         facts += '<dt>How to browse</dt><dd>' + esc(p.how) + '</dd>' +
           '<dt>Links</dt><dd class="plinks">' + p.links.map(l => '<a href="' + esc(l[1]) + '" target="_blank" rel="noopener">' + esc(l[0]) + ' &#8599;</a>').join('') + '</dd>';
         const did = 'pdetail-' + p.id;
@@ -1522,12 +1523,13 @@
       document.addEventListener('keydown', e => { if (e.key === 'Escape' && !document.getElementById('pb').hidden) pbClose(); });
 
       // ---------- load the libraries from the database ----------
-      let pSeed = null, pPoll = null, pLoaded = false, pResumed = false;
+      let pSeed = null, pPoll = null, pLoaded = false, pResumed = false, pBestAsked = false;
       async function loadPrompts() {
         try {
           let res = await call('query', 'promptLibs:list', {});
           if (!res.seeded) { await call('mutation', 'promptLibs:ensureSeeded', { origin: location.origin }); res = await call('query', 'promptLibs:list', {}); }
           PROMPT_LIBS = res.libs; pSeed = res.seed; pLoaded = true;
+          if (res.bestForMissing > 0 && !pBestAsked) { pBestAsked = true; try { const r = await call('mutation', 'promptLibs:fillBestFor', {}); res = await call('query', 'promptLibs:list', {}); PROMPT_LIBS = res.libs; if (r.needAi) setTimeout(loadPrompts, 20000); } catch (e) {} }
           // A copy with no progress for over 4 minutes was interrupted: ask the server to restart it (once per page load).
           const stale = PROMPT_LIBS.some(p => p.imp && p.imp.state === 'importing' && Date.now() - Date.parse(p.imp.at || 0) > 4 * 60 * 1000);
           if (stale && !pResumed) { pResumed = true; try { await call('mutation', 'promptLibs:resumeStuck', {}); res = await call('query', 'promptLibs:list', {}); PROMPT_LIBS = res.libs; pSeed = res.seed; } catch (e) {} }

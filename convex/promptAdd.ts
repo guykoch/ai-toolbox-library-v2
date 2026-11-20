@@ -1,6 +1,6 @@
 // "Add a prompt library": writes the card (same fields as the others on the Prompts tab), checks for duplicates,
 // and — if it's an open-source GitHub repo — starts copying its prompts into the finder.
-import { action } from "./_generated/server";
+import { action, internalAction } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { internal } from "./_generated/api";
 import { checkKey } from "./auth";
@@ -13,6 +13,7 @@ const KINDS = ["official", "open", "community", "academic", "free"];
 
 const SPEC = `You add one prompt library to the user's list. Reply with JSON only:
 {"title": "name of the library", "summary": "one plain-English sentence: what prompts it has and who it's for (max 160 chars)",
+ "bestFor": "one concise line (max 130 chars) giving the intuition of when to reach for this library and what it includes, e.g. \"Making decks look designed: 120+ slide styles with colors, fonts and a ready prompt.\"",
  "sec": one of "general" (all-purpose collections), "business" (business & productivity), "coding" (coding assistants), "design" (slides, websites, app UI, DESIGN.md), "images" (image prompts: logos, products, posters), "patterns" (thinking patterns: stress-testing, extraction, interviews, grading, style, meta-prompts),
  "kind": one of "official" (by an AI company), "open" (open-source repo), "community", "academic", "free" (free website/tool),
  "license": "e.g. MIT, CC0, Apache-2.0, Free", "format": "e.g. Website, GitHub, Website + GitHub, Visual gallery",
@@ -63,6 +64,7 @@ export const add = action({
     const data = {
       title: str(c.title) || links[0][0],
       summary: str(c.summary),
+      bestFor: str(c.bestFor).slice(0, 200),
       sec: SECTIONS.includes(c.sec) ? c.sec : "general",
       kind: KINDS.includes(c.kind) ? c.kind : repo && openSource ? "open" : "free",
       license: str(c.license) || (openSource ? "Open source" : "Not stated"),
@@ -75,5 +77,29 @@ export const add = action({
     const importing = !!(repo && openSource);
     const libId: string = await ctx.runMutation(internal.promptLibs.insertLib, { data, importing });
     return { status: "added", libId, title: data.title, importing };
+  },
+});
+
+// Fills "Best for" on cards added before that field existed (one call for all of them).
+export const bestForMissing = internalAction({
+  args: {},
+  handler: async (ctx) => {
+    const libs: { libId: string; title: string; summary: string; links: [string, string][] }[] = await ctx.runQuery(internal.promptLibs.missingBestFor, {});
+    if (!libs.length) return;
+    try {
+      const res = await callGemini({
+        model: MODELS.advisor(),
+        system:
+          'For each prompt library, write "bestFor": one concise line (max 130 chars) giving the intuition of when to reach for it and what it includes. Example: "Making decks look designed: 120+ slide styles with colors, fonts and a ready prompt." Reply JSON only: {"<libId>": "..."}',
+        turns: [{ role: "user", text: libs.map((l) => `${l.libId} | ${l.title} | ${l.summary} | ${l.links.map((x) => x[1]).join(" ")}`).join("\n") }],
+        json: true,
+        thinking: "low",
+        maxTokens: 2048,
+      });
+      const out = parseJson(res.text) || {};
+      for (const l of libs) if (typeof out[l.libId] === "string") await ctx.runMutation(internal.promptLibs.setBestFor, { libId: l.libId, bestFor: out[l.libId].trim().slice(0, 200) });
+    } catch (e) {
+      console.log("bestFor fill failed", String(e));
+    }
   },
 });

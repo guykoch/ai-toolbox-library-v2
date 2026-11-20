@@ -19,7 +19,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "OpenAI examples",
     "https://platform.openai.com/docs/examples"
    ]
-  ]
+  ],
+  "bestFor": "Everyday office work by role (marketing, sales, finance, ops), plus examples of getting structured JSON answers."
  },
  {
   "id": "p2",
@@ -35,7 +36,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "Anthropic docs",
     "https://docs.anthropic.com/en/resources/prompt-library/library"
    ]
-  ]
+  ],
+  "bestFor": "Polished Claude prompts for writing, summarizing and pulling data out of text; good templates to learn from."
  },
  {
   "id": "p3",
@@ -56,7 +58,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "https://github.com/f/prompts.chat"
    ]
   ],
-  "repo": "https://github.com/f/prompts.chat"
+  "repo": "https://github.com/f/prompts.chat",
+  "bestFor": "Turning the AI into any expert (\"act as…\"): 3,000+ role prompts across business, writing, coding and images."
  },
  {
   "id": "p4",
@@ -73,7 +76,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "https://github.com/danielmiessler/fabric/tree/main/data/patterns"
    ]
   ],
-  "repo": "https://github.com/danielmiessler/fabric"
+  "repo": "https://github.com/danielmiessler/fabric",
+  "bestFor": "Repeatable one-job tasks: summarize a talk, extract key ideas, check claims, threat-model. About 270 sharp patterns."
  },
  {
   "id": "p5",
@@ -90,7 +94,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "https://github.com/langgptai/awesome-claude-prompts"
    ]
   ],
-  "repo": "https://github.com/langgptai/awesome-claude-prompts"
+  "repo": "https://github.com/langgptai/awesome-claude-prompts",
+  "bestFor": "Claude-specific prompts: marketing copy, emails, decision-making, plus Claude Code and system-prompt examples."
  },
  {
   "id": "p6",
@@ -106,7 +111,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "Copilot prompts",
     "https://copilot.cloud.microsoft/en-US/prompts"
    ]
-  ]
+  ],
+  "bestFor": "Microsoft 365 work: meeting recaps, proposals, Excel analysis and scheduling in Word, Excel and Teams."
  },
  {
   "id": "p7",
@@ -122,7 +128,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "ClickUp blog",
     "https://clickup.com/blog/ai-prompt-workflow-templates/"
    ]
-  ]
+  ],
+  "bestFor": "Fill-in-the-blank templates for project plans, roadmaps, blog outlines and brand voice."
  },
  {
   "id": "p8",
@@ -138,7 +145,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "Orbit Media",
     "https://www.orbitmedia.com/blog/ai-marketing-prompts/"
    ]
-  ]
+  ],
+  "bestFor": "B2B content marketing: articles, case studies, webinar scripts and email sequences, with real output examples."
  },
  {
   "id": "p9",
@@ -154,7 +162,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "Momentum",
     "https://www.momentum.io/resources/ai-prompts"
    ]
-  ]
+  ],
+  "bestFor": "Sales reps: cold outreach, objection handling, discovery-call prep and competitive positioning."
  },
  {
   "id": "p10",
@@ -170,7 +179,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "cursor.directory",
     "https://cursor.directory"
    ]
-  ]
+  ],
+  "bestFor": "Setting up AI coding tools: ready rule files per tech stack (Next.js, Python, React) for Cursor and Windsurf."
  },
  {
   "id": "p11",
@@ -186,7 +196,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "GitHub",
     "https://github.com/anthropics/prompt-eng-interactive-tutorial"
    ]
-  ]
+  ],
+  "bestFor": "Learning prompt engineering hands-on: 9 chapters of exercises with bad vs. good prompt examples."
  },
  {
   "id": "p12",
@@ -202,7 +213,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "PromptDen",
     "https://promptden.com"
    ]
-  ]
+  ],
+  "bestFor": "Developer tasks: debugging, architecture and DevOps, with prompts shown next to sample code."
  },
  {
   "id": "p13",
@@ -223,7 +235,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "https://github.com/SlideSpeak/presentation-design-prompts"
    ]
   ],
-  "repo": "https://github.com/SlideSpeak/presentation-design-prompts"
+  "repo": "https://github.com/SlideSpeak/presentation-design-prompts",
+  "bestFor": "Making decks look designed: 120+ slide styles (pitch, consulting, finance) with colors, fonts and a ready prompt."
  },
  {
   "id": "p14",
@@ -239,7 +252,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "open-design.ai",
     "https://open-design.ai/"
    ]
-  ]
+  ],
+  "bestFor": "Starting a deck, website or app screen from a ready design system, previewed live and exportable."
  },
  {
   "id": "p15",
@@ -255,7 +269,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "Superdesign",
     "https://superdesign.dev/library"
    ]
-  ]
+  ],
+  "bestFor": "Picking a website or UI look fast: thousands of styles (bento, minimal, editorial) with live previews."
  },
  {
   "id": "p16",
@@ -272,7 +287,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "https://github.com/voltagent/awesome-design-md"
    ]
   ],
-  "repo": "https://github.com/VoltAgent/awesome-design-md"
+  "repo": "https://github.com/VoltAgent/awesome-design-md",
+  "bestFor": "Making your site look like a famous brand (Stripe, Linear, Apple…): drop-in DESIGN.md files for AI coding tools."
  },
  {
   "id": "p17",
@@ -289,7 +305,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "https://github.com/bergside/awesome-design-skills"
    ]
   ],
-  "repo": "https://github.com/bergside/awesome-design-skills"
+  "repo": "https://github.com/bergside/awesome-design-skills",
+  "bestFor": "Giving AI-built apps a distinct look: 67 visual styles (glassmorphism, editorial, corporate) as design files."
  },
  {
   "id": "p18",
@@ -305,7 +322,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "YouMind",
     "https://youmind.com/prompts/image"
    ]
-  ]
+  ],
+  "bestFor": "Image inspiration with the exact prompt behind each picture: posters, logos, product shots, slides."
  },
  {
   "id": "p19",
@@ -321,7 +339,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "GeneratePrompt",
     "https://generateprompt.net/image-prompts"
    ]
-  ]
+  ],
+  "bestFor": "Brand visuals: logos, packaging, product renders, ads and UI mockups, each with a copyable prompt."
  },
  {
   "id": "p20",
@@ -337,7 +356,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "MoodNode",
     "https://moodnode.ai/tools/prompt-library"
    ]
-  ]
+  ],
+  "bestFor": "Product and industrial-design renders: studio shots, exploded views, materials and lighting settings."
  },
  {
   "id": "p21",
@@ -353,7 +373,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "The Prompt Index",
     "https://www.thepromptindex.com/image-database.php"
    ]
-  ]
+  ],
+  "bestFor": "Searching 500+ image prompts by keyword, e.g. minimalist logo, 3D mockup, eBook cover."
  },
  {
   "id": "p22",
@@ -369,7 +390,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "Founderz",
     "https://founderz.com/blog/ai-prompts-product-design/"
    ]
-  ]
+  ],
+  "bestFor": "Physical product and packaging renders: 24 templates for materials, finish, scale and lighting."
  },
  {
   "id": "p23",
@@ -390,7 +412,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "Fabric patterns",
     "https://github.com/danielmiessler/fabric/tree/main/data/patterns"
    ]
-  ]
+  ],
+  "bestFor": "Pressure-testing a plan or decision: pre-mortems, devil's advocate, red-teaming and decision matrices."
  },
  {
   "id": "p24",
@@ -411,7 +434,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "Anthropic library",
     "https://docs.anthropic.com/en/resources/prompt-library/library"
    ]
-  ]
+  ],
+  "bestFor": "Turning messy input into something usable: transcripts to action items, text to tables or JSON, re-tone for an audience."
  },
  {
   "id": "p25",
@@ -432,7 +456,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "Kipt",
     "https://kipt.ai"
    ]
-  ]
+  ],
+  "bestFor": "When you don't know what to ask: the AI interviews you to build a PRD, tutor you or rehearse a negotiation."
  },
  {
   "id": "p26",
@@ -453,7 +478,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "Fabric rate_content",
     "https://github.com/danielmiessler/fabric/tree/main/data/patterns/rate_content"
    ]
-  ]
+  ],
+  "bestFor": "Quality control: scoring rubrics, ruthless editors and self-critique loops to improve a draft."
  },
  {
   "id": "p27",
@@ -474,7 +500,8 @@ export const PROMPT_LIB_SEED: any[] = [
     "Savozi",
     "https://savozi.com"
    ]
-  ]
+  ],
+  "bestFor": "Keeping output on-brand: voice profiles, rules against AI-sounding text, memo skeletons and design tokens."
  },
  {
   "id": "p28",
@@ -495,6 +522,10 @@ export const PROMPT_LIB_SEED: any[] = [
     "Anthropic prompt generator",
     "https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/prompt-generator"
    ]
-  ]
+  ],
+  "bestFor": "Writing better prompts: turn one sentence into a full structured prompt, and study real system prompts of top AI tools."
  }
 ];
+
+// "Best for" lines, also used to fill cards created before this field existed.
+export const BEST_FOR: Record<string, string> = {"p1": "Everyday office work by role (marketing, sales, finance, ops), plus examples of getting structured JSON answers.", "p2": "Polished Claude prompts for writing, summarizing and pulling data out of text; good templates to learn from.", "p3": "Turning the AI into any expert (\"act as…\"): 3,000+ role prompts across business, writing, coding and images.", "p4": "Repeatable one-job tasks: summarize a talk, extract key ideas, check claims, threat-model. About 270 sharp patterns.", "p5": "Claude-specific prompts: marketing copy, emails, decision-making, plus Claude Code and system-prompt examples.", "p6": "Microsoft 365 work: meeting recaps, proposals, Excel analysis and scheduling in Word, Excel and Teams.", "p7": "Fill-in-the-blank templates for project plans, roadmaps, blog outlines and brand voice.", "p8": "B2B content marketing: articles, case studies, webinar scripts and email sequences, with real output examples.", "p9": "Sales reps: cold outreach, objection handling, discovery-call prep and competitive positioning.", "p10": "Setting up AI coding tools: ready rule files per tech stack (Next.js, Python, React) for Cursor and Windsurf.", "p11": "Learning prompt engineering hands-on: 9 chapters of exercises with bad vs. good prompt examples.", "p12": "Developer tasks: debugging, architecture and DevOps, with prompts shown next to sample code.", "p13": "Making decks look designed: 120+ slide styles (pitch, consulting, finance) with colors, fonts and a ready prompt.", "p14": "Starting a deck, website or app screen from a ready design system, previewed live and exportable.", "p15": "Picking a website or UI look fast: thousands of styles (bento, minimal, editorial) with live previews.", "p16": "Making your site look like a famous brand (Stripe, Linear, Apple…): drop-in DESIGN.md files for AI coding tools.", "p17": "Giving AI-built apps a distinct look: 67 visual styles (glassmorphism, editorial, corporate) as design files.", "p18": "Image inspiration with the exact prompt behind each picture: posters, logos, product shots, slides.", "p19": "Brand visuals: logos, packaging, product renders, ads and UI mockups, each with a copyable prompt.", "p20": "Product and industrial-design renders: studio shots, exploded views, materials and lighting settings.", "p21": "Searching 500+ image prompts by keyword, e.g. minimalist logo, 3D mockup, eBook cover.", "p22": "Physical product and packaging renders: 24 templates for materials, finish, scale and lighting.", "p23": "Pressure-testing a plan or decision: pre-mortems, devil's advocate, red-teaming and decision matrices.", "p24": "Turning messy input into something usable: transcripts to action items, text to tables or JSON, re-tone for an audience.", "p25": "When you don't know what to ask: the AI interviews you to build a PRD, tutor you or rehearse a negotiation.", "p26": "Quality control: scoring rubrics, ruthless editors and self-critique loops to improve a draft.", "p27": "Keeping output on-brand: voice profiles, rules against AI-sounding text, memo skeletons and design tokens.", "p28": "Writing better prompts: turn one sentence into a full structured prompt, and study real system prompts of top AI tools."};
