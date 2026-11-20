@@ -1,6 +1,6 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-20 17:08 UTC.
+Updated automatically by the app: 2026-11-20 17:14 UTC.
 Tools: 258 active, 0 archived. Prompt libraries: 45 (14 open source, 4,838 prompts copied into Find a prompt).
 
 ## Tools (active)
@@ -287,12 +287,12 @@ None.
 | p41 | Gemini stock analysis prompts | Business & productivity | Community | no | — | Analyzing a stock like an analyst with Gemini: 10 ready prompts. | https://facebook.com/61571991616735/posts/pfbid02g9Fk5iWkhucB8v5ptETFfBJRtUZkcx6rkvDTzmzV27FTYMTaGLetYksFx1QixWbtl/ |
 | p10 | cursor.directory | Coding | Community | no | copy failed | Setting up AI coding tools: ready rule files per tech stack (Next.js, Python, React) for Cursor and Windsurf. | https://cursor.directory |
 | p11 | Anthropic Prompt Engineering Tutorial | Coding | Official | no | copy failed | Learning prompt engineering hands-on: 9 chapters of exercises with bad vs. good prompt examples. | https://github.com/anthropics/prompt-eng-interactive-tutorial |
-| p12 | PromptDen | Coding | Free | no | copying… | Developer tasks: debugging, architecture and DevOps, with prompts shown next to sample code. | https://promptden.com |
+| p12 | PromptDen | Coding | Free | no | copy failed | Developer tasks: debugging, architecture and DevOps, with prompts shown next to sample code. | https://promptden.com |
 | p31 | Awesome Cursor Rules | Coding | Open source | yes | copy failed | Configuring Cursor AI: curated .mdc rules for frameworks, backends, and testing to enforce coding standards. | https://github.com/PatrickJS/awesome-cursorrules |
 | p40 | Lovable Israel prompts (פרומפטים \| Lovable Israel) | Coding | Community | no | — | Building apps in Lovable: ready-made prompts, including a detailed accessibility-toolbar prompt (Hebrew). | https://lovable-ai.co.il/prompts |
 | p44 | OpenClaw security hardening prompt | Coding | Community | no | — | Protecting an OpenClaw agent: a system prompt that refuses to leak secrets and resists manipulation. | https://facebook.com/100002717045940/posts/pfbid02jwe8ahZx9zBd9HCPAi35agyCPWzwDPH3crgwhuex234QGQceW5WdtZQWH3p6ukvil/ |
 | p13 | SlideSpeak Slide Design Prompts | Slides, web & app design | Open source | yes | 128 | Making decks look designed: 120+ slide styles (pitch, consulting, finance) with colors, fonts and a ready prompt. | https://slidespeak.co/slide-design-prompts |
-| p14 | OpenDesign | Slides, web & app design | Open source | yes | — | Starting a deck, website or app screen from a ready design system, previewed live and exportable. | https://open-design.ai/ |
+| p14 | OpenDesign | Slides, web & app design | Open source | yes | copying… | Starting a deck, website or app screen from a ready design system, previewed live and exportable. | https://open-design.ai/ |
 | p15 | Superdesign Prompt Library | Slides, web & app design | Free | no | — | Picking a website or UI look fast: thousands of styles (bento, minimal, editorial) with live previews. | https://superdesign.dev/library |
 | p16 | awesome-design-md (VoltAgent) | Slides, web & app design | Open source | yes | 84 | Making your site look like a famous brand (Stripe, Linear, Apple…): drop-in DESIGN.md files for AI coding tools. | https://github.com/voltagent/awesome-design-md |
 | p17 | awesome-design-skills (TypeUI) | Slides, web & app design | Open source | yes | 67 | Giving AI-built apps a distinct look: 67 visual styles (glassmorphism, editorial, corporate) as design files. | https://github.com/bergside/awesome-design-skills |
