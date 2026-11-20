@@ -149,22 +149,24 @@ export const write = internalAction({
       const md = render(d.tools, d.libs);
       const api = `https://api.github.com/repos/${REPO()}/contents/${PATH}`;
       const headers = { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "User-Agent": "ai-toolbox", "Content-Type": "application/json" };
-      const cur = await fetch(`${api}?ref=${encodeURIComponent(BRANCH())}`, { headers });
-      let sha: string | undefined;
-      if (cur.ok) {
-        const j = await cur.json();
-        sha = j.sha;
-        // Same content (ignoring the timestamp line): nothing to commit.
-        const old = j.content ? new TextDecoder().decode(Uint8Array.from(atob(String(j.content).replace(/\n/g, "")), (c) => c.charCodeAt(0))) : "";
-        const strip = (s: string) => s.replace(/^Updated automatically.*$/m, "");
-        if (strip(old) === strip(md)) { await ctx.runMutation(internal.snapshot.record, { ok: true, error: "" }); return; }
-      } else if (cur.status !== 404) {
-        throw new Error(cur.status === 401 ? "GitHub rejected the token (401)." : `GitHub said ${cur.status} reading the file.`);
-      }
-      const put = await fetch(api, { method: "PUT", headers, body: JSON.stringify({ message: "Update library snapshot", content: b64(md), branch: BRANCH(), ...(sha ? { sha } : {}) }) });
-      if (!put.ok) {
-        const t = (await put.text()).slice(0, 200);
-        throw new Error(put.status === 403 || put.status === 404 ? "The GitHub token can't write to the repo (it needs Contents: Read and write)." : `GitHub said ${put.status}: ${t}`);
+      // Two updates can land at the same moment; if GitHub says the file just changed (409), read it again and retry.
+      for (let attempt = 0; ; attempt++) {
+        const cur = await fetch(`${api}?ref=${encodeURIComponent(BRANCH())}`, { headers });
+        let sha: string | undefined;
+        if (cur.ok) {
+          const j = await cur.json();
+          sha = j.sha;
+          // Same content (ignoring the timestamp line): nothing to commit.
+          const old = j.content ? new TextDecoder().decode(Uint8Array.from(atob(String(j.content).replace(/\n/g, "")), (c) => c.charCodeAt(0))) : "";
+          const strip = (s: string) => s.replace(/^Updated automatically.*$/m, "");
+          if (strip(old) === strip(md)) break;
+        } else if (cur.status !== 404) {
+          throw new Error(cur.status === 401 ? "GitHub rejected the token (401)." : `GitHub said ${cur.status} reading the file.`);
+        }
+        const put = await fetch(api, { method: "PUT", headers, body: JSON.stringify({ message: "Update library snapshot", content: b64(md), branch: BRANCH(), ...(sha ? { sha } : {}) }) });
+        if (put.ok) break;
+        if ((put.status === 409 || put.status === 422) && attempt < 3) { await new Promise((r) => setTimeout(r, 1500 * (attempt + 1))); continue; }
+        throw new Error(put.status === 403 || put.status === 404 ? "The GitHub token can't write to the repo (it needs Contents: Read and write)." : put.status === 409 ? "Two updates collided; the next one will catch up." : `GitHub said ${put.status}.`);
       }
       await ctx.runMutation(internal.snapshot.record, { ok: true, error: "" });
     } catch (e: any) {
