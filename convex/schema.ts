@@ -30,6 +30,23 @@ export default defineSchema({
     createdAt: v.string(),
   }).index("by_itemId", ["itemId"]),
 
+  // Prompts tab: one row per prompt library (card fields in `data`, same shape as the page's PROMPT_LIBS).
+  // imp = state of copying its prompts into the finder: none (website) | queued | importing | done | failed.
+  plibs: defineTable({
+    libId: v.string(),
+    data: v.any(),
+    imp: v.optional(v.object({ state: v.string(), count: v.number(), note: v.string(), at: v.string() })),
+    deleting: v.optional(v.boolean()),
+  }).index("by_libId", ["libId"]),
+
+  // Prompts copied from open-source libraries, for "Find a prompt". Split in two so search reads only the small part.
+  plIndex: defineTable({ libId: v.string(), pid: v.number(), title: v.string(), desc: v.string() })
+    .index("by_lib", ["libId"])
+    .index("by_pid", ["pid"]),
+  plText: defineTable({ libId: v.string(), pid: v.number(), text: v.string(), url: v.string() })
+    .index("by_lib", ["libId"])
+    .index("by_pid", ["pid"]),
+
   // Library-wide extras from the original page: clusters, attachments, unresolved links.
   meta: defineTable({
     key: v.string(),

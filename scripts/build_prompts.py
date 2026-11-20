@@ -1,8 +1,8 @@
 """Build the prompt-finder data from open-source prompt libraries.
 
 Outputs:
-  convex/promptCatalog.ts  - compact catalog (id, library, title, short description, shard) used for search
-  public/pl/<n>.json       - full prompt texts, sharded (~400 KB each), fetched by the browser on demand
+  public/pl/<n>.json   - prompts (title, library id, source url, text, short description), sharded ~400 KB.
+  public/pl/count.json - number of shards. The app copies these into its database once, on first load.
 """
 import csv, json, os, re, glob, sys
 
@@ -83,6 +83,9 @@ for d in sorted(glob.glob(f'{SRC}/awesome-design-skills/skills/*/SKILL.md')):
     m = re.search(r'^description:\s*(.+)$', text, re.M)
     items.append(dict(lib='ds', title=f'{name.replace("-", " ").title()} UI style (design skill)', desc='Website / app UI visual style: ' + short(m.group(1) if m else text), text=text, url=f'https://github.com/bergside/awesome-design-skills/tree/main/skills/{name}'))
 
+# library keys -> Prompts-tab library ids
+LIBID = {'pc': 'p3', 'fb': 'p4', 'acp': 'p5', 'ss': 'p13', 'dm': 'p16', 'ds': 'p17'}
+
 # shard full texts
 os.makedirs(f'{OUT}/public/pl', exist_ok=True)
 for f in glob.glob(f'{OUT}/public/pl/*.json'):
@@ -94,18 +97,14 @@ def flush():
         json.dump(buf, open(f'{OUT}/public/pl/{shard}.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
         shard += 1; size = 0; buf = {}
 for i, it in enumerate(items):
-    buf[i] = {'t': it['title'], 'l': it['lib'], 'u': it['url'], 'x': it['text']}
+    buf[i] = {'t': it['title'], 'l': LIBID[it['lib']], 'u': it['url'], 'x': it['text'], 'd': it['desc']}
     cat.append([i, it['lib'], it['title'], it['desc'], shard])
     size += len(it['text'].encode())
     if size > 400_000:
         flush()
 flush()
 
-with open(f'{OUT}/convex/promptCatalog.ts', 'w', encoding='utf-8') as f:
-    f.write('// Prompt-finder catalog, built from open-source prompt libraries (see scripts in the project notes).\n')
-    f.write('// Each row: [id, library, title, short description, shard]. Full texts live in public/pl/<shard>.json.\n')
-    f.write('export const PROMPT_LIB_NAMES: Record<string, string> = ' + json.dumps({'pc': 'prompts.chat', 'fb': 'Fabric Patterns', 'acp': 'awesome-claude-prompts', 'ss': 'SlideSpeak Slide Design Prompts', 'dm': 'awesome-design-md', 'ds': 'awesome-design-skills'}) + ';\n')
-    f.write('export const PROMPT_CATALOG: [number, string, string, string, number][] = ' + json.dumps(cat, ensure_ascii=False) + ';\n')
+open(f'{OUT}/public/pl/count.json','w').write(json.dumps({'shards': shard, 'prompts': len(items)}))
 
 from collections import Counter
-print(len(items), Counter(i['lib'] for i in items), 'shards', shard, 'catalog KB', os.path.getsize(f'{OUT}/convex/promptCatalog.ts') // 1024)
+print(len(items), Counter(i['lib'] for i in items), 'shards', shard)

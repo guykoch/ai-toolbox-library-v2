@@ -5,18 +5,9 @@ import { action } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { checkKey } from "./auth";
 import { callGemini, MODELS, parseJson } from "./llm";
-import { PROMPT_CATALOG, PROMPT_LIB_NAMES } from "./promptCatalog";
+import { internal } from "./_generated/api";
 
-// Libraries on the Prompts tab that are websites (their prompts aren't imported), for "try this site" suggestions.
-const WEBSITE_LIBS =
-  "OpenAI Academy & Examples (role packs: marketing, sales, finance, ops) | Anthropic Prompt Library (writing, summarizing, data extraction) | " +
-  "Microsoft Copilot Prompt Gallery (meetings, proposals, Excel, schedules) | ClickUp AI Prompt Templates (project plans, roadmaps, brand voice) | " +
-  "Orbit Media B2B Marketing Prompts (articles, case studies, webinars, email sequences) | Momentum Revenue Prompts (sales objections, outreach, discovery calls) | " +
-  "cursor.directory (coding rules per tech stack) | PromptDen (software engineering, DevOps) | OpenDesign (slides, websites, graphics, app UI) | " +
-  "Superdesign (website & UI styles with live previews) | YouMind (image prompts: slides, logos, posters, products) | GeneratePrompt (logos, branding, product, ads) | " +
-  "MoodNode (product renders, industrial design) | The Prompt Index (logos, 3D branding, eBook covers) | Founderz (product & packaging renders) | " +
-  "More Useful Things / Wharton (pre-mortems, devil's advocate, tutors, negotiation practice) | Kipt (AI interviews you, fill-in prompts) | " +
-  "Promptfoo (grading rubrics) | Savozi (writing voice & style)";
+type Row = { pid: number; libId: string; title: string; desc: string };
 
 const STOP = new Set("a an the and or for to of in on with my me i you your want need prompt prompts that this is be it as by from about how what which can please some any like".split(" "));
 
@@ -24,10 +15,10 @@ function words(s: string): string[] {
   return s.toLowerCase().split(/[^a-z0-9À-ɏ]+/).filter((w) => w.length > 1 && !STOP.has(w));
 }
 
-function shortlist(keywords: string[], n: number) {
+function shortlist(catalog: Row[], keywords: string[], n: number): Row[] {
   const kws = [...new Set(keywords.flatMap(words))].slice(0, 40);
   if (!kws.length) return [];
-  const rows = PROMPT_CATALOG.map((r) => ({ r, title: r[2].toLowerCase(), desc: r[3].toLowerCase() }));
+  const rows = catalog.map((r) => ({ r, title: r.title.toLowerCase(), desc: r.desc.toLowerCase() }));
   // Rare words count more than common ones.
   const df = new Map<string, number>();
   for (const k of kws) df.set(k, rows.filter((x) => x.title.includes(k) || x.desc.includes(k)).length);
@@ -46,12 +37,11 @@ function shortlist(keywords: string[], n: number) {
   return scored.filter((x) => x.s > 0).sort((a, b) => b.s - a.s).slice(0, n).map((x) => x.r);
 }
 
-type Hit = { id: number; lib: string; libName: string; title: string; desc: string; shard: number };
-const toHit = (r: (typeof PROMPT_CATALOG)[number]): Hit => ({ id: r[0], lib: r[1], libName: PROMPT_LIB_NAMES[r[1]] || r[1], title: r[2], desc: r[3], shard: r[4] });
+type Hit = { pid: number; libId: string; libName: string; title: string; desc: string };
 
 export const find = action({
   args: { key: v.string(), query: v.string() },
-  handler: async (_ctx, { key, query }): Promise<{ coverage: "full" | "partial" | "none"; message: string; best: (Hit & { why: string }) | null; others: (Hit & { why: string })[]; tryWebsite: string }> => {
+  handler: async (ctx, { key, query }): Promise<{ coverage: "full" | "partial" | "none"; message: string; best: (Hit & { why: string }) | null; others: (Hit & { why: string })[]; tryWebsite: string }> => {
     checkKey(key);
     const q = query.trim().slice(0, 500);
     if (!q) throw new ConvexError("Type what kind of prompt you're looking for first.");
@@ -74,10 +64,23 @@ export const find = action({
       // Fall back to the user's own words; a credit/key problem will surface in step 3 anyway.
     }
 
-    // 2. Fast word search over the catalog.
-    const cands = shortlist(keywords, 40);
-    const byId = new Map(cands.map((r) => [r[0], r]));
-    const list = cands.map((r) => `${r[0]} | ${PROMPT_LIB_NAMES[r[1]]} | ${r[2]} | ${r[3]}`).join("\n");
+    // 2. Fast word search over every copied prompt.
+    const catalog: Row[] = [];
+    let cursor: string | null = null;
+    for (;;) {
+      const page: { rows: Row[]; cursor: string; done: boolean } = await ctx.runQuery(internal.promptLibs.indexPage, { cursor });
+      catalog.push(...page.rows);
+      if (page.done) break;
+      cursor = page.cursor;
+    }
+    if (!catalog.length) throw new ConvexError("No prompts are in the app yet. Add an open-source prompt library first (or wait for the copy to finish).");
+    const libs = (await ctx.runQuery(internal.promptLibs.libNames, {})) as { libId: string; title: string; summary: string; imported: boolean }[];
+    const names = new Map<string, string>(libs.map((l) => [l.libId, l.title]));
+    // Libraries whose prompts aren't in the app (websites), for "try this site" suggestions.
+    const WEBSITE_LIBS = libs.filter((l) => !l.imported).map((l) => `${l.title} (${l.summary.slice(0, 90)})`).join(" | ");
+    const cands = shortlist(catalog.filter((r) => names.has(r.libId)), keywords, 40);
+    const byId = new Map(cands.map((r) => [r.pid, r]));
+    const list = cands.map((r) => `${r.pid} | ${names.get(r.libId)} | ${r.title} | ${r.desc}`).join("\n");
 
     // 3. Let Gemini pick.
     const r2 = await callGemini({
@@ -97,13 +100,13 @@ export const find = action({
     const raw = parseJson(r2.text) || {};
     const pick = (p: any) => {
       const r = byId.get(Number(p?.id));
-      return r ? { ...toHit(r), why: String(p?.why || "").trim() } : null;
+      return r ? { pid: r.pid, libId: r.libId, libName: names.get(r.libId) || r.libId, title: r.title, desc: r.desc, why: String(p?.why || "").trim() } : null;
     };
     const best = raw.best ? pick(raw.best) : null;
-    const seen = new Set(best ? [best.id] : []);
+    const seen = new Set(best ? [best.pid] : []);
     const others = (Array.isArray(raw.others) ? raw.others : [])
       .map(pick)
-      .filter((h: any) => h && !seen.has(h.id) && seen.add(h.id))
+      .filter((h: any) => h && !seen.has(h.pid) && seen.add(h.pid))
       .slice(0, 3);
     let coverage = ["full", "partial", "none"].includes(raw.coverage) ? raw.coverage : best ? "full" : "none";
     if (!best && coverage !== "none") coverage = others.length ? "partial" : "none";
