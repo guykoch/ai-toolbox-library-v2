@@ -92,6 +92,7 @@ export const add = action({
     };
     const importing = !!(repo && openSource);
     const libId: string = await ctx.runMutation(internal.promptLibs.insertLib, { data, importing });
+    if (!importing) await ctx.scheduler.runAfter(0, internal.siteCheck.run, { libIds: [libId] });
     const why = importing ? "" : repo && NEVER_COPY.test(repo) ? "excluded" : repo ? "nolicense" : "website";
     return { status: "added", libId, title: data.title, importing, why };
   },

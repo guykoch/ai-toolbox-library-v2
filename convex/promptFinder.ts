@@ -138,10 +138,10 @@ export const find = action({
 // 1. Gemini + Google Search finds candidate pages, only on those libraries' sites.
 // 2. The pages are read here directly.
 // 3. Gemini picks out the matching prompt from each page's real text; the text is checked against the page before it's shown.
-function hostOf(u: string) {
+export function hostOf(u: string) {
   try { return new URL(u).hostname.replace(/^www\./, "").toLowerCase(); } catch { return ""; }
 }
-function pageText(html: string) {
+export function pageText(html: string) {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
@@ -207,7 +207,8 @@ export const web = action({
       try {
         const res = await fetchWithTimeout(p.url, { headers: { "User-Agent": "Mozilla/5.0 (compatible; ai-toolbox)" } }, 12000);
         const finalUrl = res.url || p.url;
-        const lib = ownerOf(finalUrl);
+        // A library's page may forward to a new address (e.g. docs.anthropic.com -> docs.claude.com): judge by where the link started.
+        const lib = ownerOf(p.url) || ownerOf(finalUrl);
         if (!lib || seen.has(finalUrl)) continue;
         seen.add(finalUrl);
         if (!res.ok) continue;
