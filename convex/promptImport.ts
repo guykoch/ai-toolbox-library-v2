@@ -190,6 +190,10 @@ export async function extractPrompts(libId: string, repoUrl: string): Promise<{ 
       const h = clean(p.split("\n")[0].replace(/^##\s+/, "").replace(/[*_`[\]]/g, ""));
       const body = p.split("\n").slice(1).join("\n").trim();
       if (/contents|license|contributing|install|usage|credits|acknowledg|star history|sponsor|support|about/i.test(h)) continue;
+      // Skip sections written mostly in Chinese/Japanese/Korean (the app's users read English and Hebrew).
+      if ((body.match(/[\u3040-\u30ff\u4e00-\u9fff\uac00-\ud7af]/g) || []).length > body.length * 0.15 || /[\u3040-\u30ff\u4e00-\u9fff\uac00-\ud7af]{2}/.test(h)) continue;
+      // Skip sections that are just lists of links (resources, not prompts).
+      if ((body.match(/\]\(https?:/g) || []).length >= 3 && !/```/.test(body)) continue;
       const code = body.match(/```[\w-]*\n([\s\S]*?)```/);
       const promptText = code && code[1].trim().length > 60 ? code[1].trim() : body;
       if (ok(h, promptText) && promptText.length > 80) rows.push(row(h, promptText, page(readme.path)));

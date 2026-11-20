@@ -4,7 +4,6 @@ import { v, ConvexError } from "convex/values";
 import { checkKey } from "./auth";
 import { internal } from "./_generated/api";
 import { PROMPT_LIB_SEED } from "./promptLibSeed";
-import { fetchWithTimeout } from "./web";
 
 const nowIso = () => new Date().toISOString();
 
@@ -31,7 +30,7 @@ export const list = query({
   },
 });
 
-// First run: add the original libraries, then copy their prompts (shipped with the site in /pl) into the database.
+// First run: add the original libraries, then copy their prompts from their GitHub repos into the database.
 export const ensureSeeded = mutation({
   args: { key: v.string(), origin: v.string() },
   handler: async (ctx, { key, origin }) => {
@@ -54,27 +53,14 @@ export const ensureSeeded = mutation({
   },
 });
 
+// Copies each seed library's prompts straight from its GitHub repo (same importer as newly added libraries).
+// Older deploys shipped the prompts as files in /pl; if those are gone, this path is used instead.
 export const seedStep = internalAction({
   args: { origin: v.string(), shard: v.number() },
-  handler: async (ctx, { origin, shard }) => {
-    const countRes = await fetchWithTimeout(origin + "/pl/count.json", {}, 20000);
-    const shards = countRes.ok ? Number((await countRes.json()).shards) || 0 : 0;
-    if (shard < shards) {
-      const r = await fetchWithTimeout(origin + "/pl/" + shard + ".json", {}, 30000);
-      if (!r.ok) throw new Error("Could not read prompt file " + shard);
-      const data: Record<string, { t: string; l: string; u: string; x: string; d: string }> = await r.json();
-      const rows = Object.values(data).map((p) => ({ libId: p.l, title: p.t, desc: p.d, text: p.x, url: p.u }));
-      await addInBatches(ctx, rows);
-      await ctx.runMutation(internal.promptLibs.seedProgress, { shard: shard + 1, shards });
-      await ctx.scheduler.runAfter(0, internal.promptLibs.seedStep, { origin, shard: shard + 1 });
-      return;
-    }
-    // Done: record how many prompts each library has.
-    for (const lib of PROMPT_LIB_SEED.filter((l) => l.repo)) {
-      const count: number = await ctx.runQuery(internal.promptLibs.countFor, { libId: lib.id });
-      await ctx.runMutation(internal.promptLibs.setImp, { libId: lib.id, state: count ? "done" : "failed", count, note: count ? "" : "No prompts copied." });
-    }
-    await ctx.runMutation(internal.promptLibs.seedProgress, { shard, shards, finished: true });
+  handler: async (ctx) => {
+    const libs = (await ctx.runQuery(internal.promptLibs.libNames, {})) as { libId: string; repo: string; imported: boolean }[];
+    for (const l of libs) if (l.repo && !l.imported) await ctx.scheduler.runAfter(0, internal.promptImport.run, { libId: l.libId, repo: l.repo });
+    await ctx.runMutation(internal.promptLibs.seedProgress, { shard: 0, shards: 0, finished: true });
   },
 });
 
