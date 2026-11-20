@@ -1,7 +1,7 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-20 15:40 UTC.
-Tools: 258 active, 0 archived. Prompt libraries: 35 (14 open source, 4,497 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-20 16:38 UTC.
+Tools: 258 active, 0 archived. Prompt libraries: 45 (14 open source, 4,497 prompts copied into Find a prompt).
 
 ## Tools (active)
 
@@ -279,14 +279,18 @@ None.
 | p3 | prompts.chat (Awesome ChatGPT Prompts) | All-purpose libraries | Open source | yes | 3058 | Turning the AI into any expert ("act as…"): 3,000+ role prompts across business, writing, coding and images. | https://prompts.chat |
 | p4 | Fabric Patterns | All-purpose libraries | Open source | yes | 266 | Repeatable one-job tasks: summarize a talk, extract key ideas, check claims, threat-model. About 270 sharp patterns. | https://github.com/danielmiessler/fabric/tree/main/data/patterns |
 | p5 | awesome-claude-prompts | All-purpose libraries | Open source | yes | 129 | Claude-specific prompts: marketing copy, emails, decision-making, plus Claude Code and system-prompt examples. | https://github.com/langgptai/awesome-claude-prompts |
+| p39 | 10 NotebookLM prompts (10 פרומפטים ל־NotebookLM) | All-purpose libraries | Community | no | — | Getting more out of NotebookLM: 10 copy-paste prompts with tips on sources and citations (Hebrew). | https://eilon.co/10-%d7%a4%d7%a8%d7%95%d7%9e%d7%a4%d7%98%d7%99%d7%9d-%d7%9c-notebooklm-%d7%a9%d7%a9%d7%99%d7%a0%d7%95/ |
 | p6 | Microsoft Copilot Prompt Gallery | Business & productivity | Official | no | — | Microsoft 365 work: meeting recaps, proposals, Excel analysis and scheduling in Word, Excel and Teams. | https://copilot.cloud.microsoft/en-US/prompts |
 | p7 | ClickUp AI Prompt Templates | Business & productivity | Free | no | — | Fill-in-the-blank templates for project plans, roadmaps, blog outlines and brand voice. | https://clickup.com/blog/ai-prompt-workflow-templates/ |
 | p8 | Orbit Media B2B Marketing Prompts | Business & productivity | Free | no | — | B2B content marketing: articles, case studies, webinar scripts and email sequences, with real output examples. | https://www.orbitmedia.com/blog/ai-marketing-prompts/ |
 | p9 | Momentum Revenue Prompts | Business & productivity | Free | no | — | Sales reps: cold outreach, objection handling, discovery-call prep and competitive positioning. | https://www.momentum.io/resources/ai-prompts |
+| p41 | Gemini stock analysis prompts | Business & productivity | Community | no | — | Analyzing a stock like an analyst with Gemini: 10 ready prompts. | https://facebook.com/61571991616735/posts/pfbid02g9Fk5iWkhucB8v5ptETFfBJRtUZkcx6rkvDTzmzV27FTYMTaGLetYksFx1QixWbtl/ |
 | p10 | cursor.directory | Coding | Community | no | — | Setting up AI coding tools: ready rule files per tech stack (Next.js, Python, React) for Cursor and Windsurf. | https://cursor.directory |
 | p11 | Anthropic Prompt Engineering Tutorial | Coding | Official | no | — | Learning prompt engineering hands-on: 9 chapters of exercises with bad vs. good prompt examples. | https://github.com/anthropics/prompt-eng-interactive-tutorial |
 | p12 | PromptDen | Coding | Free | no | — | Developer tasks: debugging, architecture and DevOps, with prompts shown next to sample code. | https://promptden.com |
 | p31 | Awesome Cursor Rules | Coding | Open source | yes | copy failed | Configuring Cursor AI: curated .mdc rules for frameworks, backends, and testing to enforce coding standards. | https://github.com/PatrickJS/awesome-cursorrules |
+| p40 | Lovable Israel prompts (פרומפטים \| Lovable Israel) | Coding | Community | no | — | Building apps in Lovable: ready-made prompts, including a detailed accessibility-toolbar prompt (Hebrew). | https://lovable-ai.co.il/prompts |
+| p44 | OpenClaw security hardening prompt | Coding | Community | no | — | Protecting an OpenClaw agent: a system prompt that refuses to leak secrets and resists manipulation. | https://facebook.com/100002717045940/posts/pfbid02jwe8ahZx9zBd9HCPAi35agyCPWzwDPH3crgwhuex234QGQceW5WdtZQWH3p6ukvil/ |
 | p13 | SlideSpeak Slide Design Prompts | Slides, web & app design | Open source | yes | 128 | Making decks look designed: 120+ slide styles (pitch, consulting, finance) with colors, fonts and a ready prompt. | https://slidespeak.co/slide-design-prompts |
 | p14 | OpenDesign | Slides, web & app design | Open source | yes | — | Starting a deck, website or app screen from a ready design system, previewed live and exportable. | https://open-design.ai/ |
 | p15 | Superdesign Prompt Library | Slides, web & app design | Free | no | — | Picking a website or UI look fast: thousands of styles (bento, minimal, editorial) with live previews. | https://superdesign.dev/library |
@@ -295,12 +299,15 @@ None.
 | p32 | UI UX Pro Max | Slides, web & app design | Open source | yes | copy failed | Leveling up AI-generated frontends: 80+ searchable UI styles, design system generation, and 190+ UX reasoning rules. | https://uupm.cc |
 | p33 | Diagram Design | Slides, web & app design | Open source | yes | copy failed | Clean architecture & concept diagrams without Mermaid slop: 51 diagram types output as self-contained HTML + SVG files. | https://diagramdesign.dev |
 | p34 | Guizang PPT Skill | Slides, web & app design | Open source | yes | copy failed | Generating styled HTML decks: 30+ Swiss and editorial layouts, color themes, and slide image prompts for Claude Code and Codex. | https://github.com/op7418/guizang-ppt-skill |
+| p38 | 3D Style Atlas (Futurepedia) | Slides, web & app design | Free | no | — | 3D animated explainers: 37 looks, each with a copy-prompt button to recreate it in Claude on your topic. | https://www.futurepedia.io/resources/3d-style-atlas/view |
+| p45 | Beautiful apps in 3 prompts (Cursor) | Slides, web & app design | Community | no | — | Making AI-built apps look designed: a 3-prompt method to set up a reusable design system in Cursor. | https://www.youtube.com/watch?v=Be5IAxyxa6g |
 | p18 | YouMind Visual Prompt Library | Images, logos & products | Community | no | — | Image inspiration with the exact prompt behind each picture: posters, logos, product shots, slides. | https://youmind.com/prompts/image |
 | p19 | GeneratePrompt Image Library | Images, logos & products | Free | no | — | Brand visuals: logos, packaging, product renders, ads and UI mockups, each with a copyable prompt. | https://generateprompt.net/image-prompts |
 | p20 | MoodNode Prompt Library | Images, logos & products | Free | no | — | Product and industrial-design renders: studio shots, exploded views, materials and lighting settings. | https://moodnode.ai/tools/prompt-library |
 | p21 | The Prompt Index (Image DB) | Images, logos & products | Community | no | — | Searching 500+ image prompts by keyword, e.g. minimalist logo, 3D mockup, eBook cover. | https://www.thepromptindex.com/image-database.php |
 | p22 | Founderz Product Design Generator | Images, logos & products | Free | no | — | Physical product and packaging renders: 24 templates for materials, finish, scale and lighting. | https://founderz.com/blog/ai-prompts-product-design/ |
 | p35 | Awesome AI Art Pics Prompts | Images, logos & products | Community | no | copy failed | Gemini and visual AI prompts: 3,000+ real creator prompts paired with source links and sample generations. | https://aiart.pics/ |
+| p37 | 320 ChatGPT image shortcuts (320 פקודות תמונה ל־ChatGPT) | Images, logos & products | Community | no | — | Fast ChatGPT image styles: 320 copy-ready shortcuts in 12 visual style families (Hebrew). | https://chatgpt-image-slash-guide.royecr.chatgpt.site/ |
 | p23 | Stress-test an idea | Thinking patterns | Academic | no | — | Pressure-testing a plan or decision: pre-mortems, devil's advocate, red-teaming and decision matrices. | https://www.moreusefulthings.com/prompts |
 | p24 | Pull out what matters | Thinking patterns | Official | no | — | Turning messy input into something usable: transcripts to action items, text to tables or JSON, re-tone for an audience. | https://github.com/danielmiessler/fabric/tree/main/data/patterns |
 | p25 | Let the AI interview you | Thinking patterns | Academic | no | — | When you don't know what to ask: the AI interviews you to build a PRD, tutor you or rehearse a negotiation. | https://www.moreusefulthings.com/prompts |
@@ -309,3 +316,6 @@ None.
 | p28 | Prompts that write prompts | Thinking patterns | Official | no | — | Writing better prompts: turn one sentence into a full structured prompt, and study real system prompts of top AI tools. | https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools |
 | p29 | DAIR.AI Prompt Engineering Guide | Thinking patterns | Open source | yes | 765 | Mastering core prompting patterns: references for CoT, ReAct, meta-prompting, and hands-on LLM application recipes. | https://www.promptingguide.ai/ |
 | p30 | ChatGPT Prompts for Academic Writing | Thinking patterns | Academic | no | — | Academic paper writing: prompts for topic brainstorming, literature reviews, drafting paper sections, and academic editing. | https://github.com/ahmetbersoz/chatgpt-prompts-for-academic-writing |
+| p36 | Lyra Prompt (AI Prompt Generator & Directory) | Thinking patterns | Free | no | — | Turning a vague request into a sharp prompt with Lyra's 4-step method, or browsing ready prompts. | https://lyraprompt.com/ |
+| p42 | Claude anti-sycophancy prompt | Thinking patterns | Community | no | — | Making Claude a real sparring partner: a settings prompt that tells it to push back instead of flatter. | https://facebook.com/100002717045940/posts/pfbid0YbYQht5K5Darmt7KtZASH29yAxQwa1yqo3TC8UdtUQccmLmM4E6eqgijxWmvgbjHl/ |
+| p43 | Claude anti-glazing prompt | Thinking patterns | Community | no | — | Stopping Claude from flattering you: it stress-tests ideas and leads with weaknesses. | https://facebook.com/reel/955735520376190/ |
