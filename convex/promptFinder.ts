@@ -177,45 +177,89 @@ export const web = action({
       return null;
     };
 
-    // 1. Find candidate pages.
-    const siteList = sites.map((l) => `${l.libId} | ${l.title} | ${l.bestFor || l.summary} | ${l.hosts.join(" ")}`).join("\n");
-    const r1 = await callGemini({
-      model: MODELS.advisor(),
-      system:
-        "Find web pages that contain a ready-made prompt matching the user's REQUEST, ONLY on the LIBRARIES' websites listed (use Google Search with site: queries on their domains). " +
-        "Return up to 4 pages, best first. For each: libId, url (the exact page address you found), title of the prompt or page. Never invent addresses. " +
-        'Reply with JSON only (no other text): {"pages":[{"libId":"p1","url":"https://...","title":"..."}]}',
-      turns: [{ role: "user", text: `REQUEST: ${q}\n\nLIBRARIES (libId | name | what it has | site):\n${siteList}` }],
-      search: true,
-      thinking: "low",
-      maxTokens: 2048,
-    });
-    let pages: { url: string; title: string }[] = [];
+    // Words to look for (the request plus synonyms, e.g. "stress test" -> pre-mortem, devil's advocate).
+    let keywords: string[] = words(q);
     try {
-      const j = parseJson(r1.text);
-      pages = (Array.isArray(j?.pages) ? j.pages : []).map((p: any) => ({ url: String(p?.url || ""), title: String(p?.title || "") }));
-    } catch { /* fall back to the search sources below */ }
-    // Add the pages Google actually returned (redirect links), resolved to their real address.
-    for (const s of r1.sources.slice(0, 6)) pages.push({ url: s.url, title: s.title });
+      const rk = await callGemini({
+        model: MODELS.advisor(),
+        system: 'Someone is looking for a ready-made AI prompt. Give 10-15 short English keywords and synonyms likely to appear in the title or text of a matching prompt (e.g. "stress test" -> pre-mortem, premortem, devil\'s advocate, red team, risk). Reply JSON only: {"keywords": ["..."]}',
+        turns: [{ role: "user", text: q }],
+        json: true,
+        thinking: "low",
+        maxTokens: 512,
+      });
+      const k = parseJson(rk.text)?.keywords;
+      if (Array.isArray(k)) keywords = [...new Set([...keywords, ...k.flatMap((x: any) => words(String(x)))])];
+    } catch { /* use the request's own words */ }
+    const hits = (s: string) => { const t = s.toLowerCase(); return keywords.reduce((n, k) => n + (t.includes(k) ? 1 : 0), 0); };
 
-    // 2. Read the pages (only ones on the libraries' sites).
-    const seen = new Set<string>();
-    const read: { lib: (typeof sites)[number]; url: string; title: string; text: string }[] = [];
-    for (const p of pages) {
-      if (read.length >= 4) break;
-      if (!/^https?:\/\//.test(p.url)) continue;
-      try {
-        const res = await fetchWithTimeout(p.url, { headers: { "User-Agent": "Mozilla/5.0 (compatible; ai-toolbox)" } }, 12000);
-        const finalUrl = res.url || p.url;
-        // A library's page may forward to a new address (e.g. docs.anthropic.com -> docs.claude.com): judge by where the link started.
-        const lib = ownerOf(p.url) || ownerOf(finalUrl);
-        if (!lib || seen.has(finalUrl)) continue;
-        seen.add(finalUrl);
-        if (!res.ok) continue;
-        const text = pageText(await res.text()).slice(0, 30000);
-        read.push({ lib, url: finalUrl, title: p.title, text });
-      } catch { /* unreachable page: skip */ }
+    const UA = { "User-Agent": "Mozilla/5.0 (compatible; ai-toolbox)", Accept: "text/html" };
+    const getPage = async (url: string) => {
+      const res = await fetchWithTimeout(url, { headers: UA }, 12000);
+      if (!res.ok) return null;
+      const html = await res.text();
+      return { finalUrl: res.url || url, html, text: pageText(html) };
+    };
+    // Keeps the parts of a long page around the matching words, so the important bits fit.
+    const focus = (text: string) => {
+      if (text.length <= 30000) return text;
+      const low = text.toLowerCase(), spans: [number, number][] = [];
+      for (const k of keywords) { let at = low.indexOf(k); let n = 0; while (at >= 0 && n++ < 6) { spans.push([Math.max(0, at - 1500), at + 2500]); at = low.indexOf(k, at + k.length); } }
+      if (!spans.length) return text.slice(0, 30000);
+      spans.sort((a, b) => a[0] - b[0]);
+      const merged: [number, number][] = [];
+      for (const s of spans) { const last = merged[merged.length - 1]; if (last && s[0] <= last[1]) last[1] = Math.max(last[1], s[1]); else merged.push([...s]); }
+      return merged.map(([a, b]) => text.slice(a, b)).join("\n…\n").slice(0, 30000);
+    };
+
+    // 1. Open each website library's own page(s) and follow its links whose names match the request.
+    type Cand = { lib: (typeof sites)[number]; url: string; title: string; score: number; text?: string };
+    const cands: Cand[] = [];
+    const opened = await Promise.all(sites.map(async (l) => {
+      const out: Cand[] = [];
+      for (const start of l.hosts.slice(0, 2)) {
+        if (/github\.com/i.test(start) && l.hosts.length > 1) continue; // mixed cards: their GitHub links are covered elsewhere
+        try {
+          const pg = await getPage(start);
+          if (!pg) continue;
+          const own = ownerOf(start);
+          out.push({ lib: l, url: pg.finalUrl, title: l.title, score: hits(pg.text), text: pg.text });
+          // Links on the page (same site), scored by their words and address.
+          const seenLink = new Set<string>();
+          for (const m of pg.html.matchAll(/<a\b[^>]*href=["']([^"'#]+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
+            let href = m[1];
+            try { href = new URL(href, pg.finalUrl).toString(); } catch { continue; }
+            if (seenLink.has(href) || href === pg.finalUrl) continue;
+            seenLink.add(href);
+            if (!(own && (ownerOf(href) === own || hostOf(href) === hostOf(pg.finalUrl)))) continue;
+            const label = pageText(m[2]).slice(0, 200);
+            const score = hits(label) * 2 + hits(decodeURIComponent(href).replace(/[-_/]+/g, " "));
+            if (score > 0) out.push({ lib: l, url: href, title: label || href, score });
+          }
+        } catch { /* site unreachable: skip */ }
+      }
+      return out;
+    }));
+    for (const o of opened) cands.push(...o);
+
+    // 2. Pick the most promising pages: matching library pages and matching links (a few per library).
+    const ranked = cands.filter((c) => c.score > 0).sort((a, b) => b.score - a.score);
+    const perLib = new Map<string, number>();
+    const chosen: Cand[] = [];
+    for (const c of ranked) {
+      if (chosen.length >= 8) break;
+      const n = perLib.get(c.lib.libId) || 0;
+      if (n >= 3 || chosen.some((x) => x.url === c.url)) continue;
+      perLib.set(c.lib.libId, n + 1);
+      chosen.push(c);
     }
+    const read: { lib: (typeof sites)[number]; url: string; title: string; text: string }[] = [];
+    await Promise.all(chosen.map(async (c) => {
+      try {
+        const text = c.text ?? (await getPage(c.url))?.text;
+        if (text && text.length > 200) read.push({ lib: c.lib, url: c.url, title: c.title, text: focus(text) });
+      } catch { /* skip */ }
+    }));
     if (!read.length) return { results: [], searched: libs.length };
 
     // 3. Pull the matching prompt out of each page's real text.
