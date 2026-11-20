@@ -1224,7 +1224,8 @@
       let PROMPT_LIBS = []; // loaded from the database (promptLibs:list)
 
       const pstate = { q: '', sec: 'all', kind: 'all', os: false, expanded: new Set() };
-      const isOpenLib = p => p.kind === 'open' || /MIT|Apache|CC0|open source/i.test(p.license);
+      // One rule everywhere (count, checkbox, Source chip): a library is open source when its source is tagged Open source.
+      const isOpenLib = p => p.kind === 'open';
       function pMatches(p, ignore) {
         if (ignore !== 'sec' && pstate.sec !== 'all' && p.sec !== pstate.sec) return false;
         if (ignore !== 'kind' && pstate.kind !== 'all' && p.kind !== pstate.kind) return false;
@@ -1242,7 +1243,6 @@
         const k = P_KINDS[p.kind];
         let badges = '<span class="badge cat"><span class="dot" style="background:' + s.color + '"></span>' + s.label + '</span>' +
           '<span class="badge kind">' + k.icon + ' ' + k.label + '</span>';
-        if (isOpenLib(p) && p.kind !== 'open') badges += '<span class="badge os">Open source</span>';
         if (p.imp && p.imp.state === 'done') badges += '<span class="badge" title="Searchable in Find a prompt">&#128269; ' + p.imp.count.toLocaleString() + ' prompts</span>';
         if (p.imp && p.imp.state === 'importing') badges += '<span class="badge">&#8987; Copying prompts&hellip;</span>';
         let facts = '<dt>Section</dt><dd>' + s.label + '</dd>' +
