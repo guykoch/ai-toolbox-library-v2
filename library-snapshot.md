@@ -1,12 +1,13 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-20 17:38 UTC.
-Tools: 259 active, 0 archived. Prompt libraries: 45 (14 open source, 9,141 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-20 21:00 UTC.
+Tools: 260 active, 0 archived. Prompt libraries: 45 (14 open source, 9,141 prompts copied into Find a prompt).
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 259 | davila7/claude-code-templates: open-source registry and CLI for Claude Code components | Developer tool | Agent skills | yes | 78 | 20 Nov 2026 | https://github.com/davila7/claude-code-templates | Cursor Rules, Cline Rules, GitHub Copilot Instructions |
 | 258 | D4Vinci/Scrapling: adaptive Web Scraping framework from a single request to full-scale crawl | Developer tool | Productivity | yes | 88 | 20 Nov 2026 | https://github.com/D4Vinci/Scrapling | Scrapy, Firecrawl, Playwright |
 | 257 | Vancete/gitcraft: visual git client, simple to use yet powerful | Desktop / phone app | Productivity | yes | 38 | 20 Nov 2026 | https://github.com/Vancete/gitcraft | GitKraken, SourceTree, Fork |
 | 256 | mattpocock/skills: Skills for Real Engineers | Skill | Agent skills | yes | 88 | 20 Nov 2026 | https://github.com/mattpocock/skills | obra/superpowers, Cursor Rules, GitHub Copilot Instructions |
