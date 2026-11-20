@@ -1,7 +1,7 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-20 17:32 UTC.
-Tools: 258 active, 0 archived. Prompt libraries: 45 (14 open source, 7,672 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-20 17:34 UTC.
+Tools: 258 active, 0 archived. Prompt libraries: 45 (14 open source, 8,060 prompts copied into Find a prompt).
 
 ## Tools (active)
 
@@ -303,8 +303,8 @@ None.
 | p45 | Beautiful apps in 3 prompts (Cursor) | Slides, web & app design | Community | no | — | Making AI-built apps look designed: a 3-prompt method to set up a reusable design system in Cursor. | https://www.youtube.com/watch?v=Be5IAxyxa6g |
 | p18 | YouMind Visual Prompt Library | Images, logos & products | Community | no | copy failed | Image inspiration with the exact prompt behind each picture: posters, logos, product shots, slides. | https://youmind.com/prompts/image |
 | p19 | GeneratePrompt Image Library | Images, logos & products | Free | no | 1510 | Brand visuals: logos, packaging, product renders, ads and UI mockups, each with a copyable prompt. | https://generateprompt.net/image-prompts |
-| p20 | MoodNode Prompt Library | Images, logos & products | Free | no | copying… | Product and industrial-design renders: studio shots, exploded views, materials and lighting settings. | https://moodnode.ai/tools/prompt-library |
-| p21 | The Prompt Index (Image DB) | Images, logos & products | Community | no | — | Searching 500+ image prompts by keyword, e.g. minimalist logo, 3D mockup, eBook cover. | https://www.thepromptindex.com/image-database.php |
+| p20 | MoodNode Prompt Library | Images, logos & products | Free | no | 388 | Product and industrial-design renders: studio shots, exploded views, materials and lighting settings. | https://moodnode.ai/tools/prompt-library |
+| p21 | The Prompt Index (Image DB) | Images, logos & products | Community | no | copying… | Searching 500+ image prompts by keyword, e.g. minimalist logo, 3D mockup, eBook cover. | https://www.thepromptindex.com/image-database.php |
 | p22 | Founderz Product Design Generator | Images, logos & products | Free | no | — | Physical product and packaging renders: 24 templates for materials, finish, scale and lighting. | https://founderz.com/blog/ai-prompts-product-design/ |
 | p35 | Awesome AI Art Pics Prompts | Images, logos & products | Community | no | copy failed | Gemini and visual AI prompts: 3,000+ real creator prompts paired with source links and sample generations. | https://aiart.pics/ |
 | p37 | 320 ChatGPT image shortcuts (320 פקודות תמונה ל־ChatGPT) | Images, logos & products | Community | no | — | Fast ChatGPT image styles: 320 copy-ready shortcuts in 12 visual style families (Hebrew). | https://chatgpt-image-slash-guide.royecr.chatgpt.site/ |
