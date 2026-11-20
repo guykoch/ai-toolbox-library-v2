@@ -164,6 +164,16 @@ export const libNames = internalQuery({
   handler: async (ctx) => (await ctx.db.query("plibs").collect()).filter((r) => !r.deleting).map((r) => ({ libId: r.libId, title: r.data?.title || r.libId, links: r.data?.links || [], repo: r.data?.repo || "", summary: r.data?.summary || "", imported: r.imp?.state === "done" })),
 });
 
+// Titles (and one-line descriptions) of one library's prompts, for the "Browse prompts" pop-up.
+export const titles = query({
+  args: { key: v.string(), libId: v.string() },
+  handler: async (ctx, { key, libId }) => {
+    checkKey(key);
+    const rows = await ctx.db.query("plIndex").withIndex("by_lib", (q) => q.eq("libId", libId)).collect();
+    return rows.map((r) => ({ pid: r.pid, title: r.title, desc: r.desc }));
+  },
+});
+
 export const promptText = query({
   args: { key: v.string(), pid: v.number() },
   handler: async (ctx, { key, pid }) => {

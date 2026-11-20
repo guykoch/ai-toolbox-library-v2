@@ -496,6 +496,21 @@
       .modal .m-wait { color: var(--muted); font-size: 14.5px; line-height: 1.5; }
       .modal footer { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-top: 1px solid var(--line); flex-wrap: wrap; }
       .modal footer .spacer { flex: 1; }
+      .pb-panel { max-width: 760px; height: 88vh; }
+      .pb-tools { padding: 10px 18px 0; border-bottom: 1px solid var(--line); }
+      .pb-tools .kindchips { margin-top: 10px; }
+      @media (min-width: 601px) { .pb-tools .kindchips { flex-wrap: wrap; overflow: visible; } }
+      .pb-group { margin: 4px 0 16px; }
+      .pb-group h3 { position: sticky; top: -12px; background: var(--surface); margin: 0; padding: 8px 0 6px; font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); display: flex; gap: 8px; align-items: baseline; z-index: 1; }
+      .pb-group h3 .c-n { font-family: "IBM Plex Mono", monospace; font-weight: 600; letter-spacing: 0; }
+      .pb-row { border-top: 1px solid var(--line); }
+      .pb-row > button { all: unset; box-sizing: border-box; cursor: pointer; display: flex; width: 100%; gap: 10px; align-items: baseline; justify-content: space-between; padding: 9px 2px; }
+      .pb-row > button:hover .pb-t { color: var(--accent-ink); }
+      .pb-t { font-size: 14.5px; font-weight: 650; color: var(--ink); }
+      .pb-chev { color: var(--muted); font-size: 12px; flex: none; }
+      .pb-more { padding: 0 2px 12px; display: flex; flex-direction: column; gap: 8px; }
+      .pb-d { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+      .pb-empty { color: var(--muted); padding: 24px 0; text-align: center; }
       .modal .copied { font-size: 13.5px; color: var(--accent-ink); font-weight: 600; }
       .lock form { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 12px; }
       .lock h2 { margin: 0; font-size: 20px; }
@@ -538,6 +553,19 @@
         <p class="err" id="lock-err"></p>
         <button class="primary-btn" type="submit">Open library</button>
       </form>
+    </div>
+    <div class="modal" id="pb" hidden role="dialog" aria-modal="true" aria-labelledby="pb-title">
+      <div class="panel pb-panel">
+        <header>
+          <div><h2 id="pb-title">Prompts</h2><p class="m-sub" id="pb-sub"></p></div>
+          <button class="showall-btn" id="pb-exit" type="button" style="margin-left:0">Close</button>
+        </header>
+        <div class="pb-tools">
+          <div class="search-box"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.8-3.8"/></svg><input id="pb-q" type="search" placeholder="Filter by name or topic&hellip;" aria-label="Filter prompts" /></div>
+          <div class="kindchips" id="pb-chips"></div>
+        </div>
+        <div class="m-body" id="pb-body"></div>
+      </div>
     </div>
     <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div class="panel">
@@ -1265,6 +1293,7 @@
           '<p class="summary' + (open ? ' full' : '') + '">' + esc(p.summary) + '</p>' +
           '<div class="badges">' + badges + '</div>' +
           '<div class="btn-row"><button type="button" class="expand-btn" data-pexpand="' + p.id + '" aria-expanded="' + open + '" aria-controls="' + did + '">' + (open ? 'Show less' : 'Read more') + '<svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>' +
+          (p.imp && p.imp.state === 'done' && p.imp.count ? '<button type="button" class="expand-btn" data-pbrowse="' + p.id + '">Browse prompts</button>' : '') +
           '<a class="expand-btn" style="text-decoration:none" href="' + esc(p.links[0][1]) + '" target="_blank" rel="noopener">Open <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></a></div>' +
           '<div class="detail" id="' + did + '"' + (open ? '' : ' hidden') + '><div><p class="d-label">Before you click</p><dl class="facts">' + facts + '</dl></div>' +
           '<div class="foot"><span class="manage"><button type="button" class="manage-btn danger" data-pdelete="' + p.id + '">Delete</button></span></div></div>' +
@@ -1372,6 +1401,7 @@
         if (e.target.closest('[data-pclear]')) { pClear(); return; }
         const ex = e.target.closest('[data-pexpand]');
         if (ex) { const id = ex.dataset.pexpand; pstate.expanded.has(id) ? pstate.expanded.delete(id) : pstate.expanded.add(id); renderPrompts(); return; }
+        const pb = e.target.closest('[data-pbrowse]'); if (pb) { pbOpen(pb.dataset.pbrowse); return; }
         const del = e.target.closest('[data-pdelete]');
         if (del) {
           const p = PROMPT_LIBS.find(x => x.id === del.dataset.pdelete); if (!p) return;
@@ -1384,6 +1414,112 @@
         const ri = e.target.closest('[data-preimport]');
         if (ri) { call('mutation', 'promptLibs:reimport', { libId: ri.dataset.preimport }).then(loadPrompts).catch(err => alert(err.message)); }
       });
+
+      // ---------- "Browse prompts" pop-up ----------
+      // Topics are matched by words in each prompt's name first, then its description. Order = how the groups are listed.
+      const PB_TOPICS = [
+        ['Marketing & sales', /\b(marketing|marketer|sales|seo|ads?|advertis\w*|campaign|brand\w*|copywrit\w*|newsletter|email|social media|linkedin|tiktok|instagram|youtube|twitter|influencer|lead|funnel|growth|customer)\b/i],
+        ['Writing & editing', /\b(writ\w*|story|stories|blog|article|essay|edit\w*|proofread\w*|poem|poet\w*|novel|script|content|headline|grammar|rewrite|tone|summar\w*)\b/i],
+        ['Coding & tech', /\b(code|coding|coder|developer|programm\w*|python|javascript|typescript|java|sql|api|debug\w*|software|react|linux|terminal|devops|frontend|backend|git|regex|database|engineer\w*|cyber\w*|security)\b/i],
+        ['Data & research', /\b(data|analy\w*|excel|spreadsheet|chart|research\w*|report|statistic\w*|insight\w*|extract\w*|survey|dashboard)\b/i],
+        ['Business & strategy', /\b(business|startup|strategy|strategist|product|project|plan\w*|consult\w*|financ\w*|invest\w*|accounting|ceo|management|manager|negotiat\w*|pitch|market research|operations)\b/i],
+        ['Design, slides & images', /\b(design\w*|image|logo|ui|ux|slides?|presentation|deck|photo\w*|illustrat\w*|art|artist|style|visual|midjourney|render\w*|poster|font|color)\b/i],
+        ['Learning & teaching', /\b(teach\w*|tutor|learn\w*|student|explain\w*|course|quiz|lesson|language|vocabulary|study|exam|school|math\w*)\b/i],
+        ['Career & productivity', /\b(resume|cv|interview\w*|job|career|productiv\w*|schedule|meeting|recruit\w*|hr|habit|time management|todo)\b/i],
+        ['Health & life', /\b(health|fitness|diet|nutrition|travel|recipe|chef|cook\w*|relationship|life coach|motivation|wellness|meditation|doctor)\b/i],
+        ['Fun & role-play', /\b(game|play\w*|character|joke|comedian|fun|roleplay|rpg|trivia|riddle|movie|music|song)\b/i]
+      ];
+      const pbState = { lib: null, rows: [], q: '', topic: 'all', mode: 'topic', open: new Set() };
+      function pbTopic(r) {
+        for (const [name, re] of PB_TOPICS) if (re.test(r.title)) return name;
+        for (const [name, re] of PB_TOPICS) if (re.test(r.desc)) return name;
+        return 'Other';
+      }
+      async function pbOpen(libId) {
+        const lib = PROMPT_LIBS.find(p => p.id === libId); if (!lib) return;
+        pbState.lib = lib; pbState.rows = []; pbState.q = ''; pbState.topic = 'all'; pbState.open = new Set();
+        document.getElementById('pb-q').value = '';
+        document.getElementById('pb-title').textContent = lib.title;
+        document.getElementById('pb-sub').textContent = 'Loading the prompt list\u2026';
+        document.getElementById('pb-chips').innerHTML = '';
+        document.getElementById('pb-body').innerHTML = '';
+        document.getElementById('pb').hidden = false;
+        document.body.style.overflow = 'hidden';
+        try {
+          const rows = await call('query', 'promptLibs:titles', { libId });
+          rows.forEach(r => { r.topic = pbTopic(r); r.sortKey = r.title.replace(/^[^\p{L}\p{N}]+/u, '') || r.title; });
+          rows.sort((a, b) => a.sortKey.localeCompare(b.sortKey, undefined, { sensitivity: 'base', numeric: true }));
+          pbState.rows = rows;
+          // Small, single-topic or design-only libraries (e.g. slide styles) read better A to Z.
+          const counts = {}; rows.forEach(r => { counts[r.topic] = (counts[r.topic] || 0) + 1; });
+          const biggest = Math.max(0, ...Object.values(counts));
+          pbState.mode = rows.length < 40 || biggest > rows.length * 0.6 || lib.sec === 'design' || lib.sec === 'images' ? 'az' : 'topic';
+          pbRender();
+          document.getElementById('pb-q').focus();
+        } catch (e) { document.getElementById('pb-sub').textContent = e.message; }
+      }
+      function pbClose() { document.getElementById('pb').hidden = true; document.body.style.overflow = ''; }
+      function pbRender() {
+        const rows = pbState.rows, q = pbState.q;
+        const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+        const hit = r => !words.length || words.every(w => (r.title + ' ' + r.desc).toLowerCase().includes(w));
+        const shown = rows.filter(r => hit(r) && (pbState.mode !== 'topic' || pbState.topic === 'all' || r.topic === pbState.topic));
+        document.getElementById('pb-sub').textContent = rows.length.toLocaleString() + ' prompts' + (pbState.mode === 'topic' ? ', grouped by topic' : ', A to Z') + (words.length || pbState.topic !== 'all' ? ' \u00b7 showing ' + shown.length.toLocaleString() : '') + ' \u00b7 tap a name to preview it';
+        // Topic chips (counts follow the text filter).
+        if (pbState.mode === 'topic') {
+          const base = rows.filter(hit);
+          const order = PB_TOPICS.map(t => t[0]).concat('Other');
+          const chip = (key, label, n) => '<button type="button" class="kindchip" data-pbtopic="' + esc(key) + '" aria-pressed="' + (pbState.topic === key) + '"' + (n === 0 && pbState.topic !== key ? ' style="opacity:.45"' : '') + '>' + esc(label) + ' <span class="kc-n">' + n.toLocaleString() + '</span></button>';
+          document.getElementById('pb-chips').innerHTML = chip('all', 'All', base.length) + order.map(t => [t, base.filter(r => r.topic === t).length]).filter(([t, n]) => n > 0 || pbState.topic === t).sort((a, b) => (a[0] === 'Other') - (b[0] === 'Other') || b[1] - a[1]).map(([t, n]) => chip(t, t, n)).join('');
+        } else document.getElementById('pb-chips').innerHTML = '';
+        // Groups: topics (largest first, Other last) or first letters.
+        const groups = new Map();
+        for (const r of shown) {
+          const g = pbState.mode === 'topic' ? r.topic : (/[a-z]/i.test(r.sortKey[0]) ? r.sortKey[0].toUpperCase() : '#');
+          if (!groups.has(g)) groups.set(g, []);
+          groups.get(g).push(r);
+        }
+        let keys = [...groups.keys()];
+        if (pbState.mode === 'topic') keys.sort((a, b) => (a === 'Other') - (b === 'Other') || groups.get(b).length - groups.get(a).length);
+        else keys.sort((a, b) => (a === '#') - (b === '#') || a.localeCompare(b));
+        const row = r => {
+          const open = pbState.open.has(r.pid);
+          return '<div class="pb-row"><button type="button" data-pbrow="' + r.pid + '" aria-expanded="' + open + '"><span class="pb-t" dir="auto">' + esc(r.title) + '</span><span class="pb-chev">' + (open ? '\u25B2' : '\u25BC') + '</span></button>' +
+            (open ? '<div class="pb-more"><p class="pb-d" dir="auto">' + esc(r.desc) + '</p><div id="pb-full-' + r.pid + '"></div><div class="pf-actions"><button class="expand-btn" type="button" data-pbfull="' + r.pid + '">Show full prompt</button><button class="primary-btn" type="button" data-pbcopy="' + r.pid + '">Copy prompt</button><span class="pf-copied" id="pb-copied-' + r.pid + '"></span></div></div>' : '') + '</div>';
+        };
+        document.getElementById('pb-body').innerHTML = shown.length
+          ? keys.map(k => '<section class="pb-group"><h3>' + esc(k) + ' <span class="c-n">' + groups.get(k).length.toLocaleString() + '</span></h3>' + groups.get(k).map(row).join('') + '</section>').join('')
+          : '<p class="pb-empty">No prompts match &ldquo;' + esc(q) + '&rdquo;.</p>';
+      }
+      const pbTexts = new Map();
+      async function pbText(pid) { if (!pbTexts.has(pid)) pbTexts.set(pid, call('query', 'promptLibs:promptText', { pid }).catch(e => { pbTexts.delete(pid); throw e; })); return pbTexts.get(pid); }
+      document.getElementById('pb-exit').addEventListener('click', pbClose);
+      document.getElementById('pb').addEventListener('click', async e => {
+        if (e.target.id === 'pb') { pbClose(); return; }
+        const t = e.target.closest('[data-pbtopic]'); if (t) { pbState.topic = t.dataset.pbtopic; pbRender(); document.getElementById('pb-body').scrollTop = 0; return; }
+        const r = e.target.closest('[data-pbrow]'); if (r) { const id = Number(r.dataset.pbrow); pbState.open.has(id) ? pbState.open.delete(id) : pbState.open.add(id); pbRender(); return; }
+        const f = e.target.closest('[data-pbfull]');
+        if (f) {
+          const id = Number(f.dataset.pbfull), box = document.getElementById('pb-full-' + id);
+          if (box.innerHTML) { box.innerHTML = ''; f.textContent = 'Show full prompt'; return; }
+          box.innerHTML = '<p class="pf-why">Loading\u2026</p>';
+          try { const p = await pbText(id); box.innerHTML = '<pre class="pf-pre" dir="auto">' + esc(p.text) + '</pre><a class="expand-btn" style="text-decoration:none;margin-top:6px" href="' + esc(p.url) + '" target="_blank" rel="noopener">Source \u2197</a>'; f.textContent = 'Hide full prompt'; }
+          catch (err) { box.innerHTML = '<p class="err">' + esc(err.message) + '</p>'; }
+          return;
+        }
+        const c = e.target.closest('[data-pbcopy]');
+        if (c) {
+          const id = Number(c.dataset.pbcopy);
+          try {
+            const p = await pbText(id);
+            try { await navigator.clipboard.writeText(p.text); }
+            catch (err) { const ta = document.createElement('textarea'); ta.value = p.text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+            const s = document.getElementById('pb-copied-' + id); if (s) { s.textContent = 'Copied \u2713'; setTimeout(() => { s.textContent = ''; }, 2500); }
+          } catch (err) { alert(err.message); }
+        }
+      });
+      document.getElementById('pb-q').addEventListener('input', e => { pbState.q = e.target.value.trim(); pbRender(); document.getElementById('pb-body').scrollTop = 0; });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && !document.getElementById('pb').hidden) pbClose(); });
 
       // ---------- load the libraries from the database ----------
       let pSeed = null, pPoll = null, pLoaded = false, pResumed = false;
