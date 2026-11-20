@@ -1,7 +1,7 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-20 17:35 UTC.
-Tools: 259 active, 0 archived. Prompt libraries: 45 (14 open source, 8,060 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-20 17:37 UTC.
+Tools: 259 active, 0 archived. Prompt libraries: 45 (14 open source, 9,062 prompts copied into Find a prompt).
 
 ## Tools (active)
 
@@ -305,18 +305,18 @@ None.
 | p18 | YouMind Visual Prompt Library | Images, logos & products | Community | no | copy failed | Image inspiration with the exact prompt behind each picture: posters, logos, product shots, slides. | https://youmind.com/prompts/image |
 | p19 | GeneratePrompt Image Library | Images, logos & products | Free | no | 1510 | Brand visuals: logos, packaging, product renders, ads and UI mockups, each with a copyable prompt. | https://generateprompt.net/image-prompts |
 | p20 | MoodNode Prompt Library | Images, logos & products | Free | no | 388 | Product and industrial-design renders: studio shots, exploded views, materials and lighting settings. | https://moodnode.ai/tools/prompt-library |
-| p21 | The Prompt Index (Image DB) | Images, logos & products | Community | no | copying… | Searching 500+ image prompts by keyword, e.g. minimalist logo, 3D mockup, eBook cover. | https://www.thepromptindex.com/image-database.php |
-| p22 | Founderz Product Design Generator | Images, logos & products | Free | no | — | Physical product and packaging renders: 24 templates for materials, finish, scale and lighting. | https://founderz.com/blog/ai-prompts-product-design/ |
+| p21 | The Prompt Index (Image DB) | Images, logos & products | Community | no | 658 | Searching 500+ image prompts by keyword, e.g. minimalist logo, 3D mockup, eBook cover. | https://www.thepromptindex.com/image-database.php |
+| p22 | Founderz Product Design Generator | Images, logos & products | Free | no | copy failed | Physical product and packaging renders: 24 templates for materials, finish, scale and lighting. | https://founderz.com/blog/ai-prompts-product-design/ |
 | p35 | Awesome AI Art Pics Prompts | Images, logos & products | Community | no | copy failed | Gemini and visual AI prompts: 3,000+ real creator prompts paired with source links and sample generations. | https://aiart.pics/ |
 | p37 | 320 ChatGPT image shortcuts (320 פקודות תמונה ל־ChatGPT) | Images, logos & products | Community | no | — | Fast ChatGPT image styles: 320 copy-ready shortcuts in 12 visual style families (Hebrew). | https://chatgpt-image-slash-guide.royecr.chatgpt.site/ |
-| p23 | Stress-test an idea | Thinking patterns | Academic | no | — | Pressure-testing a plan or decision: pre-mortems, devil's advocate, red-teaming and decision matrices. | https://www.moreusefulthings.com/prompts |
-| p24 | Pull out what matters | Thinking patterns | Official | no | — | Turning messy input into something usable: transcripts to action items, text to tables or JSON, re-tone for an audience. | https://github.com/danielmiessler/fabric/tree/main/data/patterns |
-| p25 | Let the AI interview you | Thinking patterns | Academic | no | — | When you don't know what to ask: the AI interviews you to build a PRD, tutor you or rehearse a negotiation. | https://www.moreusefulthings.com/prompts |
-| p26 | Grade and improve work | Thinking patterns | Open source | yes | — | Quality control: scoring rubrics, ruthless editors and self-critique loops to improve a draft. | https://www.promptfoo.dev/docs/configuration/expected-outputs/model-graded/ |
-| p27 | Set a style and voice | Thinking patterns | Open source | yes | — | Keeping output on-brand: voice profiles, rules against AI-sounding text, memo skeletons and design tokens. | https://github.com/voltagent/awesome-design-md |
-| p28 | Prompts that write prompts | Thinking patterns | Official | no | — | Writing better prompts: turn one sentence into a full structured prompt, and study real system prompts of top AI tools. | https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools |
+| p23 | Stress-test an idea | Thinking patterns | Academic | no | copy failed | Pressure-testing a plan or decision: pre-mortems, devil's advocate, red-teaming and decision matrices. | https://www.moreusefulthings.com/prompts |
+| p24 | Pull out what matters | Thinking patterns | Official | no | 55 | Turning messy input into something usable: transcripts to action items, text to tables or JSON, re-tone for an audience. | https://github.com/danielmiessler/fabric/tree/main/data/patterns |
+| p25 | Let the AI interview you | Thinking patterns | Academic | no | copy failed | When you don't know what to ask: the AI interviews you to build a PRD, tutor you or rehearse a negotiation. | https://www.moreusefulthings.com/prompts |
+| p26 | Grade and improve work | Thinking patterns | Open source | yes | 185 | Quality control: scoring rubrics, ruthless editors and self-critique loops to improve a draft. | https://www.promptfoo.dev/docs/configuration/expected-outputs/model-graded/ |
+| p27 | Set a style and voice | Thinking patterns | Open source | yes | 45 | Keeping output on-brand: voice profiles, rules against AI-sounding text, memo skeletons and design tokens. | https://github.com/voltagent/awesome-design-md |
+| p28 | Prompts that write prompts | Thinking patterns | Official | no | 55 | Writing better prompts: turn one sentence into a full structured prompt, and study real system prompts of top AI tools. | https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools |
 | p29 | DAIR.AI Prompt Engineering Guide | Thinking patterns | Open source | yes | 765 | Mastering core prompting patterns: references for CoT, ReAct, meta-prompting, and hands-on LLM application recipes. | https://www.promptingguide.ai/ |
-| p30 | ChatGPT Prompts for Academic Writing | Thinking patterns | Academic | no | — | Academic paper writing: prompts for topic brainstorming, literature reviews, drafting paper sections, and academic editing. | https://github.com/ahmetbersoz/chatgpt-prompts-for-academic-writing |
-| p36 | Lyra Prompt (AI Prompt Generator & Directory) | Thinking patterns | Free | no | — | Turning a vague request into a sharp prompt with Lyra's 4-step method, or browsing ready prompts. | https://lyraprompt.com/ |
+| p30 | ChatGPT Prompts for Academic Writing | Thinking patterns | Academic | no | 4 | Academic paper writing: prompts for topic brainstorming, literature reviews, drafting paper sections, and academic editing. | https://github.com/ahmetbersoz/chatgpt-prompts-for-academic-writing |
+| p36 | Lyra Prompt (AI Prompt Generator & Directory) | Thinking patterns | Free | no | copying… | Turning a vague request into a sharp prompt with Lyra's 4-step method, or browsing ready prompts. | https://lyraprompt.com/ |
 | p42 | Claude anti-sycophancy prompt | Thinking patterns | Community | no | — | Making Claude a real sparring partner: a settings prompt that tells it to push back instead of flatter. | https://facebook.com/100002717045940/posts/pfbid0YbYQht5K5Darmt7KtZASH29yAxQwa1yqo3TC8UdtUQccmLmM4E6eqgijxWmvgbjHl/ |
 | p43 | Claude anti-glazing prompt | Thinking patterns | Community | no | — | Stopping Claude from flattering you: it stress-tests ideas and leads with weaknesses. | https://facebook.com/reel/955735520376190/ |
