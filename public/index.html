@@ -669,6 +669,11 @@
       .pl-comp textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
       .pl-comp .primary-btn { min-height: 44px; }
       .pl-comp .primary-btn.pl-stop { background: #b42318; border-color: #b42318; }
+      .pl-msgs { position: relative; }
+      .pl-m[data-mi] { -webkit-touch-callout: none; }
+      @media (pointer: coarse) { .pl-m[data-mi] { -webkit-user-select: none; user-select: none; } }
+      .pl-m.picked { filter: brightness(.92); }
+      .pl-copymenu { position: absolute; z-index: 3; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 10px; padding: 7px 12px; font: inherit; font-size: 13.5px; font-weight: 650; box-shadow: 0 8px 24px rgba(0,0,0,.2); cursor: pointer; }
       .pl-status { font-size: 12.5px; color: var(--muted); padding: 0 14px 6px; min-height: 0; }
       .pl-view { overflow-y: auto; padding: 18px 22px 40px; min-height: 0; }
       .pl-noplan { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--muted); gap: 8px; font-size: 14.5px; }
@@ -746,6 +751,7 @@
         .pl-body { grid-template-columns: 1fr; }
         .pl-body[data-show="chat"] .pl-view, .pl-body[data-show="plan"] .pl-chat { display: none; }
         .pl-chat { border-right: 0; }
+        .pl-comp { padding-bottom: calc(18px + env(safe-area-inset-bottom)); }
         .pl-view { padding: 14px 14px 40px; }
         .pl-hero h3 { font-size: 20px; }
       }
@@ -1532,6 +1538,12 @@
       // open cards, the advisor chat and the add box all cleared. Your access key and light/dark choice stay.
       document.getElementById('refresh-btn').addEventListener('click', e => {
         const b = e.currentTarget;
+        // A hard refresh also clears the Plan chat (saved playbooks stay).
+        try {
+          const sv = JSON.parse(localStorage.getItem('aicm-plan-v1') || 'null');
+          if (sv && sv.plan && sv.dirty && !confirm('Refresh clears the Plan chat, and your plan has unsaved changes. Refresh anyway?')) return;
+          localStorage.removeItem('aicm-plan-v1');
+        } catch (err) {}
         b.disabled = true; b.classList.add('spinning');
         // Also ask for a fresh library snapshot for Claude (written a few seconds later, only if something changed).
         const go = () => location.replace(location.pathname + '?fresh=' + Date.now());
@@ -3115,7 +3127,7 @@
         const last = pl.history.length - 1;
         return pl.history.map((m, i) => {
           if (m.note) return '<div class="pl-m n" dir="auto">' + esc(m.text) + '</div>';
-          let h = '<div class="pl-m ' + (m.role === 'user' ? 'u' : 'a') + '" dir="auto">' + esc(m.text) + (m.changes && m.changes.length ? '<ul>' + m.changes.map(c => '<li>' + esc(c) + '</li>').join('') + '</ul>' : '') + '</div>';
+          let h = '<div class="pl-m ' + (m.role === 'user' ? 'u' : 'a') + '" data-mi="' + i + '" dir="auto">' + esc(m.text) + (m.changes && m.changes.length ? '<ul>' + m.changes.map(c => '<li>' + esc(c) + '</li>').join('') + '</ul>' : '') + '</div>';
           if (m.questions && m.questions.length && i === last) {
             h += '<div class="pl-qs">' + m.questions.map((q, qi) => '<div class="pl-q"><b dir="auto">' + esc(q.q) + '</b><div class="pl-opts">' +
               q.options.map(o => '<button type="button" class="pl-opt" data-plans="' + qi + '" data-v="' + esc(o) + '" aria-pressed="' + (pl.answers[qi] === o) + '" dir="auto">' + esc(o) + '</button>').join('') + '</div></div>').join('') +
@@ -3156,6 +3168,33 @@
         plSave(); plRender();
         const ta = document.getElementById('pl-text'); if (ta && last && !last.note) { ta.value = last.text; ta.dispatchEvent(new Event('input')); ta.focus(); }
       }
+      // Long-press (phone) or right-click (laptop) a message → a small Copy button.
+      function plMsgText(m) {
+        return m.text + (m.changes && m.changes.length ? '\n' + m.changes.map(c => '- ' + c).join('\n') : '') + (m.questions && m.questions.length ? '\n' + m.questions.map(q => '- ' + q.q + ' (' + q.options.join(' / ') + ')').join('\n') : '');
+      }
+      function plCopyMenu(el) {
+        document.querySelectorAll('.pl-copymenu').forEach(x => x.remove());
+        const m = pl.history[Number(el.dataset.mi)]; if (!m) return;
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'pl-copymenu'; b.textContent = 'Copy message';
+        const r = el.getBoundingClientRect(), box = document.getElementById('pl-msgs').getBoundingClientRect();
+        const sc = document.getElementById('pl-msgs').scrollTop, above = r.top - box.top - 40;
+        b.style.top = (above >= 4 ? above + sc : r.bottom - box.top + sc + 6) + 'px';
+        b.style[el.classList.contains('u') ? 'right' : 'left'] = '14px';
+        b.addEventListener('click', ev => { ev.stopPropagation(); copyText(plMsgText(m)).then(() => { b.textContent = 'Copied \u2713'; setTimeout(() => b.remove(), 900); }); });
+        document.getElementById('pl-msgs').appendChild(b);
+        el.classList.add('picked'); setTimeout(() => el.classList.remove('picked'), 300);
+      }
+      (() => {
+        const box = document.getElementById('pl-msgs'); let timer = null, sx = 0, sy = 0;
+        box.addEventListener('pointerdown', e => {
+          const el = e.target.closest('.pl-m[data-mi]'); if (!el || e.pointerType === 'mouse') return;
+          sx = e.clientX; sy = e.clientY; clearTimeout(timer); timer = setTimeout(() => { plCopyMenu(el); if (navigator.vibrate) navigator.vibrate(15); }, 480);
+        });
+        box.addEventListener('pointermove', e => { if (timer && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) { clearTimeout(timer); timer = null; } });
+        ['pointerup', 'pointercancel', 'scroll'].forEach(ev => box.addEventListener(ev, () => { clearTimeout(timer); timer = null; }));
+        box.addEventListener('contextmenu', e => { const el = e.target.closest('.pl-m[data-mi]'); if (!el) return; e.preventDefault(); plCopyMenu(el); });
+        document.addEventListener('pointerdown', e => { if (!e.target.closest('.pl-copymenu')) document.querySelectorAll('.pl-copymenu').forEach(x => x.remove()); }, true);
+      })();
       function plDiff(a, b) {
         const key = s => JSON.stringify([s.title, s.do, (s.items || []).map(i => i.ref)]);
         const old = new Set((a.steps || []).map(key)); pl.changed = new Set((b.steps || []).filter(s => !old.has(key(s))).map(s => s.id));
