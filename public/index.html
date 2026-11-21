@@ -783,13 +783,13 @@
     <div class="pl-modal" id="pl-modal" hidden role="dialog" aria-modal="true" aria-labelledby="pl-h">
       <div class="pl-panel">
         <div class="pl-head">
-          <h2 id="pl-h">&#129517; Plan</h2><span class="sub">Say what you want &mdash; get a step-by-step plan from your library</span>
+          <h2 id="pl-h">&#129517; Plan</h2>
           <span class="grow"></span>
           <button class="pl-tbtn" id="pl-undo" type="button" title="Undo the last change">&#8630; Undo</button>
           <button class="pl-tbtn" id="pl-copy" type="button">Copy</button>
-          <button class="pl-tbtn" id="pl-defaults" type="button" title="Preferences every plan follows">&#128204; <span class="lg">Defaults</span></button>
-          <button class="pl-tbtn" id="pl-saveas" type="button" title="Keep it on the Playbooks tab"><span class="lg">Save as playbook</span><span class="sm">Save</span></button>
-          <button class="pl-tbtn" id="pl-new" type="button" title="Clear the chat and the plan, and start fresh">&#10227; <span class="lg">Start fresh</span><span class="sm">Clear</span></button>
+          <button class="pl-tbtn" id="pl-defaults" type="button" title="Preferences every plan follows">&#128204; Defaults</button>
+          <button class="pl-tbtn" id="pl-saveas" type="button" title="Save to the Playbooks tab"><span class="sv">Save</span></button>
+          <button class="pl-tbtn" id="pl-new" type="button" title="Clear the chat and the plan, and start fresh">&#10227; Clear</button>
           <button class="pl-x" id="pl-x" type="button" aria-label="Close">&times;</button>
         </div>
         <div class="pl-seg" role="tablist"><button type="button" data-plseg="chat" aria-pressed="true">&#128172; Chat</button><button type="button" data-plseg="plan" aria-pressed="false">&#128506;&#65039; Plan</button></div>
@@ -3292,8 +3292,7 @@
         document.getElementById('pl-undo').disabled = !pl.undo.length;
         ['pl-saveas', 'pl-copy'].forEach(id => { document.getElementById(id).disabled = !pl.plan; });
         const linked = pl.pbId && PLAYBOOKS.some(x => x.id === pl.pbId);
-        document.querySelector('#pl-saveas .lg').textContent = linked ? (pl.dirty ? 'Save changes' : 'Saved') : 'Save as playbook';
-        document.querySelector('#pl-saveas .sm').textContent = linked && !pl.dirty ? 'Saved' : 'Save';
+        document.querySelector('#pl-saveas .sv').textContent = linked && !pl.dirty ? 'Saved' : 'Save';
         document.getElementById('pl-new').disabled = !pl.plan && !pl.history.length;
         const send = document.getElementById('pl-send'), ta = document.getElementById('pl-text');
         send.disabled = pl.busy; ta.disabled = pl.busy; send.textContent = pl.busy ? 'Thinking…' : 'Send';
@@ -3390,7 +3389,7 @@
           try {
             const linked = pl.pbId && PLAYBOOKS.some(x => x.id === pl.pbId);
             const r = await call('mutation', 'playbooks:save', { id: linked ? pl.pbId : undefined, playbook: { ...plToPlaybook(pl.plan), plan: pl.plan } });
-            pl.pbId = r.id; pl.dirty = false; await loadPlaybooks(); flashCopied(t, 'Saved \u2713 (Playbooks tab)');
+            pl.pbId = r.id; pl.dirty = false; await loadPlaybooks(); flashCopied(t, 'Saved \u2713');
             pl.history.push({ role: 'user', text: linked ? 'Saved changes to the playbook' : 'Saved as a playbook', note: true }); plSave(); setTimeout(plRender, 2000);
           }
           catch (err) { alert('Couldn’t save: ' + err.message); t.disabled = false; }
