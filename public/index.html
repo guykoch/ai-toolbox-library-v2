@@ -2772,8 +2772,7 @@
       const pbx = { draft: null, editId: null, history: [], undo: [], dirty: false, editing: new Set(), adding: -1, addQ: '', changed: new Set(), busy: false, pre: null };
 
       function pbPanelHTML() {
-        return '<p class="tab-intro">Step-by-step recipes for a goal, built from <b>your own library</b>: which tool, prompt, rule, agent or automation to use at each step, with ready prompts to copy. Tap any item to jump to its card. Open one in Plan to change it.</p>' +
-          '<div class="pl-cta"><span>To make a new playbook or change one, use <b>Plan</b>: it asks what it needs, explains each step and lets you switch tools.</span><button class="plan-tab" type="button" data-plopenbtn="1">\u{1F9ED} Open Plan</button></div>' +
+        return '<p class="tab-intro">Step-by-step recipes for a goal, built from <b>your own library</b>: which tool, prompt, rule, agent or automation to use at each step, with ready prompts to copy. Tap any item to jump to its card. To make a new one, use <b>Plan</b> in the tab bar.</p>' +
           '<p class="statline" id="pbl-stat" style="margin-top:22px"></p>' +
           '<div class="controls" style="margin-top:22px"><div class="search-row"><div class="search-box">' + SEARCH_SVG + '<input id="pbl-q" type="search" placeholder="Search&hellip; e.g. pitch, NotebookLM, interview, n8n" aria-label="Search playbooks" /></div></div>' +
           '<div class="toggle-row"><button class="showall-btn" type="button" id="pbl-clear">Show all</button></div></div>' +
