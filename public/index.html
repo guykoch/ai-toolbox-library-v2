@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark light" />
     <script>
       // Theme: your saved choice (synced through your library), otherwise dark on every device.
@@ -758,6 +758,12 @@
       .to-top { position: fixed; top: 12px; left: 50%; transform: translate(-50%, -8px); z-index: 900; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); box-shadow: 0 4px 14px rgba(0,0,0,.18); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
       .to-top.show { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
       .to-top:hover { border-color: var(--accent); color: var(--accent-ink); }
+      /* iPhone zooms in on any text box with text under 16px — keep every box at 16px on touch screens. */
+      @media (pointer: coarse) {
+        input[type=text], input[type=search], input[type=password], input:not([type]), textarea, select,
+        #addbox-all textarea, #addbox-all textarea:focus, .pl-comp textarea, .pbx input[type=text], .pbx textarea, .pbx select, .pl-f input, .pl-f textarea, .pl-f select, .pl-defs textarea { font-size: 16px !important; }
+      }
+      html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     </style>
     <script src="config.js"></script>
   </head>
@@ -875,7 +881,7 @@
       </header>
       <section class="addbox" id="addbox-all" aria-labelledby="add-h">
         <h2 id="add-h">Add to the library <span class="sub-inline">&mdash; sorted into the right tab</span></h2>
-        <textarea id="add-text" dir="auto" rows="1" placeholder="Links, names, posts or screenshots&hellip;"></textarea>
+        <textarea id="add-text" dir="auto" rows="1" placeholder="Paste a link, name or screenshot"></textarea>
         <div class="shots" id="shots"></div>
         <div class="row">
           <button class="primary-btn" id="add-btn" type="button">Add</button>
