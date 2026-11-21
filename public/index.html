@@ -885,7 +885,7 @@
         <div class="subtabs" role="tablist" aria-label="Sections">
           <button class="subtab" role="tab" id="tabbtn-tools" data-tab="tools" aria-controls="tab-tools" type="button">Tools</button>
           <button class="subtab" role="tab" id="tabbtn-prompts" data-tab="prompts" aria-controls="tab-prompts" type="button">Prompts</button>
-          <button class="subtab" role="tab" id="tabbtn-rules" data-tab="rules" aria-controls="tab-rules" type="button">Rules</button>
+          <button class="subtab" role="tab" id="tabbtn-rules" data-tab="rules" aria-controls="tab-rules" type="button">Rules &amp; guardrails</button>
           <button class="subtab" role="tab" id="tabbtn-agents" data-tab="agents" aria-controls="tab-agents" type="button">Agents</button>
           <button class="subtab" role="tab" id="tabbtn-autos" data-tab="autos" aria-controls="tab-autos" type="button">Automations</button>
           <button class="subtab" role="tab" id="tabbtn-playbooks" data-tab="playbooks" aria-controls="tab-playbooks" type="button">Playbooks</button>
@@ -1116,6 +1116,8 @@
         'courses-guides': { label: 'Courses & guides', color: '#b45309' },
         'productivity':   { label: 'Productivity',   color: '#3d8b4f' },
         'knowledge-rag':  { label: 'Knowledge & RAG', color: '#4f46e5' },
+        'agent-infra':    { label: 'Agent infrastructure', color: '#1d4ed8' },
+        'apis-scraping':  { label: 'APIs & scraping', color: '#0f766e' },
         'app-building':   { label: 'App building',   color: '#be4b7a' },
         'video':          { label: 'Video',          color: '#cf3f30' },
         'image':          { label: 'Image',          color: '#0e7490' },
@@ -1156,7 +1158,7 @@
         if (/\bnews\b|report|benchmark/.test(t)) return 'news';
         return 'webapp';
       }
-      const CAT_ORDER = ['coding-agents','agent-skills','courses-guides','productivity','knowledge-rag','app-building','video','image','audio','ai-models','news-analysis','translation','other'];
+      const CAT_ORDER = ['coding-agents','agent-infra','agent-skills','courses-guides','productivity','knowledge-rag','apis-scraping','app-building','video','image','audio','ai-models','news-analysis','translation','other'];
       const MONTH_LABELS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
       const state = { q: '', kind: 'all', cat: 'all', osOnly: false, videoOnly: false, cluster: -1, month: '', sort: 'pop', expanded: new Set(), justAdded: -1, highlight: -1, prompts: new Set() };
@@ -2577,13 +2579,14 @@
       // =====================================================================
       const TAB_DEFS = {
         rules: {
-          name: 'Rules', noun: 'rule file', itemWord: 'rule files', browse: 'Browse rules',
-          intro: 'Instruction files that tell an AI how to behave in your projects &mdash; <b>CLAUDE.md, AGENTS.md, Cursor, Copilot, Windsurf and Cline rules</b> &mdash; plus ready collections to copy from. Each card says which tools read it, where the file goes, and has an example to copy.',
+          name: 'Rules & guardrails', noun: 'rule or guardrail', itemWord: 'rule files', browse: 'Browse rules',
+          intro: 'What tells an AI how to behave in your projects &mdash; <b>rule files</b> (CLAUDE.md, AGENTS.md, Cursor, Copilot, Windsurf, Cline) &mdash; and what it&rsquo;s <b>allowed to do</b> (hooks, permission settings), plus ready collections to copy from. Each card says which tools read it, where it goes, and has an example to copy.',
           addH: 'Add a rule file or collection', addSub: 'Paste a link to a rules doc, a rule collection on GitHub or a DESIGN.md source &mdash; or several links separated by commas or spaces. <b>Open-source repos</b> get their rule files copied in, so you can browse and copy them here.',
           ph: 'e.g. https://github.com/owner/awesome-rules', search: 'Search&hellip; e.g. Cursor, Next.js, CLAUDE.md',
           secs: [
             { key: 'standards', label: 'Shared standard', color: '#2f6db3', sub: 'One file that many coding agents read.' },
             { key: 'coding', label: 'Per-tool rule files', color: '#7c5cbf', sub: 'Where each AI tool looks for its rules, with an example to copy.' },
+            { key: 'guardrails', label: 'Guardrails', color: '#b42318', sub: 'Rules an agent can&rsquo;t skip: hooks that always run, and what it may do without asking.' },
             { key: 'collections', label: 'Collections to copy from', color: '#3d8b4f', sub: 'Ready rule files by tech stack &mdash; start from one instead of a blank page.' },
             { key: 'design', label: 'Design & brand rules', color: '#be4b7a', sub: 'Files that make AI-built UI follow a look.' }
           ]
@@ -2675,7 +2678,7 @@
         const c = T_TABS.map(t => TCARDS[t].find(x => x.id === u.id)).find(Boolean); return c ? c.title : u.name;
       }
       function refLabel(u) {
-        if (u.k === 'c') { const c = T_TABS.map(t => TCARDS[t].find(x => x.id === u.id)).find(Boolean); const tab = c ? c.tab : u.tab; return tab ? TAB_DEFS[tab].name.replace(/s$/, '') : 'Card'; }
+        if (u.k === 'c') { const c = T_TABS.map(t => TCARDS[t].find(x => x.id === u.id)).find(Boolean); const tab = c ? c.tab : u.tab; return tab ? ({ rules: 'Rule', agents: 'Agent', autos: 'Automation' })[tab] : 'Card'; }
         return REF_KIND[u.k] || '';
       }
       function refChip(u, removeAttr) {
@@ -3382,7 +3385,7 @@
         const out = [];
         for (const it of items) out.push({ ref: 't:' + it.id, name: it.title, type: KINDS[kindOf(it)].label, where: 'Tools' });
         for (const p of PROMPT_LIBS) out.push({ ref: 'l:' + p.id, name: p.title, type: 'Prompt library', where: 'Prompts' });
-        for (const t of T_TABS) for (const c of TCARDS[t]) out.push({ ref: 'c:' + c.id, name: c.title, type: { rules: 'Rule file', agents: 'Agent', autos: 'Automation' }[t], where: TAB_DEFS[t].name });
+        for (const t of T_TABS) for (const c of TCARDS[t]) out.push({ ref: 'c:' + c.id, name: c.title, type: { rules: 'Rule / guardrail', agents: 'Agent', autos: 'Automation' }[t], where: TAB_DEFS[t].name });
         return out;
       }
       function plEditStart(label) { pl.undo.push(JSON.parse(JSON.stringify(pl.plan))); if (pl.undo.length > 30) pl.undo.shift(); pl.dirty = true; if (label) pl.history.push({ role: 'user', text: label, note: true }); }

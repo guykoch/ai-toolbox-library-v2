@@ -12,7 +12,7 @@ const BRANCH = () => process.env.SNAPSHOT_BRANCH || "main";
 const PATH = "library-snapshot.md";
 const DELAY_MS = () => Number(process.env.SNAPSHOT_DELAY_MS) || 60_000;
 
-const SHELF: Record<string, string> = {"coding-agents":"Coding agents","agent-skills":"Agent skills","courses-guides":"Courses & guides","productivity":"Productivity","knowledge-rag":"Knowledge & RAG","app-building":"App building","video":"Video","image":"Image","audio":"Audio","ai-models":"AI models","news-analysis":"News & analysis","translation":"Translation","other":"Other"};
+const SHELF: Record<string, string> = {"coding-agents":"Coding agents","agent-skills":"Agent skills","courses-guides":"Courses & guides","productivity":"Productivity","knowledge-rag":"Knowledge & RAG","agent-infra":"Agent infrastructure","apis-scraping":"APIs & scraping","app-building":"App building","video":"Video","image":"Image","audio":"Audio","ai-models":"AI models","news-analysis":"News & analysis","translation":"Translation","other":"Other"};
 const SECTION: Record<string, string> = { general: "All-purpose libraries", business: "Business & productivity", coding: "Coding", design: "Slides, web & app design", images: "Images, logos & products", patterns: "Thinking patterns" };
 const SOURCE: Record<string, string> = { official: "Official", open: "Open source", community: "Community", academic: "Academic", free: "Free" };
 
@@ -133,7 +133,7 @@ function render(tools: any[], libs: any[], cards: any[] = [], playbooks: any[] =
     const n = l.imp?.state === "done" ? String(l.imp.count) : l.imp?.state === "importing" ? "copying…" : l.imp?.state === "failed" ? "copy failed" : "—";
     out.push(`| ${l.id} | ${cell(l.title)} | ${cell(SECTION[l.sec] || l.sec)} | ${cell(SOURCE[l.kind] || l.kind)} | ${l.kind === "open" ? "yes" : "no"} | ${n} | ${cell(l.bestFor || l.summary)} | ${cell(l.links?.[0]?.[1] || "")} |`);
   }
-  for (const [tab, name] of [["rules", "Rules"], ["agents", "Agents"], ["autos", "Automations"]]) {
+  for (const [tab, name] of [["rules", "Rules & guardrails"], ["agents", "Agents"], ["autos", "Automations"]]) {
     const list = cards.filter((c) => c.tab === tab).sort((a, b) => (TAB_SEC[tab] || []).indexOf(a.sec) - (TAB_SEC[tab] || []).indexOf(b.sec) || Number(String(a.id).slice(1)) - Number(String(b.id).slice(1)));
     out.push("", `## ${name}`, "");
     if (!list.length) { out.push("None yet."); continue; }
@@ -155,7 +155,7 @@ function render(tools: any[], libs: any[], cards: any[] = [], playbooks: any[] =
   out.push("");
   return out.join("\n");
 }
-const TAB_SEC: Record<string, string[]> = { rules: ["standards", "coding", "collections", "design"], agents: ["subagents", "assistants", "teams"], autos: ["templates", "collections", "ai"] };
+const TAB_SEC: Record<string, string[]> = { rules: ["standards", "coding", "guardrails", "collections", "design"], agents: ["subagents", "assistants", "teams"], autos: ["templates", "collections", "ai"] };
 
 const b64 = (s: string) => {
   const bytes = new TextEncoder().encode(s);

@@ -12,7 +12,7 @@ import { callGemini, parseJson, MODELS } from "./llm";
 
 const SHELVES: Record<string, string> = {
   "coding-agents": "Coding agents", "agent-skills": "Agent skills", "courses-guides": "Courses & guides", productivity: "Productivity",
-  "knowledge-rag": "Knowledge & RAG", "app-building": "App building", video: "Video", image: "Image", audio: "Audio", "ai-models": "AI models",
+  "knowledge-rag": "Knowledge & RAG", "agent-infra": "Agent infrastructure", "apis-scraping": "APIs & scraping", "app-building": "App building", video: "Video", image: "Image", audio: "Audio", "ai-models": "AI models",
   "news-analysis": "News & analysis", translation: "Translation", other: "Other",
 };
 

@@ -343,22 +343,38 @@ export const setTheme = mutation({
   },
 });
 
-// One-time shelf moves the user approved (runs once per version, from the page).
-const SHELF_MOVES_VERSION = "knowledge-rag 21 Nov 2026";
-const SHELF_MOVES: { id: number; cat: string }[] = [114, 172, 115, 61, 29, 3, 203].map((id) => ({ id, cat: "knowledge-rag" }));
+// One-time shelf moves the user approved. Each batch runs once (so a later move by hand isn't undone).
+const SHELF_BATCHES: { v: string; moves: { id: number; cat?: string; archive?: boolean }[] }[] = [
+  { v: "knowledge-rag 21 Nov 2026", moves: [114, 172, 115, 61, 29, 3, 203].map((id) => ({ id, cat: "knowledge-rag" })) },
+  { v: "shelves-2 21 Nov 2026", moves: [
+    ...[169, 28, 109, 216, 209, 83, 231, 254].map((id) => ({ id, cat: "agent-infra" })),
+    ...[194, 156, 97, 168, 237, 258, 157, 105].map((id) => ({ id, cat: "apis-scraping" })),
+    { id: 107, cat: "apis-scraping", archive: true }, // duplicate of API-mega-list (156)
+    ...[31, 30, 89, 87, 79, 96, 183, 175, 43, 42, 39, 35, 32, 33, 77, 195, 187, 60, 76, 68].map((id) => ({ id, cat: "courses-guides" })),
+    { id: 122, cat: "ai-models" }, { id: 154, cat: "news-analysis" },
+  ] },
+];
 export const applyShelfMoves = mutation({
   args: { key: v.string() },
   handler: async (ctx, { key }) => {
     checkKey(key);
     const m = await ctx.db.query("meta").withIndex("by_key", (q) => q.eq("key", "shelfMoves")).first();
-    if (m?.value === SHELF_MOVES_VERSION) return { moved: 0 };
+    const done: string[] = Array.isArray(m?.value) ? m!.value : m?.value ? [m.value] : [];
     let moved = 0;
-    for (const { id, cat } of SHELF_MOVES) {
-      const row = await ctx.db.query("items").withIndex("by_itemId", (q) => q.eq("itemId", id)).first();
-      if (row && row.data?.cat !== cat) { await ctx.db.patch(row._id, { data: { ...row.data, cat } }); moved++; }
+    for (const b of SHELF_BATCHES) {
+      if (done.includes(b.v)) continue;
+      for (const mv of b.moves) {
+        const row = await ctx.db.query("items").withIndex("by_itemId", (q) => q.eq("itemId", mv.id)).first();
+        if (!row) continue;
+        const patch: any = {};
+        if (mv.cat && row.data?.cat !== mv.cat) patch.data = { ...row.data, cat: mv.cat };
+        if (mv.archive && row.status !== "archived") { patch.status = "archived"; patch.archivedAt = new Date().toISOString().slice(0, 10); }
+        if (Object.keys(patch).length) { await ctx.db.patch(row._id, patch); moved++; }
+      }
+      done.push(b.v);
     }
-    if (m) await ctx.db.patch(m._id, { value: SHELF_MOVES_VERSION });
-    else await ctx.db.insert("meta", { key: "shelfMoves", value: SHELF_MOVES_VERSION });
+    if (m) await ctx.db.patch(m._id, { value: done });
+    else await ctx.db.insert("meta", { key: "shelfMoves", value: done });
     if (moved) await snapshotSoon(ctx);
     return { moved };
   },

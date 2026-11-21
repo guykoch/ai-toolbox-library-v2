@@ -12,7 +12,7 @@ import { callClaude, callGemini, parseJson, MODELS, FILE_MIME, docsBlock } from 
 // then validates every field in code before saving it.
 // ---------------------------------------------------------------------------
 
-const CATS = ["coding-agents", "agent-skills", "courses-guides", "productivity", "knowledge-rag", "app-building", "video", "image", "audio", "ai-models", "news-analysis", "translation", "other"];
+const CATS = ["coding-agents", "agent-skills", "courses-guides", "productivity", "knowledge-rag", "agent-infra", "apis-scraping", "app-building", "video", "image", "audio", "ai-models", "news-analysis", "translation", "other"];
 const TYPES = ["guide", "tool", "video", "course", "post", "news", "open-source-repo", "other"];
 const LANGS = ["he", "en", "unknown"];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -33,7 +33,7 @@ const FORMAT_SPEC = `You file links into a personal "AI Toolbox Library" library
 Fields (match the examples exactly in style and length):
 - "title": the tool/post's real name. For GitHub repos use "owner/repo: <repo description>". For a social post about a tool, a short name for what it is (e.g. "TranslateGemma", "Five Claude Code tips"). Keep the original language of the title if the page title is Hebrew.
 - "summary": ONE sentence, 14-22 words, in fresh English words (never copy the source), saying what it is and what it does.
-- "cat": main shelf, one of: ${CATS.join(", ")}. Use "knowledge-rag" for tools to chat with or search your own documents, RAG frameworks, knowledge bases / "second brain" tools, NotebookLM tools, and converters that prepare documents for AI.
+- "cat": main shelf, one of: ${CATS.join(", ")}. Use "coding-agents" for the coding agents themselves and their add-ons (Cursor, Claude Code plugins, OpenClaw); "agent-infra" for what agents run on — browser / desktop control, memory, context compression, orchestration of many agents, hosted agent platforms, sandboxes, guardrails; "apis-scraping" for API lists and web scraping / crawling tools; guides, tutorials, tips and workshops go to "courses-guides" even when about coding agents. Use "knowledge-rag" for tools to chat with or search your own documents, RAG frameworks, knowledge bases / "second brain" tools, NotebookLM tools, and converters that prepare documents for AI.
 - "extra": array of other shelves it also clearly belongs to (usually []).
 - "type": one of: ${TYPES.join(", ")}.
 - "kind": what kind of thing it is / how you'd use it, one of: skill (SKILL.md instruction folders for Claude & other agents), connector (MCP server / connector that links an AI to another service), plugin (browser/IDE/app extension or plugin), webapp (website or SaaS you sign up for), app (desktop or phone app you download), devtool (CLI, library, self-hosted repo you run yourself), model (AI model you call or run), learn (guide, course, video, prompt tips, post to learn from), news (announcement, roundup, report).

@@ -2,7 +2,7 @@
 // well-known open-source repos, checked 20 Nov 2026). Added once; cards the user deletes don't come back.
 // copy: true = an open-source repo whose files are copied into the app (browse them on the card).
 // related = ids of items in the Tools tab; relatedLibs = ids of Prompts-tab libraries.
-export const TAB_SEED_VERSION = "abc-1 20 Nov 2026";
+export const TAB_SEED_VERSION = "abc-2 21 Nov 2026";
 
 export type SeedCard = {
   tab: "rules" | "agents" | "autos";
@@ -86,6 +86,27 @@ export const TAB_SEED: SeedCard[] = [
     where: "~/.gemini/GEMINI.md for all projects; GEMINI.md in the project root (and subfolders). To use AGENTS.md set context.fileName in .gemini/settings.json.",
     example: "# Project: My TypeScript Library\n\n## General instructions\n- Follow the existing code style\n- Add JSDoc to every new function\n- Prefer async/await over .then()\n\n@./docs/coding-style.md",
     links: [["Docs: GEMINI.md", "https://geminicli.com/docs/cli/gemini-md/"]],
+  },
+  {
+    tab: "rules", sec: "guardrails", kind: "official", license: "Free",
+    title: "Claude Code hooks",
+    summary: "Your own commands that Claude Code always runs at set moments — before a tool runs, after a file is edited, when it stops — so a rule is enforced, not just suggested.",
+    bestFor: "Guardrails that can't be skipped: block risky commands (like rm -rf), auto-format every edited file, get notified when Claude needs you.",
+    tools: "Claude Code",
+    where: "The \"hooks\" section of ~/.claude/settings.json (all projects), .claude/settings.json (project, shared) or .claude/settings.local.json (just you). Type /hooks to see what's set.",
+    example: '{\n  "hooks": {\n    "PostToolUse": [\n      {\n        "matcher": "Edit|Write",\n        "hooks": [\n          { "type": "command", "command": "npx prettier --write \\"$CLAUDE_FILE_PATHS\\"" }\n        ]\n      }\n    ]\n  }\n}',
+    links: [["Guide: get started with hooks", "https://code.claude.com/docs/en/hooks-guide"], ["Hooks reference", "https://code.claude.com/docs/en/hooks"]],
+    related: [96],
+  },
+  {
+    tab: "rules", sec: "guardrails", kind: "official", license: "Free",
+    title: "Claude Code permission settings",
+    summary: "Allow, ask and deny rules for what Claude Code may do without asking — run commands, edit files, use the web. Deny rules always win.",
+    bestFor: "Letting Claude work faster on safe commands (git status, tests) while blocking dangerous ones and protected folders.",
+    tools: "Claude Code",
+    where: "The \"permissions\" section of ~/.claude/settings.json, .claude/settings.json or .claude/settings.local.json. Type /permissions to view and edit them.",
+    example: '{\n  "permissions": {\n    "allow": ["Bash(npm test:*)", "Bash(git status)"],\n    "ask": ["Bash(git push:*)"],\n    "deny": ["Bash(rm -rf:*)", "Read(./.env)"]\n  }\n}',
+    links: [["Docs: permissions", "https://code.claude.com/docs/en/permissions"]],
   },
   {
     tab: "rules", sec: "collections", kind: "open", license: "CC0-1.0",

@@ -10,7 +10,7 @@ import { parseRepoUrl } from "./promptRows";
 import { isOpenLicense } from "./promptAdd";
 
 export const SECTIONS: Record<string, string[]> = {
-  rules: ["standards", "coding", "collections", "design"],
+  rules: ["standards", "coding", "guardrails", "collections", "design"],
   agents: ["subagents", "assistants", "teams"],
   autos: ["templates", "collections", "ai"],
 };
@@ -24,9 +24,9 @@ const COMMON = `"title": "name", "summary": "one plain-English sentence: what it
  "openSource": true only if published under an open license in that repo`;
 
 const SPEC: Record<string, string> = {
-  rules: `You add one card to the user's RULES tab: rule / instruction files that tell an AI how to behave in a project (CLAUDE.md, AGENTS.md, Cursor rules, Copilot instructions, Windsurf/Cline rules, GEMINI.md, DESIGN.md brand rules) or collections of them. Reply with JSON only:
+  rules: `You add one card to the user's RULES & GUARDRAILS tab: guardrails (hooks, permission settings, safety rules for agents) and rule / instruction files that tell an AI how to behave in a project (CLAUDE.md, AGENTS.md, Cursor rules, Copilot instructions, Windsurf/Cline rules, GEMINI.md, DESIGN.md brand rules) or collections of them. Reply with JSON only:
 {${COMMON},
- "sec": one of "standards" (a format that works across tools, like AGENTS.md), "coding" (one coding tool's own rule file), "collections" (a collection of ready rule files to copy), "design" (design / brand rule files),
+ "sec": one of "standards" (a format that works across tools, like AGENTS.md), "coding" (one coding tool's own rule file), "guardrails" (hooks, permission settings, sandboxing and safety rules that control what an agent may do), "collections" (a collection of ready rule files to copy), "design" (design / brand rule files),
  "tools": "which AI tools read it, e.g. Cursor, Claude Code",
  "where": "where the file goes, e.g. .cursor/rules/*.mdc in your project",
  "example": "a short example of what goes in such a file (5-12 lines, in the right format); empty if it's a collection"}

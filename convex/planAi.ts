@@ -24,7 +24,7 @@ function shortlist<T extends { title: string; desc: string }>(rows: T[], kws: st
     .map((x) => ({ r: x.r, s: ks.reduce((s, k) => { const d = df.get(k) || 0; if (!d) return s; const idf = Math.log(1 + low.length / d); return s + (x.t.includes(k) ? 3 * idf : x.d.includes(k) ? idf : 0); }, 0) }))
     .filter((x) => x.s > 0).sort((a, b) => b.s - a.s).slice(0, n).map((x) => x.r);
 }
-const TAB_TYPE: Record<string, string> = { rules: "Rule file", agents: "Agent", autos: "Automation" };
+const TAB_TYPE: Record<string, string> = { rules: "Rule / guardrail", agents: "Agent", autos: "Automation" };
 const ITEM_TYPE: Record<string, string> = { rules: "Rule file", agents: "Agent", autos: "Workflow" };
 
 const SYSTEM = `You are a senior AI-workflow planner inside the user's personal "AI Toolbox" app. The user writes a free-text request (English or Hebrew, maybe with typos). You turn it into a clear, explained, step-by-step plan that uses the BEST items from THEIR library.
