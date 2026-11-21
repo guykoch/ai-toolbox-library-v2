@@ -1,7 +1,7 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-21 17:33 UTC.
-Tools: 261 active, 1 archived. Prompt libraries: 45 (14 open source, 9,141 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-21 18:14 UTC.
+Tools: 261 active, 1 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
 Rules: 12. Agents: 12. Automations: 7. Playbooks: 17.
 
 ## Tools (active)
@@ -280,6 +280,7 @@ Rules: 12. Agents: 12. Automations: 7. Playbooks: 17.
 
 | id | Name | Section | Source | Open source | Prompts in Find a prompt | Best for | Link |
 |---|---|---|---|---|---|---|---|
+| mine | My prompts | My prompts | Saved by you | no | 1 | Your own keepers: one-off prompts you found and want to reuse. |  |
 | p1 | OpenAI Academy & Examples | All-purpose libraries | Official | no | 26 | Everyday office work by role (marketing, sales, finance, ops), plus examples of getting structured JSON answers. | https://academy.openai.com/public/clubs/work-users-ynjqu/resources/chatgpt-for-any-role |
 | p2 | Anthropic Prompt Library | All-purpose libraries | Official | no | 55 | Polished Claude prompts for writing, summarizing and pulling data out of text; good templates to learn from. | https://docs.anthropic.com/en/resources/prompt-library/library |
 | p3 | prompts.chat (Awesome ChatGPT Prompts) | All-purpose libraries | Open source | yes | 3058 | Turning the AI into any expert ("act as…"): 3,000+ role prompts across business, writing, coding and images. | https://prompts.chat |
