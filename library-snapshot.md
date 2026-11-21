@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-21 21:13 UTC.
-Tools: 264 active, 1 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-21 21:56 UTC.
+Tools: 265 active, 1 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
 Rules: 12. Agents: 13. Automations: 7. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 265 | anomalyco/hex: Local voice dictation for mac, windows and linux | Desktop / phone app | Productivity | yes | 72 | 21 Nov 2026 | https://github.com/anomalyco/hex | Wispr Flow, Superwhisper, Dragon NaturallySpeaking |
 | 264 | calesthio/OpenMontage: open-source agentic video production system | Developer tool | Video | yes | 78 | 21 Nov 2026 | https://github.com/calesthio/OpenMontage | Runway, InVideo, CapCut |
 | 263 | ossu/computer-science: Path to a free self-taught education in Computer Science! | Learn | Courses & guides | yes | 92 | 21 Nov 2026 | https://github.com/ossu/computer-science |  |
 | 262 | shinyobjectz/raea: Render Anything Engine for videos, 3D, and games | Developer tool | Video | yes | 64 | 21 Nov 2026 | https://github.com/shinyobjectz/raea | Remotion, Motion Canvas, Runway |
