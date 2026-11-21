@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-21 21:09 UTC.
-Tools: 263 active, 1 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
-Rules: 12. Agents: 12. Automations: 7. Playbooks: 17.
+Updated automatically by the app: 2026-11-21 21:13 UTC.
+Tools: 264 active, 1 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Rules: 12. Agents: 13. Automations: 7. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 264 | calesthio/OpenMontage: open-source agentic video production system | Developer tool | Video | yes | 78 | 21 Nov 2026 | https://github.com/calesthio/OpenMontage | Runway, InVideo, CapCut |
 | 263 | ossu/computer-science: Path to a free self-taught education in Computer Science! | Learn | Courses & guides | yes | 92 | 21 Nov 2026 | https://github.com/ossu/computer-science |  |
 | 262 | shinyobjectz/raea: Render Anything Engine for videos, 3D, and games | Developer tool | Video | yes | 64 | 21 Nov 2026 | https://github.com/shinyobjectz/raea | Remotion, Motion Canvas, Runway |
 | 261 | Tencent/WeKnora: turn raw documents into a queryable RAG, an autonomous reasoning agent, and a self-maintaining Wiki | Developer tool | Knowledge & RAG | yes | 80 | 21 Nov 2026 | https://github.com/Tencent/WeKnora | Dify, NotebookLM, AnythingLLM |
@@ -357,6 +358,7 @@ Rules: 12. Agents: 12. Automations: 7. Playbooks: 17.
 | a5 | claude-agents (iannuttall) | subagents | Open source | 7 | A handful of useful agents to start with, without wading through hundreds. | https://github.com/iannuttall/claude-agents |
 | a6 | Claude Code Templates (davila7) | subagents | Open source | — | Browsing components on a website and installing them with npx instead of copying files by hand. | https://github.com/davila7/claude-code-templates |
 | a12 | autoresearch | subagents | Open source | copy failed | Automating overnight LLM training experiments; includes program.md instructions, training harness, and git rollback. | https://github.com/karpathy/autoresearch |
+| a13 | OpenMontage | subagents | Open source | 2 | Automating end-to-end video creation with 12 production pipelines, offline/API media tools, and Remotion composition. | https://openmontage.video |
 | a7 | Gemini Gems (premade and your own) | assistants | Official | — | A repeat task you keep explaining to Gemini: save it once as a Gem; copy a premade Gem to start fast. | https://support.google.com/gemini/answer/15236321 |
 | a8 | GPT Store (custom GPTs) | assistants | Official | — | Finding a ready assistant for a niche job (paper search, diagrams, tutoring) before building your own. | https://chatgpt.com/gpts |
 | a9 | Claude Projects | assistants | Official | — | A standing assistant for one job (a course, a client, a product) with its documents always at hand. | https://support.claude.com/en/articles/9519177 |
