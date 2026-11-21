@@ -668,6 +668,7 @@
       .pl-comp textarea { flex: 1; resize: none; min-height: 44px; max-height: 180px; font: inherit; font-size: 14.5px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); box-sizing: border-box; }
       .pl-comp textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
       .pl-comp .primary-btn { min-height: 44px; }
+      .pl-comp .primary-btn.pl-stop { background: #b42318; border-color: #b42318; }
       .pl-status { font-size: 12.5px; color: var(--muted); padding: 0 14px 6px; min-height: 0; }
       .pl-view { overflow-y: auto; padding: 18px 22px 40px; min-height: 0; }
       .pl-noplan { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--muted); gap: 8px; font-size: 14.5px; }
@@ -3130,18 +3131,30 @@
         pl.history.push({ role: 'user', text }); pl.answers = {}; pl.busy = true; pl.show = 'chat'; plRender();
         const t0 = Date.now(), st = document.getElementById('pl-status');
         const tick = () => { const s = Math.round((Date.now() - t0) / 1000); if (st) st.textContent = (s < 6 ? 'Reading your library…' : s < 20 ? 'Thinking it through…' : 'Writing the plan…') + ' ' + s + 's'; };
-        tick(); const timer = setInterval(tick, 1000);
+        tick(); clearInterval(pl.timer); pl.timer = setInterval(tick, 1000);
+        const my = pl.req = (pl.req || 0) + 1;
         try {
           const r = await call('action', 'planAi:chat', { history: prior, message: text, plan: pl.plan || undefined, defaults: typeof PB_DEFAULTS !== 'undefined' ? PB_DEFAULTS : [] });
+          if (my !== pl.req) return; // stopped
           const msg = { role: 'assistant', text: r.reply, questions: r.questions || [], changes: r.changes || [] };
           if (r.plan) {
             if (pl.plan) { pl.undo.push(pl.plan); plDiff(pl.plan, r.plan); } else pl.changed = new Set();
             pl.plan = r.plan; pl.open = null; pl.show = 'plan'; pl.dirty = true; pl.editing = new Set(); pl.adding = null;
           }
           pl.history.push(msg);
-        } catch (e) { pl.history.push({ role: 'assistant', text: 'Sorry — that didn’t work: ' + String(e.message || e).replace(/^.*ConvexError:\s*/, '') + '. Try again.' }); }
-        clearInterval(timer); pl.busy = false; plSave(); plRender();
+        } catch (e) { if (my !== pl.req) return; pl.history.push({ role: 'assistant', text: 'Sorry — that didn’t work: ' + String(e.message || e).replace(/^.*ConvexError:\s*/, '') + '. Try again.' }); }
+        clearInterval(pl.timer); pl.busy = false; plSave(); plRender();
         const ta = document.getElementById('pl-text'); if (ta && window.innerWidth > 820) ta.focus();
+      }
+      // Stop: drop the answer that's on its way, take the message back and put it in the box to edit.
+      function plStop() {
+        if (!pl.busy) return;
+        pl.req = (pl.req || 0) + 1; clearInterval(pl.timer); pl.busy = false;
+        const last = pl.history[pl.history.length - 1];
+        if (last && last.role === 'user' && !last.note) pl.history.pop();
+        pl.history.push({ role: 'user', text: 'Stopped \u2014 your message is back in the box', note: true });
+        plSave(); plRender();
+        const ta = document.getElementById('pl-text'); if (ta && last && !last.note) { ta.value = last.text; ta.dispatchEvent(new Event('input')); ta.focus(); }
       }
       function plDiff(a, b) {
         const key = s => JSON.stringify([s.title, s.do, (s.items || []).map(i => i.ref)]);
@@ -3302,7 +3315,7 @@
         document.querySelector('#pl-saveas .sv').textContent = linked && !pl.dirty ? 'Saved' : 'Save';
         document.getElementById('pl-new').disabled = !pl.plan && !pl.history.length;
         const send = document.getElementById('pl-send'), ta = document.getElementById('pl-text');
-        send.disabled = pl.busy; ta.disabled = pl.busy; send.textContent = pl.busy ? 'Thinking…' : 'Send';
+        send.disabled = false; ta.disabled = pl.busy; send.textContent = pl.busy ? '\u25A0 Stop' : 'Send'; send.classList.toggle('pl-stop', pl.busy);
         if (!pl.busy) document.getElementById('pl-status').textContent = '';
       }
       function plAsText(p) {
@@ -3345,6 +3358,7 @@
         const t = e.target;
         if (t.id === 'pl-modal') { plClose(); return; }
         if (t.id === 'pl-send') {
+          if (pl.busy) { plStop(); return; }
           const ans = Object.keys(pl.answers).length ? plAnswerText() : '';
           const v = [ans, plText.value.trim()].filter(Boolean).join('\n'); if (!v) { plText.focus(); return; }
           plText.value = ''; plText.style.height = ''; plSend(v); return;
