@@ -869,7 +869,7 @@
         </section>
         <section class="askbox" aria-labelledby="pf-h">
           <h2 id="pf-h">Find a prompt</h2>
-          <p class="sub">Say what you need in your own words &mdash; you&rsquo;ll get the actual prompt, ready to copy, or be told nothing fits. <b>Searches the libraries whose prompts are copied into the app</b> (open-source ones, and websites the app could copy)<span id="pf-libs"></span>. After the results, a button lets you also search your <b>website libraries</b> live (slower, uses a bit more Gemini credit).</p>
+          <p class="sub">Describe what you need and get a ready-to-copy prompt from your libraries<span id="pf-libs"></span>.</p>
           <div class="ask-row">
             <textarea id="pf-text" dir="auto" rows="1" placeholder="e.g. I want a marketing specialist prompt"></textarea>
             <button class="primary-btn" id="pf-btn" type="button">Find</button>
@@ -1471,7 +1471,7 @@
         const inFinder = PROMPT_LIBS.filter(p => p.imp && p.imp.state === 'done');
         const nPrompts = inFinder.reduce((n, p) => n + p.imp.count, 0);
         document.getElementById('p-statline').innerHTML = '<b>' + total + '</b> prompt libraries &middot; <b>' + openN + '</b> open source &middot; <b>' + nPrompts.toLocaleString() + '</b> prompts searchable in Find a prompt';
-        document.getElementById('pf-libs').innerHTML = inFinder.length ? ' (<b>' + nPrompts.toLocaleString() + '</b> prompts)' : '';
+        document.getElementById('pf-libs').innerHTML = inFinder.length ? ' (<b>' + nPrompts.toLocaleString() + '</b>)' : '';
         const copying = PROMPT_LIBS.filter(p => p.imp && (p.imp.state === 'importing' || p.imp.state === 'queued'));
         if (copying.length || (pSeed && !pSeed.finished)) document.getElementById('pf-libs').innerHTML += ' <b>(&#8987; copying ' + (copying.length ? copying.length + ' librar' + (copying.length > 1 ? 'ies' : 'y') : 'prompts') + ' now&hellip;)</b>';
         const chip = (attr, key, label, n, on) => '<button type="button" class="kindchip" ' + attr + '="' + key + '" aria-pressed="' + on + '"' + (n === 0 && !on ? ' style="opacity:.45"' : '') + '>' + label + ' <span class="kc-n">' + n + '</span></button>';
