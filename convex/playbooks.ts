@@ -111,8 +111,10 @@ export const save = mutation({
   handler: async (ctx, { key, id, playbook }) => {
     checkKey(key);
     const lib = await libraryRefs(ctx);
-    const clean = cleanPlaybook(playbook, lib);
+    const clean: any = cleanPlaybook(playbook, lib);
     if (!clean.steps.length) throw new ConvexError("A playbook needs at least one step.");
+    // A playbook saved from the Plan pop-up keeps the whole plan (approach, alternatives, caveats, map) for reopening there.
+    if (playbook?.plan && typeof playbook.plan === "object" && JSON.stringify(playbook.plan).length < 400_000) clean.plan = playbook.plan;
     const today = new Date().toISOString().slice(0, 10);
     if (id) {
       const row = await ctx.db.query("playbooks").withIndex("by_pbId", (q) => q.eq("pbId", id)).first();

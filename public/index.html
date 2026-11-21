@@ -584,6 +584,7 @@
       .pb-steps .st-tip { margin: 0; font-size: 13px; color: var(--muted); }
       .pb-steps .st-p { display: flex; flex-direction: column; gap: 5px; margin-top: 2px; }
       .st-p summary { cursor: pointer; font-size: 13px; font-weight: 650; color: var(--accent-ink); }
+      .pl-cta { margin-top: 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: space-between; background: var(--accent-soft); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; font-size: 14.5px; color: var(--ink-2); }
       .mk-row { display: flex; gap: 10px; align-items: flex-start; margin-top: 10px; }
       .mk-row textarea { flex: 1; }
       .mk-defaults { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--muted); }
@@ -718,6 +719,14 @@
       .pl-dd .rl { display: block; color: var(--ink-2); font-size: 12.8px; margin-top: 2px; }
       .pl-text { margin-top: 8px; }
       .pl-text pre { max-height: 320px; }
+      .pl-defs { border-bottom: 1px solid var(--line); padding: 10px 14px; background: var(--surface-2); }
+      .pl-defs textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); resize: vertical; }
+      .pl-sh .pbx-ctl { margin-left: auto; }
+      .pl-edit { display: grid; gap: 8px; }
+      .pl-f { display: flex; flex-direction: column; gap: 3px; font-size: 12.5px; color: var(--muted); font-weight: 600; }
+      .pl-f input, .pl-f textarea, .pl-f select { font: inherit; font-size: 14px; font-weight: 400; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; width: 100%; box-sizing: border-box; resize: vertical; }
+      .pl-itx { margin-left: auto; border: 0; background: transparent; color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer; padding: 0 4px; }
+      .pl-itx:hover { color: #b42318; }
       .pl-caveat li::marker { content: "\26A0\FE0F  "; }
       .pl-gap li::marker { content: "\2795  "; }
       @media (max-width: 820px) {
@@ -778,6 +787,7 @@
           <span class="grow"></span>
           <button class="pl-tbtn" id="pl-undo" type="button" title="Undo the last change">&#8630; Undo</button>
           <button class="pl-tbtn" id="pl-copy" type="button">Copy</button>
+          <button class="pl-tbtn" id="pl-defaults" type="button" title="Preferences every plan follows">&#128204; <span class="lg">Defaults</span></button>
           <button class="pl-tbtn" id="pl-saveas" type="button" title="Keep it on the Playbooks tab"><span class="lg">Save as playbook</span><span class="sm">Save</span></button>
           <button class="pl-tbtn" id="pl-new" type="button"><span class="lg">New plan</span><span class="sm">New</span></button>
           <button class="pl-x" id="pl-x" type="button" aria-label="Close">&times;</button>
@@ -785,6 +795,7 @@
         <div class="pl-seg" role="tablist"><button type="button" data-plseg="chat" aria-pressed="true">&#128172; Chat</button><button type="button" data-plseg="plan" aria-pressed="false">&#128506;&#65039; Plan</button></div>
         <div class="pl-body" id="pl-body" data-show="chat">
           <div class="pl-chat">
+            <div class="pl-defs" id="pl-defs" hidden></div>
             <div class="pl-msgs" id="pl-msgs" aria-live="polite"></div>
             <div class="pl-status" id="pl-status"></div>
             <div class="pl-comp"><textarea id="pl-text" dir="auto" rows="1" placeholder="What do you want to get done?"></textarea><button class="primary-btn" id="pl-send" type="button">Send</button></div>
@@ -2761,11 +2772,8 @@
       const pbx = { draft: null, editId: null, history: [], undo: [], dirty: false, editing: new Set(), adding: -1, addQ: '', changed: new Set(), busy: false, pre: null };
 
       function pbPanelHTML() {
-        return '<p class="tab-intro">Step-by-step recipes for a goal, built from <b>your own library</b>: which tool, prompt, rule, agent or automation to use at each step, with ready prompts to copy. Tap any item to jump to its card.</p>' +
-          '<section class="pg-box" aria-labelledby="mk-h"><div class="pg-head"><div><h2 id="mk-h">&#10024; Make a playbook</h2><p class="pg-one">Say your goal in plain words (English or Hebrew). You get a draft to tweak by chat or by hand &mdash; nothing is saved until you press Save.</p></div></div>' +
-          '<div class="ask-row" style="margin-top:12px"><textarea id="mk-goal" dir="auto" rows="1" placeholder="e.g. prepare a pitch deck for seed investors, or: להכין מצגת למשקיעים"></textarea><button class="primary-btn" id="mk-btn" type="button">Make playbook</button></div>' +
-          '<div class="mk-defaults" id="mk-defaults"></div><div id="mk-out" aria-live="polite"></div></section>' +
-          '<section class="pbx" id="pbx" hidden aria-label="Playbook editor"></section>' +
+        return '<p class="tab-intro">Step-by-step recipes for a goal, built from <b>your own library</b>: which tool, prompt, rule, agent or automation to use at each step, with ready prompts to copy. Tap any item to jump to its card. Open one in Plan to change it.</p>' +
+          '<div class="pl-cta"><span>To make a new playbook or change one, use <b>Plan</b>: it asks what it needs, explains each step and lets you switch tools.</span><button class="plan-tab" type="button" data-plopenbtn="1">\u{1F9ED} Open Plan</button></div>' +
           '<p class="statline" id="pbl-stat" style="margin-top:22px"></p>' +
           '<div class="controls" style="margin-top:22px"><div class="search-row"><div class="search-box">' + SEARCH_SVG + '<input id="pbl-q" type="search" placeholder="Search&hellip; e.g. pitch, NotebookLM, interview, n8n" aria-label="Search playbooks" /></div></div>' +
           '<div class="toggle-row"><button class="showall-btn" type="button" id="pbl-clear">Show all</button></div></div>' +
@@ -2802,8 +2810,12 @@
           '<h3 dir="auto">' + esc(p.title) + '</h3><p class="summary full" dir="auto">' + esc(p.goal) + '</p>' +
           '<div class="badges">' + badges + '</div>' +
           '<div class="btn-row"><button type="button" class="expand-btn" data-pbexpand="' + p.id + '" aria-expanded="' + open + '" aria-controls="' + did + '">' + (open ? 'Hide steps' : 'Show steps') + CHEV_SVG + '</button>' +
-          '<button type="button" class="expand-btn" data-pbtweak="' + p.id + '">Tweak</button><button type="button" class="expand-btn" data-pbcopyall="' + p.id + '">Copy as text</button></div>' +
-          '<div class="detail" id="' + did + '"' + (open ? '' : ' hidden') + '>' + stepsHTML(p.steps || [], p.id) +
+          '<button type="button" class="expand-btn" data-pbtweak="' + p.id + '">Open in Plan</button><button type="button" class="expand-btn" data-pbcopyall="' + p.id + '">Copy as text</button></div>' +
+          '<div class="detail" id="' + did + '"' + (open ? '' : ' hidden') + '>' +
+          (p.plan && p.plan.outcome ? '<div><p class="d-label">You&rsquo;ll end up with</p><p class="st-d" dir="auto">' + esc(p.plan.outcome) + '</p></div>' : '') +
+          (p.plan && p.plan.summary ? '<div><p class="d-label">The approach</p><p class="st-d" dir="auto">' + esc(p.plan.summary) + '</p></div>' : '') +
+          stepsHTML(p.steps || [], p.id) +
+          (p.plan && p.plan.caveats && p.plan.caveats.length ? '<div><p class="d-label">Watch out for</p><ul class="st-d" style="margin:0;padding-left:18px">' + p.plan.caveats.map(x => '<li dir="auto">' + esc(x) + '</li>').join('') + '</ul></div>' : '') +
           '<div class="foot"><span class="manage"><button type="button" class="manage-btn danger" data-pbdelete="' + p.id + '">Delete</button></span></div></div></article>';
       }
       function pblRender() {
@@ -2843,7 +2855,7 @@
           let r = await call('query', 'playbooks:list', {});
           if (!r.seeded) { await call('mutation', 'playbooks:ensureSeeded', {}); r = await call('query', 'playbooks:list', {}); }
           PLAYBOOKS = r.playbooks || []; PB_DEFAULTS = r.defaults || []; PB_LOADED = true;
-          pblRender(); if (!document.getElementById('mk-def-text')) renderDefaults();
+          pblRender();
         } catch (e) { const el = document.getElementById('pbl-stat'); if (el) el.textContent = 'Couldn’t load the playbooks: ' + e.message; }
       }
       function pbAsText(p) {
@@ -2987,8 +2999,7 @@
         const tw = e.target.closest('[data-pbtweak]');
         if (tw) {
           const p = PLAYBOOKS.find(x => x.id === tw.dataset.pbtweak); if (!p) return;
-          if (pbx.draft && pbx.dirty && !confirm('You have an unsaved draft. Replace it?')) return;
-          pbxOpen(p, p.id, [], null); return;
+          plFromPlaybook(p); return;
         }
         const ca = e.target.closest('[data-pbcopyall]'); if (ca) { const p = PLAYBOOKS.find(x => x.id === ca.dataset.pbcopyall); if (p) copyText(pbAsText(p)).then(() => flashCopied(ca)); return; }
         const cp = e.target.closest('[data-pbcopyprompt]');
@@ -3056,7 +3067,6 @@
       document.getElementById('tab-playbooks').innerHTML = pbPanelHTML();
       document.getElementById('pbl-q').addEventListener('input', e => { pbs.q = e.target.value.trim().toLowerCase(); pblRender(); });
       addClearX(document.getElementById('pbl-q')); addClearX(document.getElementById('mk-goal')); addClearX(document.getElementById('tb-q'));
-      renderDefaults();
       // =====================================================================
       // "Plan" pop-up: free text → questions if needed → explained plan from your library → tweak → map
       // =====================================================================
@@ -3069,9 +3079,9 @@
         'Every week, turn the articles I save into a short summary I can listen to',
         'אני רוצה להכין מצגת למשקיעים על הסטארטאפ שלי'
       ];
-      const pl = { history: [], plan: null, undo: [], busy: false, open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat' };
-      try { const sv = JSON.parse(localStorage.getItem(PLAN_STORE) || 'null'); if (sv) { pl.history = sv.history || []; pl.plan = sv.plan || null; pl.undo = sv.undo || []; } } catch (e) {}
-      function plSave() { try { localStorage.setItem(PLAN_STORE, JSON.stringify({ history: pl.history.slice(-60), plan: pl.plan, undo: pl.undo.slice(-15) })); } catch (e) {} }
+      const pl = { history: [], plan: null, undo: [], busy: false, open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat', pbId: null, dirty: false, editing: new Set(), adding: null, addQ: '' };
+      try { const sv = JSON.parse(localStorage.getItem(PLAN_STORE) || 'null'); if (sv) { pl.history = sv.history || []; pl.plan = sv.plan || null; pl.undo = sv.undo || []; pl.pbId = sv.pbId || null; pl.dirty = !!sv.dirty; } } catch (e) {}
+      function plSave() { try { localStorage.setItem(PLAN_STORE, JSON.stringify({ history: pl.history.slice(-60), plan: pl.plan, undo: pl.undo.slice(-15), pbId: pl.pbId, dirty: pl.dirty })); } catch (e) {} }
       const plIcon = t => PL_TYPE_ICON[t] || '\u{1F4E6}';
       const phaseColor = (plan, id) => PL_COLORS[Math.max(0, (plan.phases || []).findIndex(p => p.id === id)) % PL_COLORS.length];
 
@@ -3113,7 +3123,7 @@
           const msg = { role: 'assistant', text: r.reply, questions: r.questions || [], changes: r.changes || [] };
           if (r.plan) {
             if (pl.plan) { pl.undo.push(pl.plan); plDiff(pl.plan, r.plan); } else pl.changed = new Set();
-            pl.plan = r.plan; pl.open = null; pl.show = 'plan';
+            pl.plan = r.plan; pl.open = null; pl.show = 'plan'; pl.dirty = true; pl.editing = new Set(); pl.adding = null;
           }
           pl.history.push(msg);
         } catch (e) { pl.history.push({ role: 'assistant', text: 'Sorry — that didn’t work: ' + String(e.message || e).replace(/^.*ConvexError:\s*/, '') + '. Try again.' }); }
@@ -3132,7 +3142,7 @@
         const tx = pl.texts[it.ref];
         let h = '<div class="pl-item"><div class="pl-it-top"><span class="pl-type">' + plIcon(it.type) + ' ' + esc(it.type) + '</span>' +
           '<button type="button" class="pl-swap" data-plswap="' + esc(k) + '" aria-expanded="' + open + '" title="Switch to an alternative" dir="auto">' + esc(it.name) + (it.alts && it.alts.length ? ' <span class="car">▾ ' + it.alts.length + ' other' + (it.alts.length > 1 ? 's' : '') + '</span>' : '') + '</button>' +
-          (it.where ? '<span class="pl-where" dir="auto">in ' + esc(it.where) + '</span>' : '') + '</div>' +
+          (it.where ? '<span class="pl-where" dir="auto">in ' + esc(it.where) + '</span>' : '') + '<button type="button" class="pl-itx" data-plrm="' + esc(k) + '" title="Remove from this step" aria-label="Remove">\u00D7</button></div>' +
           (it.role ? '<p class="pl-role" dir="auto">' + esc(it.role) + '</p>' : '') +
           '<div class="pl-acts">' + (isText ? '<button type="button" data-pltext="' + esc(it.ref) + '">' + (tx && tx.shown ? 'Hide' : 'Show') + ' ' + (it.type === 'Prompt' ? 'prompt' : 'file') + '</button>' + (tx && tx.text ? '<button type="button" data-plcopy="' + esc(it.ref) + '">Copy</button>' : '') : '') +
           '<button type="button" data-plopen="' + esc(it.ref + '|' + (it.where || '')) + '">Open in library ↗</button></div>';
@@ -3146,14 +3156,58 @@
         return h + '</div>';
       }
       function plStepHTML(plan, s, i) {
-        const c = phaseColor(plan, s.phase);
-        return '<article class="pl-step' + (pl.changed.has(s.id) ? ' changed' : '') + '" id="pl-step-' + esc(s.id) + '">' +
-          '<div class="pl-sh"><span class="pl-num" style="background:' + c + '">' + (i + 1) + '</span><div style="flex:1;min-width:0"><h5 dir="auto">' + esc(s.title) + '</h5>' + (s.why ? '<p class="pl-why" dir="auto">' + esc(s.why) + '</p>' : '') + '</div></div>' +
-          (s.do ? '<p class="pl-do" dir="auto">' + esc(s.do) + '</p>' : '') +
-          (s.items && s.items.length ? '<div class="pl-items">' + s.items.map((it, j) => plItemHTML(s, it, j)).join('') + '</div>' : '') +
-          (s.output ? '<p class="pl-out" dir="auto"><b>You get:</b> ' + esc(s.output) + '</p>' : '') +
-          (s.prompt ? '<details class="st-p"><summary>Prompt for this step</summary><pre class="pf-pre" dir="auto">' + esc(s.prompt) + '</pre><div class="pf-actions"><button class="expand-btn" type="button" data-plstepprompt="' + esc(s.id) + '">Copy prompt</button></div></details>' : '') +
-          (s.tip ? '<p class="pl-out" dir="auto">\u{1F4A1} ' + esc(s.tip) + '</p>' : '') + '</article>';
+        const c = phaseColor(plan, s.phase), n = plan.steps.length, ed = pl.editing.has(s.id);
+        const ctl = '<span class="pbx-ctl"><button type="button" data-plsx="up" data-sid="' + esc(s.id) + '" title="Move up"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+          '<button type="button" data-plsx="down" data-sid="' + esc(s.id) + '" title="Move down"' + (i === n - 1 ? ' disabled' : '') + '>↓</button>' +
+          '<button type="button" data-plsx="edit" data-sid="' + esc(s.id) + '">' + (ed ? 'Done' : '✎ Edit') + '</button>' +
+          '<button type="button" class="del" data-plsx="del" data-sid="' + esc(s.id) + '" title="Delete step">✕</button></span>';
+        let h = '<article class="pl-step' + (pl.changed.has(s.id) ? ' changed' : '') + '" id="pl-step-' + esc(s.id) + '">' +
+          '<div class="pl-sh"><span class="pl-num" style="background:' + c + '">' + (i + 1) + '</span><div style="flex:1;min-width:0"><h5 dir="auto">' + esc(s.title) + '</h5>' + (s.why && !ed ? '<p class="pl-why" dir="auto">' + esc(s.why) + '</p>' : '') + '</div>' + ctl + '</div>';
+        if (ed) {
+          const f = (k, ph, rows) => rows ? '<label class="pl-f"><span>' + ph + '</span><textarea data-plf="' + k + '" data-sid="' + esc(s.id) + '" rows="' + rows + '" dir="auto">' + esc(s[k] || '') + '</textarea></label>'
+            : '<label class="pl-f"><span>' + ph + '</span><input type="text" data-plf="' + k + '" data-sid="' + esc(s.id) + '" value="' + esc(s[k] || '') + '" dir="auto" /></label>';
+          h += '<div class="pl-edit">' + f('title', 'Step name') + f('why', 'Why it matters') + f('do', 'What to do', 3) + f('output', 'You get') + f('prompt', 'Prompt to copy (optional)', 3) + f('tip', 'Tip (optional)') +
+            '<label class="pl-f"><span>Phase</span><select data-plf="phase" data-sid="' + esc(s.id) + '">' + plan.phases.map(ph => '<option value="' + esc(ph.id) + '"' + (ph.id === s.phase ? ' selected' : '') + '>' + esc(ph.name) + '</option>').join('') + '</select></label></div>';
+        } else if (s.do) h += '<p class="pl-do" dir="auto">' + esc(s.do) + '</p>';
+        h += '<div class="pl-items">' + (s.items || []).map((it, j) => plItemHTML(s, it, j)).join('') + '</div>';
+        if (pl.adding === s.id) {
+          const words = pl.addQ.toLowerCase().split(/\s+/).filter(Boolean);
+          const found = words.length ? plLibIndex().filter(x => words.every(w => (x.name + ' ' + x.type + ' ' + x.where).toLowerCase().includes(w))).slice(0, 12) : [];
+          h += '<div class="pbx-find"><input type="text" id="pl-find-q" placeholder="Search your library: tools, skills, connectors, prompt libraries, rules, agents, automations&hellip;" value="' + esc(pl.addQ) + '" />' +
+            (found.length ? '<div class="res">' + found.map(x => '<button type="button" data-pladd="' + esc(s.id + '|' + x.ref) + '"><b dir="auto">' + esc(x.name) + '</b> <small>' + plIcon(x.type) + ' ' + esc(x.type) + ' · ' + esc(x.where) + '</small></button>').join('') + '</div>'
+              : words.length ? '<p class="pf-why">Nothing in your library matches.</p>' : '') + '</div>';
+        }
+        h += '<div><button type="button" class="mini-btn" data-plsx="add" data-sid="' + esc(s.id) + '">' + (pl.adding === s.id ? 'Close' : '+ Add an item') + '</button></div>';
+        if (!ed) {
+          if (s.output) h += '<p class="pl-out" dir="auto"><b>You get:</b> ' + esc(s.output) + '</p>';
+          if (s.prompt) h += '<details class="st-p"><summary>Prompt for this step</summary><pre class="pf-pre" dir="auto">' + esc(s.prompt) + '</pre><div class="pf-actions"><button class="expand-btn" type="button" data-plstepprompt="' + esc(s.id) + '">Copy prompt</button></div></details>';
+          if (s.tip) h += '<p class="pl-out" dir="auto">\u{1F4A1} ' + esc(s.tip) + '</p>';
+        }
+        return h + '</article>';
+      }
+      // Every library item as a plan item (for "+ Add an item").
+      function plLibIndex() {
+        const out = [];
+        for (const it of items) out.push({ ref: 't:' + it.id, name: it.title, type: KINDS[kindOf(it)].label, where: 'Tools' });
+        for (const p of PROMPT_LIBS) out.push({ ref: 'l:' + p.id, name: p.title, type: 'Prompt library', where: 'Prompts' });
+        for (const t of T_TABS) for (const c of TCARDS[t]) out.push({ ref: 'c:' + c.id, name: c.title, type: { rules: 'Rule file', agents: 'Agent', autos: 'Automation' }[t], where: TAB_DEFS[t].name });
+        return out;
+      }
+      function plEditStart(label) { pl.undo.push(JSON.parse(JSON.stringify(pl.plan))); if (pl.undo.length > 30) pl.undo.shift(); pl.dirty = true; if (label) pl.history.push({ role: 'user', text: label, note: true }); }
+      // A playbook from the Playbooks tab, opened in Plan (full plan if it was saved from here; otherwise converted).
+      function plFromPlaybook(p) {
+        if (pl.plan && pl.dirty && pl.pbId !== p.id && !confirm('Your current plan has unsaved changes. Replace it with “' + p.title + '”?')) return;
+        let plan = p.plan ? JSON.parse(JSON.stringify(p.plan)) : null;
+        if (!plan) {
+          const idx = new Map(plLibIndex().map(x => [x.ref, x]));
+          plan = { type: p.type, title: p.title, goal: p.goal, outcome: '', summary: '', approach: [], assumptions: [], time: p.time || '', cost: '', caveats: [], gaps: [],
+            phases: [{ id: 'A', name: 'Steps' }],
+            steps: (p.steps || []).map((st, i) => ({ id: 's' + (i + 1), phase: 'A', title: st.title, why: '', do: st.do || '', output: '', after: [], prompt: st.prompt || '', tip: st.tip || '',
+              items: (st.use || []).map(u => { const x = idx.get(u.k + ':' + u.id); return x ? { ...x, role: '', alts: [] } : null; }).filter(Boolean) })) };
+        }
+        Object.assign(pl, { plan, pbId: p.id, dirty: false, undo: [], open: null, texts: {}, answers: {}, changed: new Set(), editing: new Set(), adding: null, addQ: '', show: 'plan',
+          history: [{ role: 'user', text: 'Open my playbook “' + p.title + '”', note: true }, { role: 'assistant', text: p.plan ? 'Here it is. Tell me what to change, switch any item by tapping its name, or edit steps by hand.' : 'Here it is. Ask me to “explain it and add alternatives” to get the approach, an explanation for each item, 2 alternatives each, phases and the risks — or tell me what to change.' }] });
+        plSave(); plOpen();
       }
       // The map: phases as columns (or rows on a phone), steps as boxes, arrows for "do this first".
       function plMapSVG(plan, narrow) {
@@ -3215,7 +3269,7 @@
           h += '<div class="pl-phase"><span class="dot" style="background:' + phaseColor(p, ph.id) + '"></span><span dir="auto">' + esc(ph.name) + '</span></div>';
           ss.forEach(s => { h += plStepHTML(p, s, p.steps.indexOf(s)); n++; });
         });
-        h += '</div>';
+        h += '<div style="margin-top:4px"><button type="button" class="mini-btn" id="pl-addstep">+ Add a step</button></div></div>';
         if (p.caveats.length) h += '<div class="pl-sec"><h4>Watch out for</h4><div class="pl-box"><ul class="pl-caveat">' + p.caveats.map(x => '<li dir="auto">' + esc(x) + '</li>').join('') + '</ul></div></div>';
         if (p.gaps.length) h += '<div class="pl-sec"><h4>Not in your library (yet)</h4><div class="pl-box"><ul class="pl-gap">' + p.gaps.map(x => '<li dir="auto">' + esc(x) + '</li>').join('') + '</ul></div></div>';
         return h;
@@ -3230,6 +3284,9 @@
         view.innerHTML = plViewHTML(); view.scrollTop = top;
         document.getElementById('pl-undo').disabled = !pl.undo.length;
         ['pl-saveas', 'pl-copy'].forEach(id => { document.getElementById(id).disabled = !pl.plan; });
+        const linked = pl.pbId && PLAYBOOKS.some(x => x.id === pl.pbId);
+        document.querySelector('#pl-saveas .lg').textContent = linked ? (pl.dirty ? 'Save changes' : 'Saved') : 'Save as playbook';
+        document.querySelector('#pl-saveas .sm').textContent = linked && !pl.dirty ? 'Saved' : 'Save';
         document.getElementById('pl-new').disabled = !pl.plan && !pl.history.length;
         const send = document.getElementById('pl-send'), ta = document.getElementById('pl-text');
         send.disabled = pl.busy; ta.disabled = pl.busy; send.textContent = pl.busy ? 'Thinking…' : 'Send';
@@ -3264,6 +3321,7 @@
         })) };
       }
       document.getElementById('plan-btn').addEventListener('click', plOpen);
+      // Leaving with unsaved changes to a saved playbook: just a reminder line in the chat; nothing is lost (kept on this device).
       document.getElementById('pl-x').addEventListener('click', plClose);
       document.addEventListener('keydown', e => { if (e.key === 'Escape' && !document.getElementById('pl-modal').hidden) { if (pl.open) { pl.open = null; plRender(); } else plClose(); } });
       const plText = document.getElementById('pl-text');
@@ -3278,16 +3336,55 @@
           plText.value = ''; plText.style.height = ''; plSend(v); return;
         }
         const seg = t.closest('[data-plseg]'); if (seg) { pl.show = seg.dataset.plseg; plRender(); return; }
+        if (t.closest('#pl-defaults')) { const d = document.getElementById('pl-defs'); d.hidden = !d.hidden; if (!d.hidden) { d.innerHTML = plDefsHTML(); pl.show = 'chat'; plRender(); document.getElementById('pl-def-text').focus(); } return; }
+        if (t.id === 'pl-def-cancel') { document.getElementById('pl-defs').hidden = true; return; }
+        if (t.id === 'pl-def-save') {
+          const list = document.getElementById('pl-def-text').value.split('\n').map(x => x.trim()).filter(Boolean); t.disabled = true;
+          try { await call('mutation', 'playbooks:setDefaults', { defaults: list }); PB_DEFAULTS = list; document.getElementById('pl-defs').hidden = true; pl.history.push({ role: 'user', text: 'Pinned defaults updated', note: true }); plSave(); plRender(); }
+          catch (err) { t.disabled = false; alert(err.message); }
+          return;
+        }
+        const sx = t.closest('[data-plsx]');
+        if (sx) {
+          const steps = pl.plan.steps, i = steps.findIndex(x => x.id === sx.dataset.sid), s = steps[i], act = sx.dataset.plsx;
+          if (act === 'up' && i > 0) { plEditStart('Moved step ' + (i + 1) + ' up'); [steps[i - 1], steps[i]] = [steps[i], steps[i - 1]]; pl.changed = new Set([s.id]); }
+          else if (act === 'down' && i < steps.length - 1) { plEditStart('Moved step ' + (i + 1) + ' down'); [steps[i + 1], steps[i]] = [steps[i], steps[i + 1]]; pl.changed = new Set([s.id]); }
+          else if (act === 'del') { if (!confirm('Delete step ' + (i + 1) + ' “' + s.title + '”?')) return; plEditStart('Deleted step ' + (i + 1) + ' “' + s.title + '”'); steps.splice(i, 1); steps.forEach(x => { x.after = (x.after || []).filter(a => a !== s.id); }); pl.changed = new Set(); }
+          else if (act === 'edit') { if (pl.editing.has(s.id)) pl.editing.delete(s.id); else { pl.editing.add(s.id); plEditStart(''); } }
+          else if (act === 'add') { pl.adding = pl.adding === s.id ? null : s.id; pl.addQ = ''; }
+          plSave(); plRender(); if (pl.adding) { const q = document.getElementById('pl-find-q'); if (q) q.focus(); } return;
+        }
+        if (t.id === 'pl-addstep') {
+          const ph = pl.plan.phases[pl.plan.phases.length - 1]; let n = pl.plan.steps.length + 1; while (pl.plan.steps.some(x => x.id === 's' + n)) n++;
+          plEditStart('Added a new step at the end'); pl.plan.steps.push({ id: 's' + n, phase: ph.id, title: 'New step', why: '', do: '', output: '', after: [], items: [], prompt: '', tip: '' });
+          pl.editing.add('s' + n); pl.changed = new Set(['s' + n]); plSave(); plRender(); const el = document.getElementById('pl-step-s' + n); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); return;
+        }
+        const ad = t.closest('[data-pladd]');
+        if (ad) {
+          const [sid, ref] = ad.dataset.pladd.split('|'); const s = pl.plan.steps.find(x => x.id === sid); const x = plLibIndex().find(y => y.ref === ref);
+          if (s && x && !(s.items || []).some(y => y.ref === ref)) { plEditStart('Added “' + x.name + '” to step ' + (pl.plan.steps.indexOf(s) + 1)); s.items = (s.items || []).concat([{ ...x, role: '', alts: [] }]); pl.changed = new Set([sid]); }
+          pl.adding = null; pl.addQ = ''; plSave(); plRender(); return;
+        }
+        const rm = t.closest('[data-plrm]');
+        if (rm) {
+          const [sid, j] = rm.dataset.plrm.split(':'); const s = pl.plan.steps.find(x => x.id === sid); const it = s && s.items[Number(j)]; if (!it) return;
+          plEditStart('Removed “' + it.name + '” from step ' + (pl.plan.steps.indexOf(s) + 1)); s.items.splice(Number(j), 1); pl.open = null; plSave(); plRender(); return;
+        }
         const ex = t.closest('[data-plex]'); if (ex) { plSend(ex.dataset.plex); return; }
         const op = t.closest('[data-plans]'); if (op) { const qi = op.dataset.plans; pl.answers[qi] = pl.answers[qi] === op.dataset.v ? undefined : op.dataset.v; if (pl.answers[qi] === undefined) delete pl.answers[qi]; plRender(); return; }
         if (t.closest('[data-plsendans]')) { const v = [plAnswerText(), plText.value.trim()].filter(Boolean).join('\n'); if (!v) return; plText.value = ''; plSend(v); return; }
         if (t.closest('[data-pljust]')) { plSend([plAnswerText(), plText.value.trim(), 'Just make the plan now with sensible assumptions.'].filter(Boolean).join('\n')); plText.value = ''; return; }
-        if (t.id === 'pl-new') { if ((pl.plan || pl.history.length) && !confirm('Start a new plan? The current one will be cleared (save it as a playbook first if you want to keep it).')) return; Object.assign(pl, { history: [], plan: null, undo: [], open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat' }); plSave(); plRender(); plText.focus(); return; }
-        if (t.id === 'pl-undo') { if (!pl.undo.length) return; pl.plan = pl.undo.pop(); pl.changed = new Set(); pl.open = null; pl.history.push({ role: 'user', text: 'Undo: went back one change', note: true }); plSave(); plRender(); return; }
+        if (t.closest('#pl-new')) { if ((pl.plan || pl.history.length) && !confirm('Start a new plan? The current one will be cleared (save it as a playbook first if you want to keep it).')) return; Object.assign(pl, { history: [], plan: null, undo: [], open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat', pbId: null, dirty: false, editing: new Set(), adding: null, addQ: '' }); plSave(); plRender(); plText.focus(); return; }
+        if (t.id === 'pl-undo') { if (!pl.undo.length) return; pl.plan = pl.undo.pop(); pl.dirty = true; pl.editing = new Set(); pl.adding = null; pl.changed = new Set(); pl.open = null; pl.history.push({ role: 'user', text: 'Undo: went back one change', note: true }); plSave(); plRender(); return; }
         if (t.id === 'pl-copy') { copyText(plAsText(pl.plan)).then(() => flashCopied(t)); return; }
-        if (t.id === 'pl-saveas') {
-          t.disabled = true;
-          try { const r = await call('mutation', 'playbooks:save', { playbook: plToPlaybook(pl.plan) }); await loadPlaybooks(); flashCopied(t, 'Saved ✓ (Playbooks tab)'); pl.history.push({ role: 'user', text: 'Saved as a playbook', note: true }); plSave(); setTimeout(plRender, 2000); }
+        if (t.closest('#pl-saveas')) {
+          const t = document.getElementById('pl-saveas'); t.disabled = true;
+          try {
+            const linked = pl.pbId && PLAYBOOKS.some(x => x.id === pl.pbId);
+            const r = await call('mutation', 'playbooks:save', { id: linked ? pl.pbId : undefined, playbook: { ...plToPlaybook(pl.plan), plan: pl.plan } });
+            pl.pbId = r.id; pl.dirty = false; await loadPlaybooks(); flashCopied(t, 'Saved \u2713 (Playbooks tab)');
+            pl.history.push({ role: 'user', text: linked ? 'Saved changes to the playbook' : 'Saved as a playbook', note: true }); plSave(); setTimeout(plRender, 2000);
+          }
           catch (err) { alert('Couldn’t save: ' + err.message); t.disabled = false; }
           return;
         }
@@ -3296,7 +3393,7 @@
         const pk = t.closest('[data-plpick]');
         if (pk) {
           const [sid, j, ai] = pk.dataset.plpick.split(':'); const s = pl.plan.steps.find(x => x.id === sid); const it = s.items[Number(j)]; const alt = it.alts[Number(ai)];
-          pl.undo.push(JSON.parse(JSON.stringify(pl.plan)));
+          pl.undo.push(JSON.parse(JSON.stringify(pl.plan))); pl.dirty = true;
           const others = it.alts.filter((_, x) => x !== Number(ai)); const { alts, ...cur } = it;
           s.items[Number(j)] = { ...alt, alts: [cur].concat(others) };
           pl.history.push({ role: 'user', text: 'I switched “' + it.name + '” to “' + alt.name + '” in step ' + (pl.plan.steps.indexOf(s) + 1), note: true });
@@ -3314,6 +3411,18 @@
         }
         if (pl.open && !t.closest('.pl-dd')) { pl.open = null; plRender(); }
       });
+      function plDefsHTML() {
+        return '<p style="margin:0 0 6px;font-size:13px;color:var(--muted)">&#128204; <b style="color:var(--ink)">Pinned defaults</b> &mdash; preferences every plan follows when they apply. One per line, e.g. <i>Slides: always the a16z style from SlideSpeak</i> or <i>Prefer free and open-source tools</i>.</p>' +
+          '<textarea id="pl-def-text" dir="auto" rows="3">' + esc((typeof PB_DEFAULTS !== 'undefined' ? PB_DEFAULTS : []).join('\n')) + '</textarea>' +
+          '<div class="pl-opts" style="margin-top:6px"><button class="primary-btn" style="min-height:34px;padding:5px 14px;font-size:13.5px" type="button" id="pl-def-save">Save defaults</button><button class="pl-opt" type="button" id="pl-def-cancel">Cancel</button></div>';
+      }
+      document.getElementById('pl-modal').addEventListener('input', e => {
+        const t = e.target;
+        if (t.id === 'pl-find-q') { pl.addQ = t.value; plRender(); const q = document.getElementById('pl-find-q'); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } return; }
+        if (t.dataset && t.dataset.plf) { const s = pl.plan.steps.find(x => x.id === t.dataset.sid); if (s) { s[t.dataset.plf] = t.value; pl.dirty = true; plSave(); } }
+      });
+      document.getElementById('pl-modal').addEventListener('change', e => { const t = e.target; if (t.dataset && t.dataset.plf === 'phase') { const s = pl.plan.steps.find(x => x.id === t.dataset.sid); if (s) { s.phase = t.value; pl.dirty = true; plSave(); plRender(); } } });
+      document.addEventListener('click', e => { if (e.target.closest('[data-plopenbtn]')) plOpen(); });
       function plAnswerText() {
         const last = pl.history[pl.history.length - 1]; if (!last || !last.questions) return '';
         return last.questions.map((q, i) => pl.answers[i] ? q.q + ' → ' + pl.answers[i] : '').filter(Boolean).join('\n');
