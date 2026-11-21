@@ -734,7 +734,10 @@
         .pl-panel { height: 100%; border-radius: 0; }
         .pl-head { padding: 10px 12px; }
         .pl-head .sub { display: none; }
-        .pl-tbtn { padding: 5px 9px; font-size: 12.5px; }
+        .pl-head { row-gap: 8px; column-gap: 5px; }
+        .pl-head h2 { order: 0; flex: 1 0 calc(100% - 52px); }
+        .pl-x { order: 1; width: 32px; height: 32px; font-size: 20px; }
+        .pl-tbtn { order: 2; flex: 1 1 auto; padding: 6px 4px; font-size: 12.5px; text-align: center; }
         .pl-tbtn .lg { display: none; } .pl-tbtn .sm { display: inline; }
         .pl-head { gap: 6px; } .pl-head .grow { display: none; } .pl-head h2 { margin-right: auto; }
         .pl-head h2 { font-size: 16px; }
