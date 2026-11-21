@@ -416,6 +416,7 @@
       .hypebar .hb-err { flex-basis: 100%; color: #b42318; font-size: 13px; }
       :root[data-theme="dark"] .hypebar .hb-err { color: #ff8a7a; }
       .deployed { margin: 4px 0 0; font-size: 12px; color: var(--muted); opacity: .8; }
+      #deployed:not([hidden]) + #snapline:not([hidden])::before { content: ' \00b7  '; }
       .add-status { font-size: 14px; color: var(--ink-2); }
       .add-result { display: grid; grid-template-columns: 30px 1fr auto; gap: 2px 12px; align-items: start; margin-top: 12px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); }
       .add-result[hidden] { display: none; }
@@ -701,8 +702,7 @@
     <div class="wrap">
       <header class="hero">
         <h1>AI Toolbox</h1>
-        <p class="deployed" id="deployed" hidden></p>
-        <p class="deployed" id="snapline" hidden></p>
+        <p class="deployed"><span id="deployed" hidden></span><span id="snapline" hidden></span></p>
         <div class="subtabs" role="tablist" aria-label="Sections">
           <button class="subtab" role="tab" id="tabbtn-tools" data-tab="tools" aria-controls="tab-tools" type="button">Tools</button>
           <button class="subtab" role="tab" id="tabbtn-prompts" data-tab="prompts" aria-controls="tab-prompts" type="button">Prompts</button>
@@ -1241,7 +1241,7 @@
         const d = window.DEPLOYED_AT ? new Date(window.DEPLOYED_AT) : null;
         if (!d || isNaN(d)) return;
         const el = document.getElementById('deployed');
-        el.textContent = 'Last deployed ' + d.toLocaleString('en-US', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+        el.textContent = 'Deployed ' + d.toLocaleString('en-US', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
         el.title = d.toString();
         el.hidden = false;
       })();
@@ -1889,7 +1889,7 @@
           call('query', 'snapshot:status', {}).then(s => {
             const el = document.getElementById('snapline');
             if (s.ok === false && s.error) { el.innerHTML = 'Snapshot for Claude couldn\u2019t update: ' + esc(s.error); el.style.color = '#b42318'; }
-            else if (s.at) el.innerHTML = 'Snapshot for Claude updated ' + esc(new Date(s.at).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }));
+            else if (s.at) el.innerHTML = 'Snapshot ' + esc(new Date(s.at).toLocaleString('en-US', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }));
             else return;
             el.hidden = false;
           }).catch(() => {});
