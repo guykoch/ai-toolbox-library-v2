@@ -545,6 +545,15 @@
       .loading { padding: 40px 0; color: var(--muted); }
       footer { margin-top: 52px; border-top: 1px solid var(--line); padding-top: 18px; font-size: 13.5px; color: var(--muted); max-width: 56em; }
       footer p { margin: 0 0 8px; }
+      /* compact "Add to the library" box under the tabs */
+      #addbox-all { margin-top: 14px; padding: 12px 14px; }
+      #addbox-all h2 { font-size: 16px; margin: 0 0 8px; }
+      #addbox-all .sub-inline { font-size: 13px; font-weight: 500; color: var(--muted); }
+      #addbox-all textarea, #addbox-all textarea:focus { min-height: 44px; max-height: 220px; padding: 9px 12px; font-size: 15px; resize: none; overflow-y: auto; }
+      #addbox-all .row { margin-top: 8px; gap: 8px; }
+      @media (max-width: 640px) { #addbox-all textarea, #addbox-all textarea:focus { font-size: 14.5px; } }
+      #addbox-all .primary-btn { padding: 8px 18px; min-height: 36px; }
+      #addbox-all .mini-btn { min-height: 36px; }
       /* ---------- six tabs, delete on collapsed cards ---------- */
       .subtabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
       .subtabs::-webkit-scrollbar { display: none; }
@@ -704,13 +713,12 @@
         </div>
       </header>
       <section class="addbox" id="addbox-all" aria-labelledby="add-h">
-        <h2 id="add-h">Add to the library</h2>
-        <p class="sub">One box for everything &mdash; tools, prompt libraries, rules, agents and automations. Paste a link (several: separate with commas or spaces), a name, a post&rsquo;s text or a screenshot. The app decides which tab each one goes on &mdash; sometimes more than one, like a repo with both rule files and agents.</p>
-        <textarea id="add-text" dir="auto" placeholder="e.g. https://github.com/owner/repo, https://n8n.io/workflows/123  &middot;  a post&rsquo;s text + link  &middot;  &ldquo;Granola meeting notes app&rdquo;  &middot;  or paste a screenshot (Ctrl/Cmd+V)"></textarea>
+        <h2 id="add-h">Add to the library <span class="sub-inline">&mdash; sorted into the right tab</span></h2>
+        <textarea id="add-text" dir="auto" rows="1" placeholder="Links, names, posts or screenshots&hellip;"></textarea>
         <div class="shots" id="shots"></div>
         <div class="row">
-          <button class="primary-btn" id="add-btn" type="button">Add to library</button>
-          <label class="mini-btn" style="display:inline-flex;align-items:center;cursor:pointer">Add screenshot<input type="file" id="shot-input" accept="image/*" multiple hidden /></label>
+          <button class="primary-btn" id="add-btn" type="button">Add</button>
+          <label class="mini-btn" style="display:inline-flex;align-items:center;cursor:pointer">&#128247; Screenshot<input type="file" id="shot-input" accept="image/*" multiple hidden /></label>
           <span class="add-status" id="add-status" role="status" aria-live="polite"></span>
         </div>
         <div class="add-result" id="add-result" hidden role="status" aria-live="polite">
@@ -2055,7 +2063,7 @@
           }
         }
         clearInterval(timer); addStatus.textContent = '';
-        if (nAdd || nAgain) { addText.value = ''; shots = []; renderShots(); }
+        if (nAdd || nAgain) { addText.value = ''; addText.style.height = ''; shots = []; renderShots(); }
         try { await load(); await loadPrompts(); await loadTabs(true); } catch (e) {}
         const head = [nAdd ? nAdd + (nAdd === 1 ? ' card added' : ' cards added') : '', nAgain ? nAgain + ' already in your library' : '', nFail ? nFail + ' couldn’t be added' : ''].filter(Boolean).join(' · ') || 'Nothing added';
         const shotNote = shotsSent > 1 ? '<span style="display:block;margin-top:4px">All ' + shotsSent + ' screenshots were read.</span>' : '';
@@ -2066,6 +2074,9 @@
         if (jumps.length === 1) { const [k, id, tab] = jumps[0].split('|'); jumpTo(k, id, tab); }
       }
       addBtn.addEventListener('click', addFromText);
+      // The box starts one line high and grows as you type or paste.
+      const growAdd = () => { addText.style.height = 'auto'; addText.style.height = Math.min(220, Math.max(44, addText.scrollHeight + 2)) + 'px'; };
+      addText.addEventListener('input', growAdd);
       addText.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) addFromText(); });
 
       // ---------- archive / restore / delete ----------
