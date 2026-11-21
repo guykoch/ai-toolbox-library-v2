@@ -549,7 +549,7 @@
       .subtabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
       .subtabs::-webkit-scrollbar { display: none; }
       .subtab { white-space: nowrap; flex: none; }
-      @media (max-width: 640px) { .subtabs { flex-wrap: wrap; justify-content: center; border-radius: 18px; } .subtab { padding: 7px 12px; font-size: 14px; } .mk-row { flex-direction: column; align-items: stretch; } }
+      @media (max-width: 640px) { .subtabs { flex-wrap: wrap; justify-content: center; border-radius: 18px; } .subtab { padding: 7px 12px; font-size: 14px; } .mk-row, #tab-playbooks .pg-box .ask-row { flex-direction: column; align-items: stretch; } }
       .trash-btn { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px; height: 24px; min-width: 26px; padding: 0 4px; margin: -3px -4px -3px 2px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: var(--muted); cursor: pointer; font: inherit; font-size: 12px; font-weight: 600; }
       .trash-btn:hover, .trash-btn.confirm { color: #b42318; border-color: #e7b3ab; background: var(--surface); }
       :root[data-theme="dark"] .trash-btn:hover, :root[data-theme="dark"] .trash-btn.confirm { color: #ff8a7a; border-color: #6b3029; }
@@ -2688,7 +2688,7 @@
       function pbPanelHTML() {
         return '<p class="tab-intro">Step-by-step recipes for a goal, built from <b>your own library</b>: which tool, prompt, rule, agent or automation to use at each step, with ready prompts to copy. Tap any item to jump to its card.</p>' +
           '<section class="pg-box" aria-labelledby="mk-h"><div class="pg-head"><div><h2 id="mk-h">&#10024; Make a playbook</h2><p class="pg-one">Say your goal in plain words (English or Hebrew). You get a draft to tweak by chat or by hand &mdash; nothing is saved until you press Save.</p></div></div>' +
-          '<div class="mk-row"><textarea id="mk-goal" dir="auto" rows="2" placeholder="e.g. prepare a pitch deck for seed investors, or: להכין מצגת למשקיעים"></textarea><button class="primary-btn" id="mk-btn" type="button">Make playbook</button></div>' +
+          '<div class="ask-row" style="margin-top:12px"><textarea id="mk-goal" dir="auto" rows="1" placeholder="e.g. prepare a pitch deck for seed investors, or: להכין מצגת למשקיעים"></textarea><button class="primary-btn" id="mk-btn" type="button">Make playbook</button></div>' +
           '<div class="mk-defaults" id="mk-defaults"></div><div id="mk-out" aria-live="polite"></div></section>' +
           '<section class="pbx" id="pbx" hidden aria-label="Playbook editor"></section>' +
           '<p class="statline" id="pbl-stat" style="margin-top:22px"></p>' +
