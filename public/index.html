@@ -2766,7 +2766,14 @@
         { key: 'automate', label: 'Automate & agents', icon: '⚙️', color: '#475569', sub: 'Set up agents and workflows that do the work for you.' },
         { key: 'media', label: 'Video, images & audio', icon: '\u{1F3AC}', color: '#be4b7a', sub: 'Make videos, pictures, voice and music.' }
       ];
-      const pbType = k => PB_TYPE_DEFS.find(t => t.key === k) || PB_TYPE_DEFS[0];
+      // The 8 built-in types plus any new ones your plans created (e.g. "x-travel" → ✈️ Travel).
+      function pbCustomTypes() {
+        const m = new Map();
+        for (const p of (typeof PLAYBOOKS !== 'undefined' ? PLAYBOOKS : [])) if (/^x-/.test(p.type || '') && !m.has(p.type)) m.set(p.type, { key: p.type, label: p.typeLabel || 'Other', icon: p.typeIcon || '\u{1F4C1}', color: '#64748b', sub: 'A type created by your plans.' });
+        return [...m.values()];
+      }
+      const pbAllTypes = () => PB_TYPE_DEFS.concat(pbCustomTypes());
+      const pbType = k => pbAllTypes().find(t => t.key === k) || PB_TYPE_DEFS[0];
       let PLAYBOOKS = [], PB_DEFAULTS = [], PB_LOADED = false;
       const pbs = { q: '', type: 'all', topic: 'all', expanded: new Set() };
       const pbx = { draft: null, editId: null, history: [], undo: [], dirty: false, editing: new Set(), adding: -1, addQ: '', changed: new Set(), busy: false, pre: null };
@@ -2823,7 +2830,7 @@
         const chip = (attr, key, label, n, on) => '<button type="button" class="kindchip" ' + attr + '="' + esc(key) + '" aria-pressed="' + on + '"' + (n === 0 && !on ? ' style="opacity:.45"' : '') + '>' + label + ' <span class="kc-n">' + n + '</span></button>';
         const tBase = PLAYBOOKS.filter(p => pbMatches(p, 'type'));
         document.getElementById('pbl-types').innerHTML = chip('data-pbtype', 'all', 'All', tBase.length, pbs.type === 'all') +
-          PB_TYPE_DEFS.map(t => chip('data-pbtype', t.key, t.icon + ' ' + t.label, tBase.filter(p => p.type === t.key).length, pbs.type === t.key)).join('');
+          pbAllTypes().map(t => chip('data-pbtype', t.key, t.icon + ' ' + t.label, tBase.filter(p => p.type === t.key).length, pbs.type === t.key)).join('');
         const topBase = PLAYBOOKS.filter(p => pbMatches(p, 'topic'));
         const tc = new Map(); PLAYBOOKS.forEach(p => (p.topics || []).forEach(x => tc.set(x, (tc.get(x) || 0))));
         topBase.forEach(p => (p.topics || []).forEach(x => tc.set(x, (tc.get(x) || 0) + 1)));
@@ -2831,7 +2838,7 @@
         document.getElementById('pbl-topics').innerHTML = chip('data-pbtopic', 'all', 'All', topBase.length, pbs.topic === 'all') + topics.map(([x, n]) => chip('data-pbtopic', x, esc(x), n, pbs.topic === x)).join('');
         const list = PLAYBOOKS.filter(p => pbMatches(p));
         let html = '';
-        PB_TYPE_DEFS.forEach(t => {
+        pbAllTypes().forEach(t => {
           const ps = list.filter(p => pbType(p.type).key === t.key).sort((a, b) => (a.source === 'made' ? 0 : 1) - (b.source === 'made' ? 0 : 1) || a.title.localeCompare(b.title));
           if (!ps.length) return;
           html += '<section class="pgroup"><h2 class="pgroup-h"><span class="dot" style="background:' + t.color + '"></span>' + t.icon + ' ' + t.label + ' <span class="pg-n">' + ps.length + '</span></h2><p class="pgroup-sub">' + t.sub + '</p><div class="grid">' + ps.map(pbCardHTML).join('') + '</div></section>';
@@ -3256,7 +3263,8 @@
         if (!p) return '<div class="pl-noplan"><div class="big">\u{1F5FA}️</div><b style="color:var(--ink)">Your plan will appear here</b><span>Tell me what you want to get done in the chat.</span></div>';
         const narrow = (document.getElementById('pl-view') || {}).clientWidth < 600;
         let h = '<div class="pl-hero"><h3 dir="auto">' + esc(p.title) + '</h3>' + (p.goal ? '<p class="goal" dir="auto">' + esc(p.goal) + '</p>' : '') +
-          '<div class="pl-pills"><span class="pl-pill">\u{1F9ED} ' + p.steps.length + ' steps</span>' + (p.time ? '<span class="pl-pill">⏱ ' + esc(p.time) + '</span>' : '') + (p.cost ? '<span class="pl-pill">\u{1F4B2} ' + esc(p.cost) + '</span>' : '') + '</div></div>';
+          '<div class="pl-pills">' + (() => { const t = /^x-/.test(p.type || '') && p.typeLabel ? { icon: p.typeIcon, label: p.typeLabel } : pbType(p.type); return '<span class="pl-pill" title="Playbook type">' + t.icon + ' ' + esc(t.label) + (/^x-/.test(p.type || '') && !PLAYBOOKS.some(x => x.type === p.type) ? ' <b>(new type)</b>' : '') + '</span>'; })() +
+          (p.topics || []).map(x => '<span class="pl-pill" title="Topic">#' + esc(x) + (PLAYBOOKS.some(y => (y.topics || []).includes(x)) ? '' : ' <b>(new)</b>') + '</span>').join('') + '<span class="pl-pill">\u{1F9ED} ' + p.steps.length + ' steps</span>' + (p.time ? '<span class="pl-pill">⏱ ' + esc(p.time) + '</span>' : '') + (p.cost ? '<span class="pl-pill">\u{1F4B2} ' + esc(p.cost) + '</span>' : '') + '</div></div>';
         if (p.outcome) h += '<div class="pl-sec"><h4>You&rsquo;ll end up with</h4><div class="pl-box pl-outcome"><p dir="auto">' + esc(p.outcome) + '</p></div></div>';
         if (p.summary || p.approach.length) h += '<div class="pl-sec"><h4>The approach</h4><div class="pl-box">' + (p.summary ? '<p dir="auto">' + esc(p.summary) + '</p>' : '') + (p.approach.length ? '<ul>' + p.approach.map(x => '<li dir="auto">' + esc(x) + '</li>').join('') + '</ul>' : '') +
           (p.assumptions.length ? '<p style="margin-top:8px;font-size:13px;color:var(--muted)" dir="auto"><b>Assumed:</b> ' + p.assumptions.map(esc).join(' · ') + '</p>' : '') + '</div></div>';
@@ -3314,7 +3322,8 @@
       }
       function plToPlaybook(p) {
         const libByName = new Map(PROMPT_LIBS.map(l => [l.title, l.id]));
-        return { title: p.title, goal: p.goal, type: p.type, topics: [], time: p.time, steps: p.steps.map(s => ({
+        const own = /^x-/.test(p.type || '') ? (p.typeLabel ? { typeLabel: p.typeLabel, typeIcon: p.typeIcon } : (() => { const t = pbType(p.type); return { typeLabel: t.label, typeIcon: t.icon }; })()) : {};
+        return { title: p.title, goal: p.goal, type: p.type, ...own, topics: p.topics || [], time: p.time, steps: p.steps.map(s => ({
           title: s.title, do: [s.why, s.do, s.output ? 'You get: ' + s.output : ''].filter(Boolean).join(' '), prompt: s.prompt, tip: s.tip,
           use: (s.items || []).map(it => { const [k, a] = it.ref.split(':'); return k === 'p' ? (libByName.has(it.where) ? { k: 'l', id: libByName.get(it.where) } : null) : k === 'i' ? { k: 'c', id: a } : { k, id: a, name: it.name }; }).filter(Boolean)
         })) };

@@ -55,7 +55,8 @@ export function cleanPlaybook(p: any, lib: LibRef[]) {
   return {
     title: str(p?.title, 120) || "Untitled playbook",
     goal: str(p?.goal, 400),
-    type: (PB_TYPES as readonly string[]).includes(p?.type) ? p.type : "create",
+    type: (PB_TYPES as readonly string[]).includes(p?.type) || /^x-[a-z0-9-]{1,40}$/.test(String(p?.type)) ? p.type : "create",
+    ...(/^x-/.test(String(p?.type)) ? { typeLabel: str(p?.typeLabel, 30) || "Other", typeIcon: str(p?.typeIcon, 8) || "\u{1F4C1}" } : {}),
     topics: (Array.isArray(p?.topics) ? p.topics : []).map((t: any) => str(t, 40)).filter(Boolean).slice(0, 4),
     time: str(p?.time, 40),
     steps,
@@ -173,6 +174,9 @@ export const libraryForPlan = internalQuery({
     });
     const libs = (await ctx.db.query("plibs").collect()).filter((r) => !r.deleting).map((r) => ({ id: r.libId, name: String(r.data?.title || ""), info: String(r.data?.bestFor || r.data?.summary || "").slice(0, 200), copied: r.imp?.state === "done" }));
     const cards = (await ctx.db.query("tcards").collect()).filter((r) => !r.deleting).map((r) => ({ id: r.cid, tab: r.tab, name: String(r.data?.title || ""), info: String(r.data?.bestFor || r.data?.summary || "").slice(0, 200) }));
-    return { tools, libs, cards };
+    const pbs = await ctx.db.query("playbooks").collect();
+    const topics = [...new Set(pbs.flatMap((p: any) => p.data?.topics || []))].sort();
+    const types = [...new Map(pbs.filter((p: any) => /^x-/.test(String(p.data?.type))).map((p: any) => [p.data.type, { key: p.data.type, label: p.data.typeLabel, icon: p.data.typeIcon }])).values()];
+    return { tools, libs, cards, topics, types };
   },
 });

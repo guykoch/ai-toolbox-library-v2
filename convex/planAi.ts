@@ -8,7 +8,7 @@ import { checkKey } from "./auth";
 import { callGemini, parseJson, MODELS } from "./llm";
 import { KIND_LABEL } from "./kinds";
 
-type Lib = { tools: { id: string; name: string; kind: string; cat: string; info: string; url: string }[]; libs: { id: string; name: string; info: string; copied: boolean }[]; cards: { id: string; tab: string; name: string; info: string }[] };
+type Lib = { topics: string[]; types: { key: string; label: string; icon: string }[]; tools: { id: string; name: string; kind: string; cat: string; info: string; url: string }[]; libs: { id: string; name: string; info: string; copied: boolean }[]; cards: { id: string; tab: string; name: string; info: string }[] };
 type PRow = { pid: number; libId: string; title: string; desc: string };
 type IRow = { cid: string; n: number; title: string; desc: string; tag: string; tab: string; card: string };
 export type Ref = { ref: string; name: string; type: string; where: string };
@@ -45,7 +45,9 @@ PICKING ITEMS
 
 THE PLAN (JSON)
 {"title": "short name", "goal": "one sentence", "outcome": "what the user ends up with",
- "type": one of "create" (write & present), "research", "learn", "career", "build" (apps & sites), "money" (data & stocks), "automate" (automate & agents), "media" (video, images, audio),
+ "type": one of "create" (write & present), "research", "learn", "career", "build" (apps & sites), "money" (data & stocks), "automate" (automate & agents), "media" (video, images, audio), or one of the user's own types listed under PLAYBOOK TYPES AND TOPICS (by its key),
+ "newType": only if NONE of those fits at all: {"label": "2-3 word type name", "icon": "one emoji"} (else omit),
+ "topics": ["1-3 short topic tags; reuse the user's EXISTING TOPICS (exact spelling) when they fit, otherwise create a short new one, e.g. Product management, Startups, NotebookLM"],
  "summary": "2-3 plain sentences: the approach and why it works",
  "approach": ["2-4 short key ideas"], "assumptions": ["what you assumed, if anything"],
  "time": "rough total time", "cost": "rough cost, e.g. Free / ~$20 a month (say which item costs)",
@@ -121,6 +123,7 @@ export const chat = action({
       "\n\nRULE / AGENT / AUTOMATION CARDS:\n" + lib.cards.map((c) => `c:${c.id} | ${c.name} | ${TAB_TYPE[c.tab]} | ${c.info}`).join("\n") +
       "\n\nSPECIFIC PROMPTS that may fit (ref | title | library | what it does):\n" + (pShort.map((p) => `p:${p.pid} | ${p.title} | ${libName.get(p.libId)} | ${p.desc.slice(0, 160)}`).join("\n") || "(none found)") +
       "\n\nSPECIFIC AGENT / RULE / WORKFLOW FILES that may fit (ref | title | type | collection | what it does):\n" + (iShort.map((f) => `i:${f.cid}:${f.n} | ${f.title} | ${ITEM_TYPE[f.tab]} | ${f.card} | ${f.desc.slice(0, 160)}`).join("\n") || "(none found)") +
+      "\n\nPLAYBOOK TYPES AND TOPICS already used:\nOwn types: " + (lib.types.map((t) => `${t.key} (${t.icon} ${t.label})`).join(", ") || "none") + "\nExisting topics: " + (lib.topics.join(", ") || "none") +
       (defaults?.length ? "\n\nPINNED DEFAULTS (follow when they apply):\n" + defaults.map((d) => "- " + d).join("\n") : "");
 
     const turns = history.slice(-20).map((h) => ({ role: (h.role === "user" ? "user" : "model") as "user" | "model", text: h.text.slice(0, 4000) }));
@@ -129,6 +132,7 @@ export const chat = action({
     if (turns.length && turns[turns.length - 1].role === "user") turns.push({ role: "model", text: "(ok)" });
     turns.push({ role: "user", text: (plan ? `CURRENT PLAN:\n${JSON.stringify(stripPlan(plan)).slice(0, 40000)}\n\n` : "") + `MY MESSAGE: ${m.slice(0, 4000)}` });
 
+    knownTypes = new Set(lib.types.map((t) => t.key));
     const res = await callGemini({ model: MODELS.advisor(), system: SYSTEM + "\n\nLIBRARY\n" + libText, turns, json: true, thinking: "high", maxTokens: 16000 });
     const out = parseJson(res.text) || {};
     const questions = (Array.isArray(out.questions) ? out.questions : []).slice(0, 3).map((q: any) => ({ q: String(q?.q || "").slice(0, 300), options: (Array.isArray(q?.options) ? q.options : []).map((o: any) => String(o).slice(0, 80)).slice(0, 4) })).filter((q: any) => q.q);
@@ -147,6 +151,18 @@ function stripPlan(p: any) {
   return { ...p, steps: (p.steps || []).map((s: any) => ({ ...s, items: (s.items || []).map((it: any) => ({ ref: it.ref, role: it.role, alts: (it.alts || []).map((a: any) => ({ ref: a.ref, role: a.role })) })) })) };
 }
 
+let knownTypes = new Set<string>();
+const BASE_TYPES = ["create", "research", "learn", "career", "build", "money", "automate", "media"];
+// One of the 8 types, one of the user's own types, or a brand-new one ("x-<name>", with its label and emoji).
+function planType(p: any) {
+  const nt = p?.newType;
+  if (nt && typeof nt === "object" && str(nt.label, 30)) {
+    const label = str(nt.label, 30), slug = label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "other";
+    return { type: "x-" + slug, typeLabel: label, typeIcon: str(nt.icon, 8) || "\u{1F4C1}" };
+  }
+  if (BASE_TYPES.includes(p?.type) || knownTypes.has(p?.type)) return { type: p.type };
+  return { type: "create" };
+}
 const str = (x: any, n: number) => (typeof x === "string" ? x.trim().slice(0, n) : "");
 const list = (x: any, n: number, len = 300) => (Array.isArray(x) ? x.map((y) => str(y, len)).filter(Boolean).slice(0, n) : []);
 
@@ -174,7 +190,8 @@ export function cleanPlan(p: any, refs: Map<string, Ref>) {
   const ids = new Set(steps.map((s: any) => s.id));
   for (const s of steps) s.after = s.after.filter((a: string) => ids.has(a) && a !== s.id);
   return {
-    type: ["create", "research", "learn", "career", "build", "money", "automate", "media"].includes(p.type) ? p.type : "create",
+    ...planType(p),
+    topics: list(p.topics, 3, 40),
     title: str(p.title, 100) || "Your plan", goal: str(p.goal, 400), outcome: str(p.outcome, 400), summary: str(p.summary, 1000),
     approach: list(p.approach, 5), assumptions: list(p.assumptions, 5), time: str(p.time, 60), cost: str(p.cost, 120),
     phases, steps, caveats: list(p.caveats, 6), gaps: list(p.gaps, 5),
