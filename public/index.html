@@ -1115,6 +1115,7 @@
         'agent-skills':   { label: 'Agent skills',   color: '#7c5cbf' },
         'courses-guides': { label: 'Courses & guides', color: '#b45309' },
         'productivity':   { label: 'Productivity',   color: '#3d8b4f' },
+        'knowledge-rag':  { label: 'Knowledge & RAG', color: '#4f46e5' },
         'app-building':   { label: 'App building',   color: '#be4b7a' },
         'video':          { label: 'Video',          color: '#cf3f30' },
         'image':          { label: 'Image',          color: '#0e7490' },
@@ -1155,7 +1156,7 @@
         if (/\bnews\b|report|benchmark/.test(t)) return 'news';
         return 'webapp';
       }
-      const CAT_ORDER = ['coding-agents','agent-skills','courses-guides','productivity','app-building','video','image','audio','ai-models','news-analysis','translation','other'];
+      const CAT_ORDER = ['coding-agents','agent-skills','courses-guides','productivity','knowledge-rag','app-building','video','image','audio','ai-models','news-analysis','translation','other'];
       const MONTH_LABELS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
       const state = { q: '', kind: 'all', cat: 'all', osOnly: false, videoOnly: false, cluster: -1, month: '', sort: 'pop', expanded: new Set(), justAdded: -1, highlight: -1, prompts: new Set() };

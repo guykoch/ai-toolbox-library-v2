@@ -12,7 +12,7 @@ const BRANCH = () => process.env.SNAPSHOT_BRANCH || "main";
 const PATH = "library-snapshot.md";
 const DELAY_MS = () => Number(process.env.SNAPSHOT_DELAY_MS) || 60_000;
 
-const SHELF: Record<string, string> = {"coding-agents":"Coding agents","agent-skills":"Agent skills","courses-guides":"Courses & guides","productivity":"Productivity","app-building":"App building","video":"Video","image":"Image","audio":"Audio","ai-models":"AI models","news-analysis":"News & analysis","translation":"Translation","other":"Other"};
+const SHELF: Record<string, string> = {"coding-agents":"Coding agents","agent-skills":"Agent skills","courses-guides":"Courses & guides","productivity":"Productivity","knowledge-rag":"Knowledge & RAG","app-building":"App building","video":"Video","image":"Image","audio":"Audio","ai-models":"AI models","news-analysis":"News & analysis","translation":"Translation","other":"Other"};
 const SECTION: Record<string, string> = { general: "All-purpose libraries", business: "Business & productivity", coding: "Coding", design: "Slides, web & app design", images: "Images, logos & products", patterns: "Thinking patterns" };
 const SOURCE: Record<string, string> = { official: "Official", open: "Open source", community: "Community", academic: "Academic", free: "Free" };
 
