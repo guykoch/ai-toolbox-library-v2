@@ -1,6 +1,6 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-21 16:11 UTC.
+Updated automatically by the app: 2026-11-21 17:21 UTC.
 Tools: 261 active, 0 archived. Prompt libraries: 45 (14 open source, 9,141 prompts copied into Find a prompt).
 Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 
@@ -90,7 +90,7 @@ Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 | 175 | Claude desktop 11 updates guide | Learn | Coding agents | yes | 45 | 5 Nov 2026 | https://facebook.com/reel/1116222541331567/ |  |
 | 174 | wheresryan22/anatomy: Claude Code skill for interactive 3D technical illustrations | Skill | Agent skills | yes | 49 | 5 Nov 2026 | https://github.com/wheresryan22/anatomy | Figma, Spline, Canva |
 | 173 | storytold/craft-anything: AI studies a site, app or game and rebuilds it | Developer tool | App building | yes | 42 | 4 Nov 2026 | https://github.com/storytold/craft-anything | Bolt.new, v0, Lovable |
-| 172 | microsoft/markitdown: Convert files and office documents to Markdown | Developer tool | Productivity | yes | 39 | 3 Nov 2026 | https://github.com/microsoft/markitdown | Adobe Acrobat, Pandoc, LlamaParse |
+| 172 | microsoft/markitdown: Convert files and office documents to Markdown | Developer tool | Knowledge & RAG | yes | 39 | 3 Nov 2026 | https://github.com/microsoft/markitdown | Adobe Acrobat, Pandoc, LlamaParse |
 | 171 | Idealab.ai | Web app | Productivity | no | 36 | 3 Nov 2026 | https://idealab.ai | IdeaBrowser, Exploding Topics, Y Combinator Requests for Startups |
 | 170 | Freefield | Web app | Video | yes | 42 | 2 Nov 2026 | https://facebook.com/reel/1579962273880465/ | Higgsfield, Runway, Krea |
 | 169 | vercel-labs/agent-desktop: desktop computer use for AI agents via the accessibility tree | Developer tool | Coding agents | yes | 72 | 31 Oct 2026 | https://github.com/vercel-labs/agent-desktop | Claude Computer Use, OpenAI Operator, UiPath |
@@ -148,8 +148,8 @@ Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 | 118 | Language Model Builder | Desktop / phone app | AI models | yes | 31 | 25 Jul 2026 | https://languagemodelbuilder.com/ | Hugging Face AutoTrain, Google Teachable Machine, Fast.ai |
 | 117 | How to set up Claude properly | Learn | Courses & guides | yes | 46 | 18 Jul 2026 | https://facebook.com/groups/claudecowork/permalink/1369903514519480/ |  |
 | 116 | Meetily | Desktop / phone app | Productivity | yes | 40 | 6 Jul 2026 | https://meetily.ai | Granola, Otter.ai, Fireflies.ai |
-| 115 | opendatalab/MinerU: document-to-Markdown parsing engine | Developer tool | Productivity | yes | 71 | 25 Jun 2026 | https://github.com/opendatalab/MinerU | Adobe Acrobat, LlamaParse, Unstructured |
-| 114 | StarTrail-org/PixelRAG: visual RAG over web page screenshots | Developer tool | Coding agents | yes | 42 | 25 Jun 2026 | https://github.com/StarTrail-org/PixelRAG | LlamaParse, Unstructured, ColPali |
+| 115 | opendatalab/MinerU: document-to-Markdown parsing engine | Developer tool | Knowledge & RAG | yes | 71 | 25 Jun 2026 | https://github.com/opendatalab/MinerU | Adobe Acrobat, LlamaParse, Unstructured |
+| 114 | StarTrail-org/PixelRAG: visual RAG over web page screenshots | Developer tool | Knowledge & RAG | yes | 42 | 25 Jun 2026 | https://github.com/StarTrail-org/PixelRAG | LlamaParse, Unstructured, ColPali |
 | 113 | Unified AI model API / proxy tool | Developer tool | AI models | yes | 60 | 19 Jun 2026 | https://facebook.com/61572558090421/posts/pfbid02h1bpzP5xXEwKtmUpwgiKspg3A9ejQRuDoBq7YmYJ1GZdvbiBLQgZyeFQEaX6Yp2cl/ | OpenRouter, LiteLLM, Portkey |
 | 112 | 24 Claude plugins, skills and MCP tools | Learn | Agent skills | yes | 40 | 16 Jun 2026 | https://facebook.com/750547861/posts/pfbid02DMjwgmQgeec3ACcV4ZhUJVU3iSyAqFnEesATmRvebWAaKjtjKFFx1BSQSqiTrJdjl/ |  |
 | 111 | Claude Fable 5 animated websites tutorial | Learn | App building | yes | 49 | 12 Jun 2026 | https://facebook.com/reel/1630394814696082/ |  |
@@ -202,7 +202,7 @@ Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 | 64 | AI Startup Idea Generator — Free Tool for Founders \| FBM Studio | Web app | Productivity | no | 34 | 14 Mar 2026 | https://fbm-studio.com/ideator | IdeaBrowser, Exploding Topics, ChatGPT |
 | 63 | Gemini stock analysis prompts | Learn | News & analysis | no | 51 | 13 Mar 2026 | https://facebook.com/61571991616735/posts/pfbid02g9Fk5iWkhucB8v5ptETFfBJRtUZkcx6rkvDTzmzV27FTYMTaGLetYksFx1QixWbtl/ |  |
 | 62 | Wispr Flow | Desktop / phone app | Agent skills | no | 49 | 13 Mar 2026 | https://wisprflow.ai | Superwhisper, Apple Dictation, Otter.ai |
-| 61 | teng-lin/notebooklm-py: Unofficial Python API and skill for Google NotebookLM | Developer tool | Coding agents | yes | 72 | 13 Mar 2026 | https://github.com/teng-lin/notebooklm-py | Google NotebookLM API, Zapier, Make |
+| 61 | teng-lin/notebooklm-py: Unofficial Python API and skill for Google NotebookLM | Developer tool | Knowledge & RAG | yes | 72 | 13 Mar 2026 | https://github.com/teng-lin/notebooklm-py | Google NotebookLM API, Zapier, Make |
 | 60 | Building AI Agents — March 2026 Stack | Learn | Coding agents | yes | 50 | 13 Mar 2026 | https://facebook.com/61571060319687/posts/pfbid02XmNyRHLYEAppks8wwAzReNCbEgdcXDwGZ3yGjQQbEnT9zxhAbm2mKEvU9TVGhtBul/ |  |
 | 59 | blader/humanizer: Claude skill that removes signs of AI writing | Skill | Agent skills | yes | 47 | 10 Mar 2026 | https://github.com/blader/humanizer | Undetectable AI, QuillBot, Grammarly |
 | 58 | Website explainer video skill | Skill | Agent skills | yes | 43 | 6 Mar 2026 | https://facebook.com/1704588976/posts/pfbid026RXAFaMqJTayJHge5PjVGu2w9xnLNSBu2FyuEH6mJ5naYaJE5SBZRsPb6nE7BaSyl/ | Loom, Arcade, Synthesia |
@@ -236,7 +236,7 @@ Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 | 32 | OpenClaw security hardening | Learn | Coding agents | yes | 38 | 20 Feb 2026 | https://facebook.com/100002717045940/posts/pfbid02jwe8ahZx9zBd9HCPAi35agyCPWzwDPH3crgwhuex234QGQceW5WdtZQWH3p6ukvil/ |  |
 | 31 | Five Claude Code tips | Learn | Coding agents | no | 40 | 20 Feb 2026 | https://facebook.com/groups/1684554685829832/permalink/1959006055051359/ |  |
 | 30 | Claude Desktop + Claude Code | Learn | Coding agents | no | 51 | 20 Feb 2026 | https://facebook.com/reel/1544123853331530/ |  |
-| 29 | YouTube to NotebookLM (Chrome extension) | Plugin / extension | Productivity | no | 47 | 19 Feb 2026 | https://chromewebstore.google.com/detail/youtube-to-notebooklm/dfleaiflbbfhlknlolhllcobaelgoajd | Eightify, NoteGPT, Glasp |
+| 29 | YouTube to NotebookLM (Chrome extension) | Plugin / extension | Knowledge & RAG | no | 47 | 19 Feb 2026 | https://chromewebstore.google.com/detail/youtube-to-notebooklm/dfleaiflbbfhlknlolhllcobaelgoajd | Eightify, NoteGPT, Glasp |
 | 28 | vercel-labs/agent-browser: Browser automation CLI for AI agents | Developer tool | Coding agents | yes | 83 | 18 Feb 2026 | https://github.com/vercel-labs/agent-browser | Playwright, Selenium, Browserbase |
 | 27 | trailofbits/skills: Trail of Bits skills for security research, vulnerability detection, and audit workflows | Skill | Agent skills | yes | 82 | 18 Feb 2026 | https://github.com/trailofbits/skills | Snyk, Semgrep, GitHub Advanced Security |
 | 26 | vercel-labs/agent-skills: Vercel's official collection of agent skills | Skill | Agent skills | yes | 86 | 18 Feb 2026 | https://github.com/vercel-labs/agent-skills | Cursor Rules, v0, GitHub Copilot Instructions |
@@ -244,7 +244,7 @@ Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 | 24 | using-git-worktrees skill — obra/superpowers | Skill | Agent skills | yes | 49 | 18 Feb 2026 | https://github.com/obra/superpowers/blob/main/skills/using-git-worktrees/SKILL.md | Cursor Background Agents, GitHub Desktop, Conductor |
 | 23 | obra/superpowers: An agentic skills framework & software development methodology that works | Skill | Agent skills | yes | 94 | 18 Feb 2026 | https://github.com/obra/superpowers | Cursor Rules, GitHub Spec Kit, BMAD Method |
 | 204 | Claude Code Tutorial #1 — Introduction & Setup | Learn | Courses & guides | no | 54 | 17 Feb 2026 | https://www.youtube.com/watch?v=SUysp3sJHbA |  |
-| 203 | RAG & MCP Fundamentals – A Hands-On Crash Course | Learn | Courses & guides | no | 58 | 17 Feb 2026 | https://www.youtube.com/watch?v=I7_WXKhyGms |  |
+| 203 | RAG & MCP Fundamentals – A Hands-On Crash Course | Learn | Knowledge & RAG | no | 58 | 17 Feb 2026 | https://www.youtube.com/watch?v=I7_WXKhyGms |  |
 | 202 | n8n Beginner Course (1/9) — Introduction to Automation | Learn | Courses & guides | no | 52 | 17 Feb 2026 | https://www.youtube.com/watch?v=4BVTkqbn_tY |  |
 | 22 | Choosing Claude Code skills | Learn | Agent skills | yes | 37 | 17 Feb 2026 | https://facebook.com/groups/1684554685829832/permalink/1956987195253245/ |  |
 | 21 | February 2026 AI updates | News | News & analysis | no | 61 | 17 Feb 2026 | https://facebook.com/groups/lovable.il/permalink/34516189801312745/ |  |
@@ -265,7 +265,7 @@ Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 | 6 | Build an app by describing it · FlutterFlow | Web app | App building | no | 74 | 26 Jan 2026 | https://www.flutterflow.io/ | Lovable, Bubble, Bolt.new |
 | 5 | NotebookLM meeting preparation | Learn | Courses & guides | no | 46 | 25 Jan 2026 | https://facebook.com/groups/1266824747259615/permalink/1898991724042911/ |  |
 | 4 | NikiforovAll/claude-code-kanban: live Kanban board for Claude Code tasks and sessions | Developer tool | Coding agents | yes | 54 | 23 Jan 2026 | https://github.com/NikiforovAll/claude-code-kanban | Linear, Trello, Jira |
-| 3 | NotebookLM Deep Research workflow | Learn | Courses & guides | no | 82 | 23 Jan 2026 | https://facebook.com/groups/715153780127233/permalink/1464217775220826/ |  |
+| 3 | NotebookLM Deep Research workflow | Learn | Knowledge & RAG | no | 82 | 23 Jan 2026 | https://facebook.com/groups/715153780127233/permalink/1464217775220826/ |  |
 | 2 | Claude anti-sycophancy prompt | Learn | AI models | no | 43 | 21 Jan 2026 | https://facebook.com/100002717045940/posts/pfbid0YbYQht5K5Darmt7KtZASH29yAxQwa1yqo3TC8UdtUQccmLmM4E6eqgijxWmvgbjHl/ |  |
 | 1 | TranslateGemma | AI model | Translation | yes | 81 | 18 Jan 2026 | https://blog.google/innovation-and-ai/technology/developers-tools/translategemma/ | Google Translate, DeepL, Microsoft Translator |
 | 0 | Gemini - 12 things you can do | Learn | AI models | no | 38 | 18 Jan 2026 | https://facebook.com/685119124/posts/pfbid02y96SfCWK6YxTBcSTFiukvG3L626kmXMpXNnSwRkn3kptdTyUrXDRf9bYBMgsGtAGl/ |  |
