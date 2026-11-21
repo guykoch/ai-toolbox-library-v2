@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-21 17:30 UTC.
-Tools: 260 active, 1 archived. Prompt libraries: 45 (14 open source, 9,141 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-21 17:33 UTC.
+Tools: 261 active, 1 archived. Prompt libraries: 45 (14 open source, 9,141 prompts copied into Find a prompt).
 Rules: 12. Agents: 12. Automations: 7. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 261 | Tencent/WeKnora: turn raw documents into a queryable RAG, an autonomous reasoning agent, and a self-maintaining Wiki | Developer tool | Knowledge & RAG | yes | 80 | 21 Nov 2026 | https://github.com/Tencent/WeKnora | Dify, NotebookLM, AnythingLLM |
 | 260 | Vaultite: The open-source Obsidian alternative | Desktop / phone app | Productivity | yes | 46 | 21 Nov 2026 | https://vaultite.com/ | Obsidian, Notion, Logseq |
 | 259 | davila7/claude-code-templates: open-source registry and CLI for Claude Code components | Developer tool | Agent skills | yes | 78 | 20 Nov 2026 | https://github.com/davila7/claude-code-templates | Cursor Rules, Cline Rules, GitHub Copilot Instructions |
 | 258 | D4Vinci/Scrapling: adaptive Web Scraping framework from a single request to full-scale crawl | Developer tool | APIs & scraping | yes | 88 | 20 Nov 2026 | https://github.com/D4Vinci/Scrapling | Scrapy, Firecrawl, Playwright |
