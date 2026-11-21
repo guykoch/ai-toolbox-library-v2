@@ -14,7 +14,19 @@ export const MODELS = {
   addGemini: () => process.env.GEMINI_MODEL_ADD || "gemini-3.8-flash",
 };
 
-export type ImageIn = { mime: string; data: string }; // base64, no data: prefix
+export type ImageIn = { mime: string; data: string }; // base64, no data: prefix (images or PDFs)
+export type DocIn = { name: string; text: string }; // text pulled out of Word / PowerPoint / Excel / text files in the browser
+export const FILE_MIME = /^(image\/(png|jpeg|webp|gif)|application\/pdf)$/;
+// Text files as a block the AI reads together with the message.
+export function docsBlock(docs: DocIn[] | undefined, maxEach = 60000, maxAll = 200000) {
+  let left = maxAll;
+  const parts = (docs || []).slice(0, 20).map((d) => {
+    const t = String(d.text || "").slice(0, Math.min(maxEach, Math.max(0, left)));
+    left -= t.length;
+    return t ? `--- FILE: ${String(d.name || "file").slice(0, 120)} ---\n${t}` : "";
+  }).filter(Boolean);
+  return parts.length ? `ATTACHED FILES (text extracted from them — read all of it):\n${parts.join("\n\n")}\n\n` : "";
+}
 export type GeminiTurn = { role: "user" | "model"; text: string; images?: ImageIn[] };
 export type GeminiResult = { text: string; sources: { title: string; url: string }[] };
 
@@ -85,7 +97,7 @@ export async function callClaude(system: string, user: string, withSearch: boole
     model: MODELS.addClaude(),
     max_tokens: 2000,
     system,
-    messages: [{ role: "user", content: [...images.map((im) => ({ type: "image", source: { type: "base64", media_type: im.mime, data: im.data } })), { type: "text", text: user }] }],
+    messages: [{ role: "user", content: [...images.map((im) => ({ type: im.mime === "application/pdf" ? "document" : "image", source: { type: "base64", media_type: im.mime, data: im.data } })), { type: "text", text: user }] }],
   };
   if (withSearch) body.tools = [{ type: "web_search_20250305", name: "web_search", max_uses: 4 }];
   const r = await fetchWithTimeout(

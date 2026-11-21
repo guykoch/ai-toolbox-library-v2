@@ -4,7 +4,7 @@ import { v, ConvexError } from "convex/values";
 import { checkKey } from "./auth";
 import { KINDS, guessKind } from "./kinds";
 import { cleanUrl, norm, hostLabel, gatherUrl } from "./web";
-import { callClaude, callGemini, parseJson, MODELS } from "./llm";
+import { callClaude, callGemini, parseJson, MODELS, FILE_MIME, docsBlock } from "./llm";
 
 // ---------------------------------------------------------------------------
 // "Add to library": takes anything you paste (a link, a tool name, a note),
@@ -81,12 +81,14 @@ export const addFromText = action({
     text: v.string(),
     today: v.string(),
     images: v.optional(v.array(v.object({ mime: v.string(), data: v.string() }))),
+    docs: v.optional(v.array(v.object({ name: v.string(), text: v.string() }))),
   },
-  handler: async (ctx, { key, text, today, images }): Promise<AddResponse> => {
+  handler: async (ctx, { key, text, today, images, docs }): Promise<AddResponse> => {
     checkKey(key);
     const input = text.trim();
-    const pics = (images || []).filter((im) => /^image\/(png|jpeg|webp|gif)$/.test(im.mime)).slice(0, MAX_SHOTS);
-    if (!input && !pics.length) throw new ConvexError("Paste a link, a tool name, some context or a screenshot first.");
+    const pics = (images || []).filter((im) => FILE_MIME.test(im.mime)).slice(0, MAX_SHOTS);
+    const docText = docsBlock(docs);
+    if (!input && !pics.length && !docText) throw new ConvexError("Paste a link, a tool name, some context or a screenshot first.");
     if (!/^\d{4}-\d{2}-\d{2}$/.test(today)) throw new ConvexError("Bad date.");
     const day = dateParts(today);
 
@@ -104,7 +106,7 @@ export const addFromText = action({
     const reply = (results: AddResult[]): AddResponse => ({ ...results[0], results });
 
     // 1. A single link that's already in the library: no AI needed.
-    const single = urls.length === 1 && !pics.length;
+    const single = urls.length === 1 && !pics.length && !docText;
     if (single && findDup(urls[0])) return reply([await again(findDup(urls[0])!)]);
 
     // 2. Gather context from every link.
@@ -116,7 +118,7 @@ export const addFromText = action({
     const userMsg =
       `Today is ${day.date}.\n\nEXAMPLE CARDS FROM THE LIBRARY (copy their style):\n${JSON.stringify(examples, null, 1)}\n\n` +
       `WHAT THE USER PASTED:\n"""\n${input.slice(0, 9000) || "(nothing typed — see the attached screenshots)"}\n"""\n\n` +
-      (pics.length ? `${pics.length} SCREENSHOT(S) ATTACHED — read every one of them.\n\n` : "") +
+      (pics.length ? `${pics.length} SCREENSHOT(S) / PDF(S) ATTACHED — read every one of them.\n\n` : "") + docText +
       (fetched.length ? `WHAT I FOUND AT THE LINKS:\n${fetched.map((f) => f.notes).join("\n---\n")}\n\n` : "") +
       `Return only the JSON.`;
     // Claude writes the card if you gave it a key; otherwise Gemini does (one key runs everything).

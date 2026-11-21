@@ -5,7 +5,7 @@ import { action } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { internal } from "./_generated/api";
 import { checkKey } from "./auth";
-import { callGemini, parseJson, MODELS } from "./llm";
+import { callGemini, parseJson, MODELS, FILE_MIME, docsBlock, GeminiTurn } from "./llm";
 import { KIND_LABEL } from "./kinds";
 
 type Lib = { topics: string[]; types: { key: string; label: string; icon: string }[]; tools: { id: string; name: string; kind: string; cat: string; info: string; url: string }[]; libs: { id: string; name: string; info: string; copied: boolean }[]; cards: { id: string; tab: string; name: string; info: string }[] };
@@ -69,7 +69,10 @@ REPLY (JSON only)
 {"reply": "for a plan or change: 1-3 short sentences (what you did, or why you ask). For a question or consulting: your full answer (plain text, short paragraphs or '- ' bullets, usually under 150 words)",
  "questions": [{"q": "...", "options": ["...", "..."]}] (empty when you give a plan),
  "plan": the FULL plan when you made or changed one, or null when you answer, consult or ask questions,
- "changes": ["each change in a few words, when you changed an existing plan"]}`;
+ "changes": ["each change in a few words, when you changed an existing plan"],
+ "fileNotes": "ONLY when files are attached to the latest message: detailed notes of everything in them that could matter for this or later requests (structure, steps, numbers, names, constraints, what diagrams show) — up to ~400 words. Later messages only see these notes, not the files."}
+
+FILES: the user may attach images, screenshots, diagrams, PDFs or documents (Word, PowerPoint, Excel, text) for context. Read them completely and use them: they can define the goal, constraints, the current setup, a process to follow or examples. Mention what you took from them. Earlier files appear in the chat as [Notes on attached files: …].`;
 
 export const chat = action({
   args: {
@@ -78,21 +81,26 @@ export const chat = action({
     message: v.string(),
     plan: v.optional(v.any()),
     defaults: v.optional(v.array(v.string())),
+    files: v.optional(v.array(v.object({ mime: v.string(), data: v.string() }))),
+    docs: v.optional(v.array(v.object({ name: v.string(), text: v.string() }))),
   },
-  handler: async (ctx, { key, history, message, plan, defaults }): Promise<{ reply: string; questions: { q: string; options: string[] }[]; plan: any | null; changes: string[] }> => {
+  handler: async (ctx, { key, history, message, plan, defaults, files, docs }): Promise<{ reply: string; questions: { q: string; options: string[] }[]; plan: any | null; changes: string[]; fileNotes: string }> => {
     checkKey(key);
-    const m = message.trim();
+    const pics = (files || []).filter((f) => FILE_MIME.test(f.mime)).slice(0, 20);
+    const docText = docsBlock(docs);
+    const hasFiles = pics.length > 0 || !!docText;
+    const m = message.trim() || (hasFiles ? "Here are some files for context." : "");
     if (!m) throw new ConvexError("Write what you want to do.");
     const lib: Lib = await ctx.runQuery(internal.playbooks.libraryForPlan, {});
 
     // Search words (in English) for finding specific prompts / agents / workflows.
-    const userText = [...history.filter((h) => h.role === "user").map((h) => h.text), m, plan?.title || "", plan?.goal || ""].join("\n").slice(-4000);
+    const userText = [...history.filter((h) => h.role === "user").map((h) => h.text), m, docText.slice(0, 3000), plan?.title || "", plan?.goal || ""].join("\n").slice(-6000);
     let kws: string[] = [userText];
     try {
       const r = await callGemini({
         model: MODELS.advisor(),
         system: 'Turn this request into 12-20 short English search keywords and synonyms for finding relevant AI prompts, agents, rule files and automation workflows (translate if needed). Reply JSON only: {"keywords": ["..."]}',
-        turns: [{ role: "user", text: userText }],
+        turns: [{ role: "user", text: userText, images: pics }],
         json: true, thinking: "low", maxTokens: 1024,
       });
       const k = parseJson(r.text)?.keywords;
@@ -109,8 +117,8 @@ export const chat = action({
     }
     const libName = new Map(lib.libs.map((l) => [l.id, l.name]));
     const pShort = shortlist(prompts.filter((p) => libName.has(p.libId)), kws, 40);
-    const files: IRow[] = await ctx.runQuery(internal.tabs.itemIndex, {});
-    const iShort = shortlist(files.map((f) => ({ ...f, desc: f.desc + " " + f.tag })), kws, 40);
+    const copied: IRow[] = await ctx.runQuery(internal.tabs.itemIndex, {});
+    const iShort = shortlist(copied.map((f) => ({ ...f, desc: f.desc + " " + f.tag })), kws, 40);
 
     // Every ref the model may use, with display info.
     const refs = new Map<string, Ref>();
@@ -131,15 +139,22 @@ export const chat = action({
       "\n\nPLAYBOOK TYPES AND TOPICS already used:\nOwn types: " + (lib.types.map((t) => `${t.key} (${t.icon} ${t.label})`).join(", ") || "none") + "\nExisting topics: " + (lib.topics.join(", ") || "none") +
       (defaults?.length ? "\n\nPINNED DEFAULTS (follow when they apply):\n" + defaults.map((d) => "- " + d).join("\n") : "");
 
-    const turns = history.slice(-20).map((h) => ({ role: (h.role === "user" ? "user" : "model") as "user" | "model", text: h.text.slice(0, 4000) }));
+    const turns: GeminiTurn[] = history.slice(-20).map((h) => ({ role: (h.role === "user" ? "user" : "model") as "user" | "model", text: h.text.slice(0, 7000) }));
     while (turns.length && turns[0].role !== "user") turns.shift();
     for (let i = turns.length - 1; i > 0; i--) if (turns[i].role === turns[i - 1].role) { turns[i - 1].text += "\n" + turns[i].text; turns.splice(i, 1); }
     if (turns.length && turns[turns.length - 1].role === "user") turns.push({ role: "model", text: "(ok)" });
-    turns.push({ role: "user", text: (plan ? `CURRENT PLAN:\n${JSON.stringify(stripPlan(plan)).slice(0, 40000)}\n\n` : "") + `MY MESSAGE: ${m.slice(0, 4000)}` });
+    turns.push({
+      role: "user",
+      text: (plan ? `CURRENT PLAN:\n${JSON.stringify(stripPlan(plan)).slice(0, 40000)}\n\n` : "") + docText +
+        (pics.length ? `${pics.length} IMAGE(S) / PDF(S) ATTACHED to this message — read every one fully (diagrams, text, numbers).\n\n` : "") +
+        `MY MESSAGE: ${m.slice(0, 4000)}`,
+      images: pics,
+    });
 
     knownTypes = new Set(lib.types.map((t) => t.key));
     const res = await callGemini({ model: MODELS.advisor(), system: SYSTEM + "\n\nLIBRARY\n" + libText, turns, json: true, thinking: "high", maxTokens: 16000 });
     const out = parseJson(res.text) || {};
+    const fileNotes = hasFiles ? String(out.fileNotes || "").slice(0, 6000) : "";
     const questions = (Array.isArray(out.questions) ? out.questions : []).slice(0, 3).map((q: any) => ({ q: String(q?.q || "").slice(0, 300), options: (Array.isArray(q?.options) ? q.options : []).map((o: any) => String(o).slice(0, 80)).slice(0, 4) })).filter((q: any) => q.q);
     const p = out.plan && typeof out.plan === "object" ? cleanPlan(out.plan, refs) : null;
     return {
@@ -147,6 +162,7 @@ export const chat = action({
       questions: p ? [] : questions,
       plan: p && p.steps.length ? p : null,
       changes: Array.isArray(out.changes) ? out.changes.map((c: any) => String(c).slice(0, 200)).slice(0, 12) : [],
+      fileNotes,
     };
   },
 });

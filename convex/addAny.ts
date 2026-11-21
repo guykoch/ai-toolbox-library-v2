@@ -3,11 +3,11 @@
 import { action } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { checkKey } from "./auth";
-import { callGemini, parseJson, MODELS } from "./llm";
+import { callGemini, parseJson, MODELS, FILE_MIME, docsBlock } from "./llm";
 
 const TABS = ["tools", "prompts", "rules", "agents", "autos"];
 
-const SPEC = `You sort what the user pasted into the tabs of their personal AI library. Screenshots may be attached (usually a social post): read them, including any names and links shown.
+const SPEC = `You sort what the user pasted into the tabs of their personal AI library. Files may be attached — screenshots (usually a social post), PDFs or documents: read them, including any names and links shown, and put what you read into each item's "input".
 The tabs:
 - "tools": AI apps, websites, products, models, GitHub tools, skills, plugins, MCP servers, extensions, courses, tutorials, guides or posts about how to use a tool. The default when unsure.
 - "prompts": prompt libraries — a collection, site or repo full of ready-to-copy prompts (or a post that IS a ready prompt to keep).
@@ -20,16 +20,17 @@ Reply with JSON only:
 {"items": [{"name": "short name", "input": "everything needed to add this one item: its link(s), its name and the relevant pasted text, plus anything read from the screenshots (names, links)", "tabs": ["tools"], "why": "a few words on why these tabs"}]}`;
 
 export const classify = action({
-  args: { key: v.string(), text: v.string(), images: v.optional(v.array(v.object({ mime: v.string(), data: v.string() }))) },
-  handler: async (ctx, { key, text, images }): Promise<{ items: { name: string; input: string; tabs: string[]; why: string }[] }> => {
+  args: { key: v.string(), text: v.string(), images: v.optional(v.array(v.object({ mime: v.string(), data: v.string() }))), docs: v.optional(v.array(v.object({ name: v.string(), text: v.string() }))) },
+  handler: async (ctx, { key, text, images, docs }): Promise<{ items: { name: string; input: string; tabs: string[]; why: string }[] }> => {
     checkKey(key);
     const t = text.trim();
-    const pics = (images || []).filter((im) => /^image\/(png|jpeg|webp|gif)$/.test(im.mime)).slice(0, 20);
-    if (!t && !pics.length) throw new ConvexError("Paste a link, a name, some text or a screenshot first.");
+    const pics = (images || []).filter((im) => FILE_MIME.test(im.mime)).slice(0, 20);
+    const docText = docsBlock(docs, 30000, 100000);
+    if (!t && !pics.length && !docText) throw new ConvexError("Paste a link, a name, some text or a screenshot first.");
     const res = await callGemini({
       model: MODELS.addGemini(),
       system: SPEC,
-      turns: [{ role: "user", text: `WHAT THE USER PASTED:\n"""\n${t.slice(0, 12000) || "(only screenshots)"}\n"""\nReturn only the JSON.`, images: pics }],
+      turns: [{ role: "user", text: `WHAT THE USER PASTED:\n"""\n${t.slice(0, 12000) || "(only files)"}\n"""\n${docText}Return only the JSON.`, images: pics }],
       json: true,
       thinking: "low",
       maxTokens: 4096,

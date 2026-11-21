@@ -674,6 +674,18 @@
       @media (pointer: coarse) { .pl-m[data-mi] { -webkit-user-select: none; user-select: none; } }
       .pl-m.picked { filter: brightness(.92); }
       .pl-copymenu { position: absolute; z-index: 3; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 10px; padding: 7px 12px; font: inherit; font-size: 13.5px; font-weight: 650; box-shadow: 0 8px 24px rgba(0,0,0,.2); cursor: pointer; }
+      .shot.doc { display: inline-flex; align-items: center; gap: 6px; width: auto; max-width: 220px; height: 40px; padding: 0 26px 0 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); font-size: 12.5px; color: var(--ink-2); }
+      .shot.doc .di { font-size: 18px; }
+      .shot.doc .dn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .pl-files { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px 0; border-top: 1px solid var(--line); }
+      .pl-files[hidden] { display: none; }
+      .pl-files .shot { width: 52px; height: 52px; }
+      .pl-files .shot.doc { width: auto; height: 40px; }
+      .pl-ferr { font-size: 12.5px; color: #b42318; align-self: center; }
+      .pl-attach { flex: none; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); display: inline-flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; }
+      .pl-attach:hover { border-color: var(--accent); }
+      .pl-chat.dragover { outline: 2px dashed var(--accent); outline-offset: -6px; }
+      .pl-mfiles { display: block; font-size: 12.5px; opacity: .85; margin-bottom: 2px; }
       .pl-status { font-size: 12.5px; color: var(--muted); padding: 0 14px 6px; min-height: 0; }
       .pl-view { overflow-y: auto; padding: 18px 22px 40px; min-height: 0; }
       .pl-noplan { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--muted); gap: 8px; font-size: 14.5px; }
@@ -818,7 +830,8 @@
             <div class="pl-defs" id="pl-defs" hidden></div>
             <div class="pl-msgs" id="pl-msgs" aria-live="polite"></div>
             <div class="pl-status" id="pl-status"></div>
-            <div class="pl-comp"><textarea id="pl-text" dir="auto" rows="1" placeholder="Ask a question or describe a goal"></textarea><button class="primary-btn" id="pl-send" type="button">Send</button></div>
+            <div class="pl-files" id="pl-files"></div>
+            <div class="pl-comp"><label class="pl-attach" title="Add images, screenshots or documents (PDF, Word, PowerPoint, Excel, text)" aria-label="Add files">&#128206;<input type="file" id="pl-file-input" multiple hidden /></label><textarea id="pl-text" dir="auto" rows="1" placeholder="Ask or describe a goal"></textarea><button class="primary-btn" id="pl-send" type="button">Send</button></div>
           </div>
           <div class="pl-view" id="pl-view"></div>
         </div>
@@ -881,11 +894,11 @@
       </header>
       <section class="addbox" id="addbox-all" aria-labelledby="add-h">
         <h2 id="add-h">Add to the library <span class="sub-inline">&mdash; sorted into the right tab</span></h2>
-        <textarea id="add-text" dir="auto" rows="1" placeholder="Paste a link, name or screenshot"></textarea>
+        <textarea id="add-text" dir="auto" rows="1" placeholder="Paste a link, name or file"></textarea>
         <div class="shots" id="shots"></div>
         <div class="row">
           <button class="primary-btn" id="add-btn" type="button">Add</button>
-          <label class="mini-btn" style="display:inline-flex;align-items:center;cursor:pointer">&#128247; Screenshot<input type="file" id="shot-input" accept="image/*" multiple hidden /></label>
+          <label class="mini-btn" style="display:inline-flex;align-items:center;cursor:pointer">&#128206; Add File<input type="file" id="shot-input" multiple hidden /></label>
           <span class="add-status" id="add-status" role="status" aria-live="polite"></span>
         </div>
         <div class="add-result" id="add-result" hidden role="status" aria-live="polite">
@@ -2110,11 +2123,106 @@
       const addBtn = document.getElementById('add-btn');
       const addText = document.getElementById('add-text');
       const addStatus = document.getElementById('add-status');
-      // ---- screenshots: paste, drop or pick; shrunk in the browser before sending ----
+      // ---- files: images, PDFs, Word / PowerPoint / Excel, text — read in the browser ----
+      // Images are shrunk; PDFs go to the AI as they are; Office and text files are turned into plain text here.
+      const FILE_ACCEPT = 'image/*,.pdf,.docx,.pptx,.xlsx,.txt,.md,.markdown,.csv,.tsv,.json,.html,.htm,.xml,.rtf,.yaml,.yml,.log';
+      const MAX_PDF_BYTES = 9 * 1024 * 1024;
+      function xmlText(s) {
+        return s.replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+          .replace(/&#(\d+);/g, (m, n) => String.fromCodePoint(Number(n))).replace(/&#x([0-9a-f]+);/gi, (m, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&amp;/g, '&');
+      }
+      // Minimal ZIP reader (Office files are ZIPs of XML).
+      async function unzipEntries(buf, want) {
+        const dv = new DataView(buf), out = {};
+        let eocd = -1;
+        for (let i = buf.byteLength - 22; i >= Math.max(0, buf.byteLength - 70000); i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+        if (eocd < 0) throw new Error('This file looks damaged.');
+        let p = dv.getUint32(eocd + 16, true);
+        const n = dv.getUint16(eocd + 10, true), dec = new TextDecoder();
+        for (let k = 0; k < n; k++) {
+          if (dv.getUint32(p, true) !== 0x02014b50) break;
+          const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true), nlen = dv.getUint16(p + 28, true), elen = dv.getUint16(p + 30, true), clen = dv.getUint16(p + 32, true), off = dv.getUint32(p + 42, true);
+          const name = dec.decode(new Uint8Array(buf, p + 46, nlen));
+          p += 46 + nlen + elen + clen;
+          if (!want.test(name)) continue;
+          const start = off + 30 + dv.getUint16(off + 26, true) + dv.getUint16(off + 28, true);
+          const raw = new Uint8Array(buf, start, csize);
+          let bytes;
+          if (method === 0) bytes = raw;
+          else if (method === 8) bytes = new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+          else continue;
+          out[name] = dec.decode(bytes);
+        }
+        return out;
+      }
+      const byNum = (a, b) => Number((a.match(/(\d+)\.xml$/) || [])[1]) - Number((b.match(/(\d+)\.xml$/) || [])[1]);
+      async function officeText(file, ext) {
+        const buf = await file.arrayBuffer();
+        if (ext === 'docx') {
+          const z = await unzipEntries(buf, /^word\/(document|footnotes)\.xml$/);
+          const x = z['word/document.xml'] || '';
+          return xmlText(x.replace(/<w:tab\/>/g, '\t').replace(/<\/w:p>/g, '\n').replace(/<w:br\/>/g, '\n')).replace(/\n{3,}/g, '\n\n').trim();
+        }
+        if (ext === 'pptx') {
+          const z = await unzipEntries(buf, /^ppt\/(slides\/slide|notesSlides\/notesSlide)\d+\.xml$/);
+          const slides = Object.keys(z).filter(k => /slides\/slide/.test(k)).sort(byNum);
+          return slides.map((k, i) => {
+            const notes = z['ppt/notesSlides/notesSlide' + k.match(/(\d+)\.xml$/)[1] + '.xml'];
+            const t = xmlText(z[k].replace(/<\/a:p>/g, '\n')).replace(/\n{2,}/g, '\n').trim();
+            const nt = notes ? xmlText(notes.replace(/<\/a:p>/g, '\n')).replace(/\n{2,}/g, '\n').replace(/^\s*\d+\s*$/gm, '').trim() : '';
+            return 'Slide ' + (i + 1) + ':\n' + t + (nt ? '\n(Notes: ' + nt + ')' : '');
+          }).join('\n\n');
+        }
+        if (ext === 'xlsx') {
+          const z = await unzipEntries(buf, /^xl\/(sharedStrings|workbook)\.xml$|^xl\/worksheets\/sheet\d+\.xml$/);
+          const shared = [...(z['xl/sharedStrings.xml'] || '').matchAll(/<si>([\s\S]*?)<\/si>/g)].map(m => xmlText(m[1]));
+          const names = [...(z['xl/workbook.xml'] || '').matchAll(/<sheet [^>]*name="([^"]*)"/g)].map(m => xmlText(m[1]));
+          return Object.keys(z).filter(k => /worksheets\/sheet/.test(k)).sort(byNum).map((k, si) => {
+            const rows = [...z[k].matchAll(/<row[^>]*>([\s\S]*?)<\/row>/g)].slice(0, 3000).map(r => [...r[1].matchAll(/<c ([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)].map(c => {
+              const attrs = c[1], body = c[2] || '', v = (body.match(/<v>([\s\S]*?)<\/v>/) || [])[1];
+              if (/t="s"/.test(attrs)) return shared[Number(v)] || '';
+              if (/t="inlineStr"/.test(attrs)) return xmlText(body);
+              return v != null ? xmlText(v) : '';
+            }).join('\t'));
+            return 'Sheet: ' + (names[si] || 'Sheet ' + (si + 1)) + '\n' + rows.join('\n');
+          }).join('\n\n');
+        }
+        return '';
+      }
+      // One file → { kind: 'image' | 'pdf' | 'text', name, mime?, data?, url?, text? }
+      async function readAttachment(file, shrinkImage) {
+        const name = file.name || 'file', ext = (name.split('.').pop() || '').toLowerCase();
+        if (/^image\//.test(file.type)) return { kind: 'image', name, ...(await shrinkImage(file)) };
+        if (file.type === 'application/pdf' || ext === 'pdf') {
+          if (file.size > MAX_PDF_BYTES) throw new Error(name + ' is too big (max 9 MB for a PDF).');
+          const data = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(file); });
+          return { kind: 'pdf', name, mime: 'application/pdf', data };
+        }
+        if (['docx', 'pptx', 'xlsx'].includes(ext)) {
+          const text = await officeText(file, ext);
+          if (!text.trim()) throw new Error('Couldn’t find any text in ' + name + '.');
+          return { kind: 'text', name, text };
+        }
+        if (['doc', 'ppt', 'xls', 'pages', 'key', 'numbers'].includes(ext)) throw new Error(name + ': save it as PDF, .docx, .pptx or .xlsx first.');
+        if (/^text\//.test(file.type) || /^(txt|md|markdown|csv|tsv|json|html?|xml|rtf|ya?ml|log)$/.test(ext)) return { kind: 'text', name, text: (await file.text()).slice(0, 300000) };
+        throw new Error(name + ': this file type isn’t supported.');
+      }
+      const attIcon = a => a.kind === 'image' ? '' : a.kind === 'pdf' ? '\u{1F4D5}' : /\.(xlsx|csv|tsv)$/i.test(a.name) ? '\u{1F4CA}' : /\.pptx$/i.test(a.name) ? '\u{1F4FD}️' : '\u{1F4C4}';
+      function attChipHTML(a, i, attr) {
+        return a.kind === 'image'
+          ? '<span class="shot"><img src="' + a.url + '" alt="' + esc(a.name) + '"><button type="button" ' + attr + '="' + i + '" aria-label="Remove">&times;</button></span>'
+          : '<span class="shot doc" title="' + esc(a.name) + '"><span class="di">' + attIcon(a) + '</span><span class="dn">' + esc(a.name) + '</span><button type="button" ' + attr + '="' + i + '" aria-label="Remove">&times;</button></span>';
+      }
+      // What to send: images/PDFs as files, the rest as text.
+      function attPayload(list) {
+        return { images: list.filter(a => a.kind !== 'text').map(a => ({ mime: a.mime, data: a.data })), docs: list.filter(a => a.kind === 'text').map(a => ({ name: a.name, text: a.text })) };
+      }
+      const attTooBig = list => list.reduce((n, a) => n + (a.data ? a.data.length : 0) + (a.text ? a.text.length : 0), 0) > 13e6;
+      // ---- files for the Add box: paste, drop or pick ----
       let shots = [];   // [{mime, data, url}]
       const shotsEl = document.getElementById('shots');
       function renderShots() {
-        shotsEl.innerHTML = shots.map((s, i) => '<span class="shot"><img src="' + s.url + '" alt="Screenshot ' + (i + 1) + '"><button type="button" data-rm="' + i + '" aria-label="Remove screenshot">&times;</button></span>').join('');
+        shotsEl.innerHTML = shots.map((s, i) => attChipHTML(s, i, 'data-rm')).join('');
       }
       function shrink(file) {
         return new Promise((resolve, reject) => {
@@ -2134,19 +2242,19 @@
       }
       const MAX_SHOTS = 20;
       async function addShots(files) {
-        let skipped = 0;
+        let skipped = 0; const errs = [];
         for (const f of Array.from(files || [])) {
-          if (!/^image\//.test(f.type)) continue;
           if (shots.length >= MAX_SHOTS) { skipped++; continue; }
-          try { shots.push(await shrink(f)); } catch (e) {}
+          try { shots.push(await readAttachment(f, shrink)); } catch (e) { errs.push(e.message); }
         }
         renderShots();
-        addStatus.className = 'add-status' + (skipped ? ' err' : '');
-        addStatus.textContent = skipped
-          ? 'Up to ' + MAX_SHOTS + ' screenshots per item \u2014 ' + skipped + ' extra ' + (skipped === 1 ? 'one was' : 'ones were') + ' left out.'
-          : (shots.length ? shots.length + ' of ' + MAX_SHOTS + ' screenshots' : '');
+        addStatus.className = 'add-status' + (skipped || errs.length ? ' err' : '');
+        addStatus.textContent = errs.length ? errs.join(' ')
+          : skipped ? 'Up to ' + MAX_SHOTS + ' files per item \u2014 ' + skipped + ' extra ' + (skipped === 1 ? 'one was' : 'ones were') + ' left out.'
+          : (shots.length ? shots.length + ' of ' + MAX_SHOTS + ' files' : '');
       }
-      shotsEl.addEventListener('click', e => { const b = e.target.closest('[data-rm]'); if (b) { shots.splice(Number(b.dataset.rm), 1); renderShots(); addStatus.className = 'add-status'; addStatus.textContent = shots.length ? shots.length + ' of ' + MAX_SHOTS + ' screenshots' : ''; } });
+      shotsEl.addEventListener('click', e => { const b = e.target.closest('[data-rm]'); if (b) { shots.splice(Number(b.dataset.rm), 1); renderShots(); addStatus.className = 'add-status'; addStatus.textContent = shots.length ? shots.length + ' of ' + MAX_SHOTS + ' files' : ''; } });
+      document.getElementById('shot-input').setAttribute('accept', FILE_ACCEPT);
       document.getElementById('shot-input').addEventListener('change', e => { addShots(e.target.files); e.target.value = ''; });
       addText.addEventListener('paste', e => { const files = Array.from(e.clipboardData ? e.clipboardData.files : []); if (files.length) { e.preventDefault(); addShots(files); } });
       addText.addEventListener('dragover', e => { e.preventDefault(); addText.classList.add('dragover'); });
@@ -2193,8 +2301,9 @@
         addResult.hidden = true;
         if (!text && !shots.length) { showResult('fail', 'Nothing to add yet', friendlyError('Paste a link')); return; }
         addBtn.disabled = true; addStatus.className = 'add-status';
-        const pics = shots.map(s => ({ mime: s.mime, data: s.data })), shotsSent = shots.length;
-        const pieces = pics.length ? [text] : pAddItems(text);
+        if (attTooBig(shots)) { showResult('fail', 'Files too big', 'Together the files are over the upload limit \u2014 remove one or use a smaller PDF.'); return; }
+        const att = attPayload(shots), pics = att.images, docs = att.docs, shotsSent = shots.length;
+        const pieces = shots.length ? [text] : pAddItems(text);
         const lines = [], jumps = []; let nAdd = 0, nAgain = 0, nFail = 0, toolsAdded = 0, stage = '';
         const t0 = Date.now();
         const tick = () => { addStatus.textContent = '⏳ ' + stage + ' (' + Math.round((Date.now() - t0) / 1000) + 's)'; };
@@ -2207,7 +2316,7 @@
         for (let i = 0; i < pieces.length; i++) {
           stage = 'Working out what ' + (pieces.length > 1 ? 'item ' + (i + 1) + ' of ' + pieces.length : 'it') + ' is…'; tick();
           let found;
-          try { found = (await call('action', 'addAny:classify', { text: pieces[i], images: pics })).items; }
+          try { found = (await call('action', 'addAny:classify', { text: pieces[i], images: pics, docs })).items; }
           catch (e) { nFail++; line('✕ Couldn’t add', '', pAddLabel(pieces[i] || 'screenshot'), friendlyError(e.message)); continue; }
           for (const it of found) {
             const single = found.length === 1;
@@ -2215,7 +2324,7 @@
               stage = 'Adding ' + (it.name || 'it') + ' to ' + ADD_TAB_LABEL[tab] + '…'; tick();
               try {
                 if (tab === 'tools') {
-                  const res = await call('action', 'ingest:addFromText', { text: single ? (pieces[i] || it.input) : it.input, today: todayISO(), images: single ? pics : [] });
+                  const res = await call('action', 'ingest:addFromText', { text: single ? (pieces[i] || it.input) : it.input, today: todayISO(), images: single ? pics : [], docs: single ? docs : [] });
                   for (const r of (res.results && res.results.length ? res.results : [res])) {
                     const t = r.item || {};
                     if (r.status === 'failed') { nFail++; line('✕ Couldn’t add', tab, t.title || it.name, 'no link found for it'); }
@@ -2239,7 +2348,7 @@
         if (nAdd || nAgain) { addText.value = ''; addText.style.height = ''; shots = []; renderShots(); }
         try { await load(); await loadPrompts(); await loadTabs(true); } catch (e) {}
         const head = [nAdd ? nAdd + (nAdd === 1 ? ' card added' : ' cards added') : '', nAgain ? nAgain + ' already in your library' : '', nFail ? nFail + ' couldn’t be added' : ''].filter(Boolean).join(' · ') || 'Nothing added';
-        const shotNote = shotsSent > 1 ? '<span style="display:block;margin-top:4px">All ' + shotsSent + ' screenshots were read.</span>' : '';
+        const shotNote = shotsSent > 1 ? '<span style="display:block;margin-top:4px">All ' + shotsSent + ' files were read.</span>' : '';
         showResult(nAdd ? 'ok' : nAgain ? 'again' : 'fail', head, lines.join('') + shotNote +
           (toolsAdded ? '<span style="display:block;margin-top:8px">Install prompts for new tools are being written and will be ready in about a minute.</span>' : '') +
           (nFail && !nAdd && !nAgain ? '<span style="display:block;margin-top:6px">Your text is still in the box.</span>' : ''), '');
@@ -3111,7 +3220,7 @@
         'Every week, turn the articles I save into a short summary I can listen to',
         'אני רוצה להכין מצגת למשקיעים על הסטארטאפ שלי'
       ];
-      const pl = { history: [], plan: null, undo: [], busy: false, open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat', pbId: null, dirty: false, editing: new Set(), adding: null, addQ: '' };
+      const pl = { history: [], plan: null, undo: [], busy: false, open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat', pbId: null, dirty: false, editing: new Set(), adding: null, addQ: '', files: [] };
       try { const sv = JSON.parse(localStorage.getItem(PLAN_STORE) || 'null'); if (sv) { pl.history = sv.history || []; pl.plan = sv.plan || null; pl.undo = sv.undo || []; pl.pbId = sv.pbId || null; pl.dirty = !!sv.dirty; } } catch (e) {}
       function plSave() { try { localStorage.setItem(PLAN_STORE, JSON.stringify({ history: pl.history.slice(-60), plan: pl.plan, undo: pl.undo.slice(-15), pbId: pl.pbId, dirty: pl.dirty })); } catch (e) {} }
       const plIcon = t => PL_TYPE_ICON[t] || '\u{1F4E6}';
@@ -3127,13 +3236,13 @@
       // ---------- chat ----------
       function plChatHTML() {
         if (!pl.history.length) {
-          return '<div class="pl-empty"><div class="big">\u{1F9ED}</div><b>What do you want to get done?</b><span>Ask me anything about your tools, or tell me a goal and I&rsquo;ll build a step-by-step plan from the tools, skills, connectors, prompts, rules, agents and automations in your library &mdash; asking a quick question first if I need to.</span>' +
+          return '<div class="pl-empty"><div class="big">\u{1F9ED}</div><b>What do you want to get done?</b><span>Ask me anything about your tools, or tell me a goal and I&rsquo;ll build a step-by-step plan from the tools, skills, connectors, prompts, rules, agents and automations in your library &mdash; asking a quick question first if I need to. Attach images, diagrams or documents with &#128206; for more context.</span>' +
             '<div class="pl-ex">' + PL_EXAMPLES.map(x => '<button type="button" data-plex="' + esc(x) + '" dir="auto">' + esc(x) + '</button>').join('') + '</div></div>';
         }
         const last = pl.history.length - 1;
         return pl.history.map((m, i) => {
           if (m.note) return '<div class="pl-m n" dir="auto">' + esc(m.text) + '</div>';
-          let h = '<div class="pl-m ' + (m.role === 'user' ? 'u' : 'a') + '" data-mi="' + i + '" dir="auto">' + esc(m.text) + (m.changes && m.changes.length ? '<ul>' + m.changes.map(c => '<li>' + esc(c) + '</li>').join('') + '</ul>' : '') + '</div>';
+          let h = '<div class="pl-m ' + (m.role === 'user' ? 'u' : 'a') + '" data-mi="' + i + '" dir="auto">' + (m.files && m.files.length ? '<span class="pl-mfiles">\u{1F4CE} ' + m.files.map(esc).join(', ') + '</span>' : '') + esc(m.text === '(files)' ? '' : m.text) + (m.changes && m.changes.length ? '<ul>' + m.changes.map(c => '<li>' + esc(c) + '</li>').join('') + '</ul>' : '') + '</div>';
           if (m.questions && m.questions.length && i === last) {
             h += '<div class="pl-qs">' + m.questions.map((q, qi) => '<div class="pl-q"><b dir="auto">' + esc(q.q) + '</b><div class="pl-opts">' +
               q.options.map(o => '<button type="button" class="pl-opt" data-plans="' + qi + '" data-v="' + esc(o) + '" aria-pressed="' + (pl.answers[qi] === o) + '" dir="auto">' + esc(o) + '</button>').join('') + '</div></div>').join('') +
@@ -3144,15 +3253,20 @@
         }).join('');
       }
       async function plSend(text) {
-        text = (text || '').trim(); if (!text || pl.busy) return;
-        const prior = pl.history.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', text: m.note ? '[' + m.text + ']' : m.text + (m.questions && m.questions.length ? '\n' + m.questions.map(q => '- ' + q.q + ' (' + q.options.join(' / ') + ')').join('\n') : '') }));
-        pl.history.push({ role: 'user', text }); pl.answers = {}; pl.busy = true; pl.show = 'chat'; plRender();
+        text = (text || '').trim(); if ((!text && !pl.files.length) || pl.busy) return;
+        if (attTooBig(pl.files)) { alert('Together the files are over the upload limit \u2014 remove one or use a smaller PDF.'); return; }
+        const prior = pl.history.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', text: m.note ? '[' + m.text + ']' : m.text + (m.files && m.files.length ? '\n[Attached: ' + m.files.join(', ') + ']' + (m.fileNotes ? '\n[Notes on attached files: ' + m.fileNotes + ']' : '') : '') + (m.questions && m.questions.length ? '\n' + m.questions.map(q => '- ' + q.q + ' (' + q.options.join(' / ') + ')').join('\n') : '') }));
+        const sending = pl.files; pl.files = []; pl.lastSent = sending;
+        const userMsg = { role: 'user', text: text || '(files)', files: sending.map(f => f.name) };
+        pl.history.push(userMsg); pl.answers = {}; pl.busy = true; pl.show = 'chat'; plRender(); plRenderFiles();
         const t0 = Date.now(), st = document.getElementById('pl-status');
         const tick = () => { const s = Math.round((Date.now() - t0) / 1000); if (st) st.textContent = (s < 6 ? 'Reading your library…' : s < 20 ? 'Thinking it through…' : 'Writing the plan…') + ' ' + s + 's'; };
         tick(); clearInterval(pl.timer); pl.timer = setInterval(tick, 1000);
         const my = pl.req = (pl.req || 0) + 1;
         try {
-          const r = await call('action', 'planAi:chat', { history: prior, message: text, plan: pl.plan || undefined, defaults: typeof PB_DEFAULTS !== 'undefined' ? PB_DEFAULTS : [] });
+          const att = attPayload(sending);
+          const r = await call('action', 'planAi:chat', { history: prior, message: text, plan: pl.plan || undefined, defaults: typeof PB_DEFAULTS !== 'undefined' ? PB_DEFAULTS : [], files: att.images, docs: att.docs });
+          if (my === pl.req && r.fileNotes) userMsg.fileNotes = r.fileNotes;
           if (my !== pl.req) return; // stopped
           const msg = { role: 'assistant', text: r.reply, questions: r.questions || [], changes: r.changes || [] };
           if (r.plan) {
@@ -3169,7 +3283,8 @@
         if (!pl.busy) return;
         pl.req = (pl.req || 0) + 1; clearInterval(pl.timer); pl.busy = false;
         const last = pl.history[pl.history.length - 1];
-        if (last && last.role === 'user' && !last.note) pl.history.pop();
+        if (last && last.role === 'user' && !last.note) { pl.history.pop(); if (pl.lastSent && pl.lastSent.length) { pl.files = pl.lastSent.concat(pl.files); plRenderFiles(); } }
+        if (last && last.text === '(files)') last.text = '';
         pl.history.push({ role: 'user', text: 'Stopped \u2014 your message is back in the box', note: true });
         plSave(); plRender();
         const ta = document.getElementById('pl-text'); if (ta && last && !last.note) { ta.value = last.text; ta.dispatchEvent(new Event('input')); ta.focus(); }
@@ -3405,7 +3520,7 @@
         if (t.id === 'pl-send') {
           if (pl.busy) { plStop(); return; }
           const ans = Object.keys(pl.answers).length ? plAnswerText() : '';
-          const v = [ans, plText.value.trim()].filter(Boolean).join('\n'); if (!v) { plText.focus(); return; }
+          const v = [ans, plText.value.trim()].filter(Boolean).join('\n'); if (!v && !pl.files.length) { plText.focus(); return; }
           plText.value = ''; plText.style.height = ''; plSend(v); return;
         }
         const seg = t.closest('[data-plseg]'); if (seg) { pl.show = seg.dataset.plseg; plRender(); return; }
@@ -3447,7 +3562,7 @@
         const op = t.closest('[data-plans]'); if (op) { const qi = op.dataset.plans; pl.answers[qi] = pl.answers[qi] === op.dataset.v ? undefined : op.dataset.v; if (pl.answers[qi] === undefined) delete pl.answers[qi]; plRender(); return; }
         if (t.closest('[data-plsendans]')) { const v = [plAnswerText(), plText.value.trim()].filter(Boolean).join('\n'); if (!v) return; plText.value = ''; plSend(v); return; }
         if (t.closest('[data-pljust]')) { plSend([plAnswerText(), plText.value.trim(), 'Just make the plan now with sensible assumptions.'].filter(Boolean).join('\n')); plText.value = ''; return; }
-        if (t.closest('#pl-new')) { if (pl.plan && pl.dirty && !confirm('Clear everything and start fresh? Your plan has unsaved changes — press Save first if you want to keep it.')) return; if (pl.busy) { pl.req = (pl.req || 0) + 1; clearInterval(pl.timer); pl.busy = false; } Object.assign(pl, { history: [], plan: null, undo: [], open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat', pbId: null, dirty: false, editing: new Set(), adding: null, addQ: '' }); plSave(); plRender(); plText.focus(); return; }
+        if (t.closest('#pl-new')) { if (pl.plan && pl.dirty && !confirm('Clear everything and start fresh? Your plan has unsaved changes — press Save first if you want to keep it.')) return; if (pl.busy) { pl.req = (pl.req || 0) + 1; clearInterval(pl.timer); pl.busy = false; } Object.assign(pl, { history: [], plan: null, undo: [], open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat', pbId: null, dirty: false, editing: new Set(), adding: null, addQ: '', files: [] }); plSave(); plRender(); plRenderFiles(); plText.focus(); return; }
         if (t.id === 'pl-undo') { if (!pl.undo.length) return; pl.plan = pl.undo.pop(); pl.dirty = true; pl.editing = new Set(); pl.adding = null; pl.changed = new Set(); pl.open = null; pl.history.push({ role: 'user', text: 'Undo: went back one change', note: true }); plSave(); plRender(); return; }
         if (t.id === 'pl-copy') { copyText(plAsText(pl.plan)).then(() => flashCopied(t)); return; }
         if (t.closest('#pl-saveas')) {
@@ -3496,6 +3611,29 @@
       });
       document.getElementById('pl-modal').addEventListener('change', e => { const t = e.target; if (t.dataset && t.dataset.plf === 'phase') { const s = pl.plan.steps.find(x => x.id === t.dataset.sid); if (s) { s.phase = t.value; pl.dirty = true; plSave(); plRender(); } } });
       document.addEventListener('click', e => { if (e.target.closest('[data-plopenbtn]')) plOpen(); });
+      function plRenderFiles() {
+        const box = document.getElementById('pl-files'); if (!box) return;
+        box.innerHTML = pl.files.map((f, i) => attChipHTML(f, i, 'data-plrmfile')).join('') + (pl.fileErr ? '<span class="pl-ferr">' + esc(pl.fileErr) + '</span>' : '');
+        box.hidden = !pl.files.length && !pl.fileErr;
+      }
+      async function plAddFiles(list) {
+        pl.fileErr = '';
+        for (const f of Array.from(list || [])) {
+          if (pl.files.length >= 20) { pl.fileErr = 'Up to 20 files per message.'; break; }
+          try { pl.files.push(await readAttachment(f, shrink)); } catch (e) { pl.fileErr = e.message; }
+        }
+        plRenderFiles();
+      }
+      const plFileInput = document.getElementById('pl-file-input');
+      plFileInput.setAttribute('accept', FILE_ACCEPT);
+      plFileInput.addEventListener('change', e => { plAddFiles(e.target.files); e.target.value = ''; });
+      document.getElementById('pl-files').addEventListener('click', e => { const b = e.target.closest('[data-plrmfile]'); if (b) { pl.files.splice(Number(b.dataset.plrmfile), 1); pl.fileErr = ''; plRenderFiles(); } });
+      plText.addEventListener('paste', e => { const fs = Array.from(e.clipboardData ? e.clipboardData.files : []); if (fs.length) { e.preventDefault(); plAddFiles(fs); } });
+      const plChatEl = document.querySelector('.pl-chat');
+      plChatEl.addEventListener('dragover', e => { e.preventDefault(); plChatEl.classList.add('dragover'); });
+      plChatEl.addEventListener('dragleave', e => { if (!plChatEl.contains(e.relatedTarget)) plChatEl.classList.remove('dragover'); });
+      plChatEl.addEventListener('drop', e => { plChatEl.classList.remove('dragover'); if (e.dataTransfer && e.dataTransfer.files.length) { e.preventDefault(); plAddFiles(e.dataTransfer.files); } });
+      plRenderFiles();
       function plAnswerText() {
         const last = pl.history[pl.history.length - 1]; if (!last || !last.questions) return '';
         return last.questions.map((q, i) => pl.answers[i] ? q.q + ' → ' + pl.answers[i] : '').filter(Boolean).join('\n');
