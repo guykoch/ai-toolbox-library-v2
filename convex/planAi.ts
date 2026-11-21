@@ -30,8 +30,13 @@ const ITEM_TYPE: Record<string, string> = { rules: "Rule file", agents: "Agent",
 const SYSTEM = `You are a senior AI-workflow planner inside the user's personal "AI Toolbox" app. The user writes a free-text request (English or Hebrew, maybe with typos). You turn it into a clear, explained, step-by-step plan that uses the BEST items from THEIR library.
 
 HOW TO WORK
+0. FIRST decide what the user is doing in THIS message — be a dynamic partner, not a plan machine:
+   a) ASKING or CONSULTING (a question, "what do you think", "which is better", "why did you pick X", "how does Y work", "is this realistic", brainstorming, thinking out loud): ANSWER it directly in "reply" — conversational, specific to their situation, the current plan and their library (name the relevant items). Don't make or change a plan ("plan": null). You may end with one short offer like "Want me to turn this into a plan?" or "Want me to swap that into step 3?" when it would help.
+   b) ASKING FOR A PLAN or a clear goal to achieve ("help me do X", "I need to…", "plan…", "make it"): follow steps 1-3 below.
+   c) ASKING TO CHANGE the existing plan: change it (step 3).
+   d) Unclear which: answer briefly and ask what they'd like.
 1. Understand the full context: the whole chat so far, the current plan (if any), earlier answers, and the pinned defaults.
-2. If this is a new request and details that would really change the plan are missing (e.g. the audience, the deadline, what they already have, budget, skill level, which platform), ask 1-3 short questions INSTEAD of a plan. Give each question 2-4 short quick-reply options. Don't ask about things you can reasonably assume; never ask twice in a row about the same thing; if the user says "just do it" or similar, make the plan with sensible assumptions and list them in "assumptions".
+2. If this is a new plan request and details that would really change the plan are missing (e.g. the audience, the deadline, what they already have, budget, skill level, which platform), ask 1-3 short questions INSTEAD of a plan. Give each question 2-4 short quick-reply options. Don't ask about things you can reasonably assume; never ask twice in a row about the same thing; if the user says "just do it" or similar, make the plan with sensible assumptions and list them in "assumptions".
 3. When changing an existing plan, keep everything the user didn't ask to change. Resolve vague references ("step 2", "that tool", "make it cheaper") from context. If a change request is truly ambiguous, ask one short question and return "plan": null.
 
 PICKING ITEMS
@@ -61,9 +66,9 @@ THE PLAN (JSON)
 Steps: 3-9, in order. Keep text short and friendly; no jargon unless the user uses it. Write in the user's language.
 
 REPLY (JSON only)
-{"reply": "1-3 short sentences to the user (what you did, or why you ask)",
+{"reply": "for a plan or change: 1-3 short sentences (what you did, or why you ask). For a question or consulting: your full answer (plain text, short paragraphs or '- ' bullets, usually under 150 words)",
  "questions": [{"q": "...", "options": ["...", "..."]}] (empty when you give a plan),
- "plan": the FULL plan, or null when you only ask questions,
+ "plan": the FULL plan when you made or changed one, or null when you answer, consult or ask questions,
  "changes": ["each change in a few words, when you changed an existing plan"]}`;
 
 export const chat = action({
@@ -138,7 +143,7 @@ export const chat = action({
     const questions = (Array.isArray(out.questions) ? out.questions : []).slice(0, 3).map((q: any) => ({ q: String(q?.q || "").slice(0, 300), options: (Array.isArray(q?.options) ? q.options : []).map((o: any) => String(o).slice(0, 80)).slice(0, 4) })).filter((q: any) => q.q);
     const p = out.plan && typeof out.plan === "object" ? cleanPlan(out.plan, refs) : null;
     return {
-      reply: String(out.reply || (questions.length ? "A couple of quick questions first:" : p ? "Here's your plan." : "Sorry — I couldn't work that out. Try saying it another way.")).slice(0, 1200),
+      reply: String(out.reply || (questions.length ? "A couple of quick questions first:" : p ? "Here's your plan." : "Sorry — I couldn't work that out. Try saying it another way.")).slice(0, 4000),
       questions: p ? [] : questions,
       plan: p && p.steps.length ? p : null,
       changes: Array.isArray(out.changes) ? out.changes.map((c: any) => String(c).slice(0, 200)).slice(0, 12) : [],

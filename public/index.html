@@ -818,7 +818,7 @@
             <div class="pl-defs" id="pl-defs" hidden></div>
             <div class="pl-msgs" id="pl-msgs" aria-live="polite"></div>
             <div class="pl-status" id="pl-status"></div>
-            <div class="pl-comp"><textarea id="pl-text" dir="auto" rows="1" placeholder="What do you want to get done?"></textarea><button class="primary-btn" id="pl-send" type="button">Send</button></div>
+            <div class="pl-comp"><textarea id="pl-text" dir="auto" rows="1" placeholder="Ask a question or describe a goal"></textarea><button class="primary-btn" id="pl-send" type="button">Send</button></div>
           </div>
           <div class="pl-view" id="pl-view"></div>
         </div>
@@ -3127,7 +3127,7 @@
       // ---------- chat ----------
       function plChatHTML() {
         if (!pl.history.length) {
-          return '<div class="pl-empty"><div class="big">\u{1F9ED}</div><b>What do you want to get done?</b><span>Write it in your own words. I&rsquo;ll ask a quick question if I need to, then build a step-by-step plan from the tools, skills, connectors, prompts, rules, agents and automations in your library.</span>' +
+          return '<div class="pl-empty"><div class="big">\u{1F9ED}</div><b>What do you want to get done?</b><span>Ask me anything about your tools, or tell me a goal and I&rsquo;ll build a step-by-step plan from the tools, skills, connectors, prompts, rules, agents and automations in your library &mdash; asking a quick question first if I need to.</span>' +
             '<div class="pl-ex">' + PL_EXAMPLES.map(x => '<button type="button" data-plex="' + esc(x) + '" dir="auto">' + esc(x) + '</button>').join('') + '</div></div>';
         }
         const last = pl.history.length - 1;
@@ -3447,7 +3447,7 @@
         const op = t.closest('[data-plans]'); if (op) { const qi = op.dataset.plans; pl.answers[qi] = pl.answers[qi] === op.dataset.v ? undefined : op.dataset.v; if (pl.answers[qi] === undefined) delete pl.answers[qi]; plRender(); return; }
         if (t.closest('[data-plsendans]')) { const v = [plAnswerText(), plText.value.trim()].filter(Boolean).join('\n'); if (!v) return; plText.value = ''; plSend(v); return; }
         if (t.closest('[data-pljust]')) { plSend([plAnswerText(), plText.value.trim(), 'Just make the plan now with sensible assumptions.'].filter(Boolean).join('\n')); plText.value = ''; return; }
-        if (t.closest('#pl-new')) { if (pl.plan && pl.dirty && !confirm('Clear everything and start fresh? Your plan has unsaved changes — press Save first if you want to keep it.')) return; Object.assign(pl, { history: [], plan: null, undo: [], open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat', pbId: null, dirty: false, editing: new Set(), adding: null, addQ: '' }); plSave(); plRender(); plText.focus(); return; }
+        if (t.closest('#pl-new')) { if (pl.plan && pl.dirty && !confirm('Clear everything and start fresh? Your plan has unsaved changes — press Save first if you want to keep it.')) return; if (pl.busy) { pl.req = (pl.req || 0) + 1; clearInterval(pl.timer); pl.busy = false; } Object.assign(pl, { history: [], plan: null, undo: [], open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat', pbId: null, dirty: false, editing: new Set(), adding: null, addQ: '' }); plSave(); plRender(); plText.focus(); return; }
         if (t.id === 'pl-undo') { if (!pl.undo.length) return; pl.plan = pl.undo.pop(); pl.dirty = true; pl.editing = new Set(); pl.adding = null; pl.changed = new Set(); pl.open = null; pl.history.push({ role: 'user', text: 'Undo: went back one change', note: true }); plSave(); plRender(); return; }
         if (t.id === 'pl-copy') { copyText(plAsText(pl.plan)).then(() => flashCopied(t)); return; }
         if (t.closest('#pl-saveas')) {
