@@ -1,7 +1,8 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-20 21:00 UTC.
+Updated automatically by the app: 2026-11-21 00:02 UTC.
 Tools: 260 active, 0 archived. Prompt libraries: 45 (14 open source, 9,141 prompts copied into Find a prompt).
+Rules: 10. Agents: 11. Automations: 7. Playbooks: 17.
 
 ## Tools (active)
 
@@ -321,3 +322,68 @@ None.
 | p36 | Lyra Prompt (AI Prompt Generator & Directory) | Thinking patterns | Free | no | 1 | Turning a vague request into a sharp prompt with Lyra's 4-step method, or browsing ready prompts. | https://lyraprompt.com/ |
 | p42 | Claude anti-sycophancy prompt | Thinking patterns | Community | no | copy failed | Making Claude a real sparring partner: a settings prompt that tells it to push back instead of flatter. | https://facebook.com/100002717045940/posts/pfbid0YbYQht5K5Darmt7KtZASH29yAxQwa1yqo3TC8UdtUQccmLmM4E6eqgijxWmvgbjHl/ |
 | p43 | Claude anti-glazing prompt | Thinking patterns | Community | no | copy failed | Stopping Claude from flattering you: it stress-tests ideas and leads with weaknesses. | https://facebook.com/reel/955735520376190/ |
+
+## Rules
+
+| id | Name | Section | Source | Files copied | Best for | Link |
+|---|---|---|---|---|---|---|
+| r1 | AGENTS.md (the shared standard) | standards | Open source | — | Writing your project rules once so Codex, Cursor, Copilot, Jules, Amp and others all follow them. | https://agents.md |
+| r2 | CLAUDE.md (Claude Code memory) | coding | Official | — | Stop repeating yourself to Claude Code: put build commands, style rules and project facts in one file. | https://code.claude.com/docs/en/memory |
+| r3 | Cursor Rules | coding | Official | — | Teaching Cursor your stack and style, e.g. one rule for React components and another for API routes. | https://cursor.com/docs/context/rules |
+| r4 | GitHub Copilot custom instructions | coding | Official | — | Making Copilot follow your team's conventions in VS Code, on github.com and in code review. | https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions |
+| r5 | Windsurf rules & memories | coding | Official | — | Setting Windsurf's coding style per project; each rule file can be up to 12,000 characters. | https://docs.windsurf.com/windsurf/cascade/memories |
+| r6 | Cline Rules | coding | Official | — | Giving Cline project rules, and reusing rules you already wrote for Cursor or Windsurf. | https://docs.cline.bot/features/cline-rules |
+| r7 | GEMINI.md (Gemini CLI context) | coding | Open source | — | Giving Gemini CLI your project's instructions; it can also be set to read AGENTS.md instead. | https://geminicli.com/docs/cli/gemini-md/ |
+| r8 | Awesome Cursor Rules | collections | Open source | 257 | Starting a project's rules from a proven file for your exact stack instead of a blank page. | https://github.com/PatrickJS/awesome-cursorrules |
+| r9 | cursor.directory | collections | Community | — | Quickly finding a rule set for a stack (e.g. Next.js + Supabase) and copying it. | https://cursor.directory |
+| r10 | DESIGN.md brand rules (awesome-design-md) | design | Open source | — | Making an AI-built site look like a known brand: drop one DESIGN.md in your project and point the agent at it. | https://github.com/VoltAgent/awesome-design-md |
+
+## Agents
+
+| id | Name | Section | Source | Files copied | Best for | Link |
+|---|---|---|---|---|---|---|
+| a1 | Claude Code subagents (how they work) | subagents | Official | — | Splitting work: a reviewer, a test writer and a researcher that don't clutter the main chat. | https://code.claude.com/docs/en/sub-agents |
+| a2 | Awesome Claude Code Subagents (VoltAgent) | subagents | Open source | 170 | Grabbing a specialist (API designer, SQL expert, UX researcher) and dropping it into .claude/agents/. | https://github.com/VoltAgent/awesome-claude-code-subagents |
+| a3 | wshobson/agents | subagents | Open source | 199 | Whole toolkits per area; install a plugin, or copy single agents from Browse. | https://github.com/wshobson/agents |
+| a4 | Claude Code sub-agents (lst97) | subagents | Open source | 37 | A ready dev team (frontend, backend, data, product manager) coordinated by one organizer agent. | https://github.com/lst97/claude-code-sub-agents |
+| a5 | claude-agents (iannuttall) | subagents | Open source | 7 | A handful of useful agents to start with, without wading through hundreds. | https://github.com/iannuttall/claude-agents |
+| a6 | Claude Code Templates (davila7) | subagents | Open source | — | Browsing components on a website and installing them with npx instead of copying files by hand. | https://github.com/davila7/claude-code-templates |
+| a7 | Gemini Gems (premade and your own) | assistants | Official | — | A repeat task you keep explaining to Gemini: save it once as a Gem; copy a premade Gem to start fast. | https://support.google.com/gemini/answer/15236321 |
+| a8 | GPT Store (custom GPTs) | assistants | Official | — | Finding a ready assistant for a niche job (paper search, diagrams, tutoring) before building your own. | https://chatgpt.com/gpts |
+| a9 | Claude Projects | assistants | Official | — | A standing assistant for one job (a course, a client, a product) with its documents always at hand. | https://support.claude.com/en/articles/9519177 |
+| a10 | Paperclip (agent company orchestration) | teams | Open source | — | Experimenting with many agents working together on a long project. | https://github.com/paperclipai/paperclip |
+| a11 | Claude Managed Agents | teams | Official | — | Putting an agent into production for a product or an internal workflow. | https://platform.claude.com/docs/en/managed-agents/overview |
+
+## Automations
+
+| id | Name | Section | Source | Files copied | Best for | Link |
+|---|---|---|---|---|---|---|
+| w1 | n8n workflow templates | templates | Official | — | Finding a working n8n flow (AI agents, email, CRM, Sheets) and importing it in one click. | https://n8n.io/workflows/ |
+| w2 | Zapier templates | templates | Official | — | No-code automations between everyday apps (Gmail, Slack, Sheets, HubSpot) in a few minutes. | https://zapier.com/templates |
+| w3 | Make templates | templates | Official | — | Visual, multi-step automations with branches and filters, built by dragging modules. | https://www.make.com/en/templates |
+| w4 | Awesome n8n Templates | collections | Open source | 358 | Ready AI workflows (email triage, chatbots, RAG) you can download and import into n8n. | https://github.com/enescingoz/awesome-n8n-templates |
+| w5 | n8n-workflows (Zie619) | collections | Open source | copying… | Seeing how other people automated a specific app before building your own. | https://github.com/Zie619/n8n-workflows |
+| w6 | Daily briefing: Claude Code + NotebookLM | ai | Community | — | A personal morning briefing on your topics without opening ten sites. | https://facebook.com/685119124/posts/pfbid02j3L4Dd3uU3YMC5GZbfnMTqSbGVpUqdZH5D6pCuBiexZPHbdjDbE7Vrz3bE9RvCqPl/ |
+| w7 | Gemini Spark (agent that runs tasks) | ai | Official | — | Handing off an errand (research, booking, collecting info) instead of building a workflow. | https://gemini.google/overview/agent/spark/ |
+
+## Playbooks
+
+| id | Name | Type | Topics | Steps (items used) |
+|---|---|---|---|---|
+| b13 | Set up Claude Code for a project | automate | Claude Code, Coding | 1. Learn the basics (t:98, t:131); 2. Write CLAUDE.md (c:r2, c:r1); 3. Add subagents (c:a1, c:a2); 4. Add skills and hooks (t:23, t:96) |
+| b14 | Automate a weekly chore with n8n | automate | Automation, n8n | 1. Learn n8n basics (t:202); 2. Install or sign up (t:249); 3. Start from a template (c:w1, c:w4, c:w5); 4. Adapt and schedule |
+| b6 | Ship a small app | build | Vibe coding | 1. Write a short spec (l:p25); 2. Set the rules (c:r2, c:r3, c:r8); 3. Build it (t:164, l:p40, t:7); 4. Make it look designed (t:8, t:198, t:155); 5. Pick a database (t:108) |
+| b9 | Landing page that doesn't look AI-made | build | Web design | 1. Choose a look (c:r10, l:p17); 2. Install design skills (t:144, t:198, t:155, t:197); 3. Build and polish (t:223, t:199) |
+| b3 | Prepare for a PM interview | career | Product management, Interviews | 1. Research the company (t:3, t:5); 2. Mock interview (l:p25, l:p3); 3. Record and review (t:247, l:p26); 4. Explore the role (t:10) |
+| b12 | Job application pack | career | Job hunt | 1. Set up the job-search system (t:141); 2. Tailor the CV; 3. Write in your voice (l:p27, t:59, t:239); 4. Grade it (l:p26) |
+| b1 | Write a PRD | create | Product management | 1. Let the AI interview you (l:p25); 2. Research the market (t:3); 3. Draft the PRD (c:a9, t:88); 4. Stress-test it (l:p23, l:p42); 5. Polish the writing (l:p27, t:59) |
+| b2 | Build a pitch deck | create | Startups, Slides | 1. Check the idea first (t:102, t:64); 2. Write the story; 3. Pick a look (l:p13, l:p34); 4. Generate the slides (t:90, t:92, t:99); 5. Prepare for questions (l:p23, l:p43) |
+| b10 | Meeting notes to action items | create | Meetings, Productivity | 1. Prepare (t:5); 2. Record locally (t:116, t:103); 3. Extract decisions and tasks (l:p24) |
+| b15 | Marketing post in your own voice | create | Marketing, LinkedIn | 1. Find the angle (l:p8, l:p9); 2. Set your voice (l:p27, t:159); 3. De-AI the draft (t:59); 4. Get honest feedback (l:p43, l:p26) |
+| b5 | Turn a lecture or video into study notes | learn | Studying, NotebookLM | 1. Get the transcript in (t:29, t:221); 2. Make the notes (l:p39, l:p24); 3. Quiz yourself (t:211) |
+| b11 | Learn a new technical skill | learn | Self-study, Coding | 1. Get the roadmap (t:236); 2. Learn with a tutor (t:211, t:163); 3. Turn a book into a skill (t:125); 4. Build something (t:225, t:51) |
+| b7 | Make a product demo video | media | Video, Marketing | 1. Record the screen (t:245); 2. Or generate an explainer (t:58, t:196, t:222); 3. Edit (t:255, t:138); 4. Add voice and music (t:241, t:233) |
+| b16 | Product and brand images | media | Images, Branding | 1. Find a prompt that matches (l:p19, l:p20, l:p21); 2. Generate (l:p37, t:81, t:137); 3. Advanced control (t:220) |
+| b8 | Analyze a stock | money | Stocks, Investing | 1. Run the analyst prompts (t:63, l:p41); 2. Read the filings (t:3); 3. Argue the other side (l:p23, t:2) |
+| b4 | Research a company | research | Business research | 1. Collect the sources (t:157, t:105, t:258); 2. Deep research (t:3); 3. Pull out what matters (l:p24, l:p4); 4. Challenge the conclusions (l:p23, l:p42) |
+| b17 | Turn a pile of documents into a brief | research | Documents | 1. Convert to clean text (t:172, t:115); 2. Ask questions with sources (t:3); 3. Write the brief (l:p24) |
