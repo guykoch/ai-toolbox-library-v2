@@ -13,8 +13,8 @@ const PATH = "library-snapshot.md";
 const DELAY_MS = () => Number(process.env.SNAPSHOT_DELAY_MS) || 60_000;
 
 const SHELF: Record<string, string> = {"coding-agents":"Coding agents","agent-skills":"Agent skills","courses-guides":"Courses & guides","productivity":"Productivity","knowledge-rag":"Knowledge & RAG","agent-infra":"Agent infrastructure","apis-scraping":"APIs & scraping","app-building":"App building","video":"Video","image":"Image","audio":"Audio","ai-models":"AI models","news-analysis":"News & analysis","translation":"Translation","other":"Other"};
-const SECTION: Record<string, string> = { general: "All-purpose libraries", business: "Business & productivity", coding: "Coding", design: "Slides, web & app design", images: "Images, logos & products", patterns: "Thinking patterns" };
-const SOURCE: Record<string, string> = { official: "Official", open: "Open source", community: "Community", academic: "Academic", free: "Free" };
+const SECTION: Record<string, string> = { mine: "My prompts", general: "All-purpose libraries", business: "Business & productivity", coding: "Coding", design: "Slides, web & app design", images: "Images, logos & products", patterns: "Thinking patterns" };
+const SOURCE: Record<string, string> = { mine: "Saved by you", official: "Official", open: "Open source", community: "Community", academic: "Academic", free: "Free" };
 
 async function meta(ctx: any) {
   return await ctx.db.query("meta").withIndex("by_key", (q: any) => q.eq("key", "snapshot")).first();

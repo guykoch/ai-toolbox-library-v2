@@ -1602,6 +1602,7 @@
 
       // ---------- Prompts tab data (from "Master AI Prompt Library Directory", added 19 Nov 2026) ----------
       const P_SECTIONS = [
+        { key: 'mine',     label: 'My prompts',                 color: '#15803d', sub: 'Single prompts you saved yourself from posts, screenshots or pasted text.' },
         { key: 'general',  label: 'All-purpose libraries',      color: '#2f6db3', sub: 'Big collections that cover business, writing and coding in one place.' },
         { key: 'business', label: 'Business & productivity',    color: '#3d8b4f', sub: 'Ready prompts for meetings, sales, marketing and project work.' },
         { key: 'coding',   label: 'Coding',                     color: '#7c5cbf', sub: 'Rules and prompts for coding assistants like Cursor and Claude Code.' },
@@ -1610,6 +1611,7 @@
         { key: 'patterns', label: 'Thinking patterns',          color: '#b45309', sub: 'Prompts by job: stress-test an idea, pull out key points, interview you, grade work.' }
       ];
       const P_KINDS = {
+        mine:      { label: 'Saved by you', icon: '\u2B50' },
         official:  { label: 'Official',     icon: '🏢' },
         open:      { label: 'Open source',  icon: '🔓' },
         community: { label: 'Community',    icon: '👥' },
@@ -1639,7 +1641,7 @@
         const k = P_KINDS[p.kind];
         let badges = '<span class="badge cat"><span class="dot" style="background:' + s.color + '"></span>' + s.label + '</span>' +
           '<span class="badge kind">' + k.icon + ' ' + k.label + '</span>';
-        if (p.imp && p.imp.state === 'done') badges += '<span class="badge" title="Searchable in Find a prompt">&#128269; ' + p.imp.count.toLocaleString() + ' prompts</span>';
+        if (p.imp && p.imp.state === 'done') badges += '<span class="badge" title="Searchable in Find a prompt">&#128269; ' + p.imp.count.toLocaleString() + (p.imp.count === 1 ? ' prompt' : ' prompts') + '</span>';
         if (p.imp && p.imp.state === 'queued') badges += '<span class="badge">&#8987; Waiting to copy</span>';
         if (p.imp && p.imp.state === 'importing') badges += '<span class="badge" title="' + esc(p.imp.note || '') + '">&#8987; ' + esc(p.imp.note || 'Copying prompts\u2026') + '</span>';
         let facts = '<dt>Section</dt><dd>' + s.label + '</dd>' +
@@ -1648,7 +1650,8 @@
           '<dt>Format</dt><dd>' + esc(p.format) + '</dd>';
         if (p.sources) facts += '<dt>Found in</dt><dd>' + esc(p.sources) + '</dd>';
         const imp = p.imp || { state: 'none', count: 0 };
-        const impText = imp.state === 'done' ? 'Yes &mdash; <b>' + imp.count.toLocaleString() + '</b> prompts copied' + (p.copiedFrom === 'website' ? ' from the website (not open source)' : '')
+        const impText = p.id === 'mine' ? 'Yes &mdash; <b>' + imp.count.toLocaleString() + '</b> prompt' + (imp.count === 1 ? '' : 's') + ' you saved'
+          : imp.state === 'done' ? 'Yes &mdash; <b>' + imp.count.toLocaleString() + '</b> prompts copied' + (p.copiedFrom === 'website' ? ' from the website (not open source)' : '')
           : imp.state === 'queued' ? 'Waiting in line to be copied from the website&hellip;'
           : imp.state === 'importing' ? esc(imp.note || 'Copying prompts\u2026') + (Date.now() - Date.parse(imp.at || 0) > 4 * 60 * 1000 && p.repo ? ' <button class="mini-btn" type="button" data-preimport="' + p.id + '">Restart copy</button>' : '')
           : imp.state === 'failed' ? (p.repo ? 'Couldn&rsquo;t copy: ' : 'Couldn&rsquo;t copy from the website: ') + esc(imp.note) + ' <button class="mini-btn" type="button" data-preimport="' + p.id + '">Try again</button>'
@@ -1666,16 +1669,16 @@
         }
         if (p.bestFor) facts += '<dt>Best for</dt><dd>' + esc(p.bestFor) + '</dd>';
         facts += '<dt>How to browse</dt><dd>' + esc(p.how) + '</dd>' +
-          '<dt>Links</dt><dd class="plinks">' + p.links.map(l => '<a href="' + esc(l[1]) + '" target="_blank" rel="noopener">' + esc(l[0]) + ' &#8599;</a>').join('') + '</dd>';
+          (p.links && p.links.length ? '<dt>Links</dt><dd class="plinks">' + p.links.map(l => '<a href="' + esc(l[1]) + '" target="_blank" rel="noopener">' + esc(l[0]) + ' &#8599;</a>').join('') + '</dd>' : '');
         const did = 'pdetail-' + p.id;
         return '<article class="card" id="pcard-' + p.id + '">' +
-          '<div class="meta"><span>' + esc(p.format) + '</span><span class="effort">' + esc(hostOf(p.links[0][1]) || '') + '</span><button type="button" class="trash-btn" data-pdelete="' + p.id + '" title="Delete" aria-label="Delete ' + esc(p.title) + '">' + TRASH_SVG + '</button></div>' +
+          '<div class="meta"><span>' + esc(p.format) + '</span><span class="effort">' + esc(p.links && p.links[0] ? hostOf(p.links[0][1]) || '' : '') + '</span><button type="button" class="trash-btn" data-pdelete="' + p.id + '" title="Delete" aria-label="Delete ' + esc(p.title) + '">' + TRASH_SVG + '</button></div>' +
           '<h3>' + esc(p.title) + '</h3>' +
           '<p class="summary' + (open ? ' full' : '') + '">' + esc(p.summary) + '</p>' +
           '<div class="badges">' + badges + '</div>' +
           '<div class="btn-row"><button type="button" class="expand-btn" data-pexpand="' + p.id + '" aria-expanded="' + open + '" aria-controls="' + did + '">' + (open ? 'Show less' : 'Read more') + '<svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>' +
           (p.imp && p.imp.state === 'done' && p.imp.count ? '<button type="button" class="expand-btn" data-pbrowse="' + p.id + '">Browse prompts</button>' : '') +
-          '<a class="expand-btn" style="text-decoration:none" href="' + esc(p.links[0][1]) + '" target="_blank" rel="noopener">Open <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></a></div>' +
+          (p.links && p.links[0] ? '<a class="expand-btn" style="text-decoration:none" href="' + esc(p.links[0][1]) + '" target="_blank" rel="noopener">Open <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></a>' : '') + '</div>' +
           '<div class="detail" id="' + did + '"' + (open ? '' : ' hidden') + '><div><p class="d-label">Before you click</p><dl class="facts">' + facts + '</dl></div>' +
           '<div class="foot"><span class="manage"><button type="button" class="manage-btn danger" data-pdelete="' + p.id + '">Delete</button></span></div></div>' +
           '</article>';
@@ -1813,7 +1816,7 @@
             res.matches.map((m, i) => '<div class="pf-best">' +
               '<div style="display:flex;gap:10px;align-items:baseline;justify-content:space-between"><h3 dir="auto"><span class="pg-n" style="font-family:\'IBM Plex Mono\',monospace;color:var(--muted);margin-right:6px">' + (i + 1) + '</span>' + esc(m.title) + '</h3>' +
               '<button class="expand-btn" type="button" data-pfshow="' + i + '">Show prompt</button></div>' +
-              '<div class="badges">' + (() => { const L = PROMPT_LIBS.find(x => x.id === m.libId); return L && L.kind !== 'open' && !L.repo ? '<span class="badge kind">\uD83C\uDF10 ' + esc(m.libName) + ' \u00b7 Copied from website, not open source</span>' : '<span class="badge kind">\uD83D\uDD13 ' + esc(m.libName) + ' \u00b7 Open source</span>'; })() + (m.fit === 'partial' ? '<span class="pf-tag partial">\u2248 Partly</span>' : '') + '</div>' +
+              '<div class="badges">' + (() => { const L = PROMPT_LIBS.find(x => x.id === m.libId); return L && L.id === 'mine' ? '<span class="badge kind">\u2B50 My prompts \u00b7 Saved by you</span>' : L && L.kind !== 'open' && !L.repo ? '<span class="badge kind">\uD83C\uDF10 ' + esc(m.libName) + ' \u00b7 Copied from website, not open source</span>' : '<span class="badge kind">\uD83D\uDD13 ' + esc(m.libName) + ' \u00b7 Open source</span>'; })() + (m.fit === 'partial' ? '<span class="pf-tag partial">\u2248 Partly</span>' : '') + '</div>' +
               (m.why ? '<p class="pf-why" dir="auto">' + esc(m.why) + '</p>' : '') +
               '<div id="pf-body-' + i + '" hidden></div></div>').join('');
           html += '<div id="pf-web"></div>';
@@ -1938,7 +1941,7 @@
         const words = q.toLowerCase().split(/\s+/).filter(Boolean);
         const hit = r => !words.length || words.every(w => (r.title + ' ' + r.desc).toLowerCase().includes(w));
         const shown = rows.filter(r => hit(r) && (pbState.mode !== 'topic' || pbState.topic === 'all' || r.topic === pbState.topic));
-        document.getElementById('pb-sub').textContent = rows.length.toLocaleString() + ' prompts' + (pbState.mode === 'topic' ? ', grouped by topic' : ', A to Z') + (words.length || pbState.topic !== 'all' ? ' \u00b7 showing ' + shown.length.toLocaleString() : '') + ' \u00b7 tap a name to preview it';
+        document.getElementById('pb-sub').textContent = rows.length.toLocaleString() + (rows.length === 1 ? ' prompt' : ' prompts') + (pbState.mode === 'topic' ? ', grouped by topic' : ', A to Z') + (words.length || pbState.topic !== 'all' ? ' \u00b7 showing ' + shown.length.toLocaleString() : '') + ' \u00b7 tap a name to preview it';
         // Topic chips (counts follow the text filter).
         if (pbState.mode === 'topic') {
           const base = rows.filter(hit);
@@ -1959,7 +1962,7 @@
         const row = r => {
           const open = pbState.open.has(r.pid);
           return '<div class="pb-row"><button type="button" data-pbrow="' + r.pid + '" aria-expanded="' + open + '"><span class="pb-t" dir="auto">' + esc(r.title) + '</span><span class="pb-chev">' + (open ? '\u25B2' : '\u25BC') + '</span></button>' +
-            (open ? '<div class="pb-more"><p class="pb-d" dir="auto">' + esc(r.desc) + '</p><div id="pb-full-' + r.pid + '"></div><div class="pf-actions"><button class="expand-btn" type="button" data-pbfull="' + r.pid + '">Show full prompt</button><button class="primary-btn" type="button" data-pbcopy="' + r.pid + '">Copy prompt</button><span class="pf-copied" id="pb-copied-' + r.pid + '"></span></div></div>' : '') + '</div>';
+            (open ? '<div class="pb-more"><p class="pb-d" dir="auto">' + esc(r.desc) + '</p><div id="pb-full-' + r.pid + '"></div><div class="pf-actions"><button class="expand-btn" type="button" data-pbfull="' + r.pid + '">Show full prompt</button><button class="primary-btn" type="button" data-pbcopy="' + r.pid + '">Copy prompt</button>' + (pbState.lib && pbState.lib.id === 'mine' ? '<button class="manage-btn danger" type="button" data-pbdel="' + r.pid + '">Delete</button>' : '') + '<span class="pf-copied" id="pb-copied-' + r.pid + '"></span></div></div>' : '') + '</div>';
         };
         document.getElementById('pb-body').innerHTML = shown.length
           ? keys.map(k => '<section class="pb-group"><h3>' + esc(k) + ' <span class="c-n">' + groups.get(k).length.toLocaleString() + '</span></h3>' + groups.get(k).map(row).join('') + '</section>').join('')
@@ -1977,8 +1980,19 @@
           const id = Number(f.dataset.pbfull), box = document.getElementById('pb-full-' + id);
           if (box.innerHTML) { box.innerHTML = ''; f.textContent = 'Show full prompt'; return; }
           box.innerHTML = '<p class="pf-why">Loading\u2026</p>';
-          try { const p = await pbText(id); box.innerHTML = '<pre class="pf-pre" dir="auto">' + esc(p.text) + '</pre><a class="expand-btn" style="text-decoration:none;margin-top:6px" href="' + esc(p.url) + '" target="_blank" rel="noopener">Source \u2197</a>'; f.textContent = 'Hide full prompt'; }
+          try { const p = await pbText(id); box.innerHTML = '<pre class="pf-pre" dir="auto">' + esc(p.text) + '</pre>' + (p.url ? '<a class="expand-btn" style="text-decoration:none;margin-top:6px" href="' + esc(p.url) + '" target="_blank" rel="noopener">Source \u2197</a>' : ''); f.textContent = 'Hide full prompt'; }
           catch (err) { box.innerHTML = '<p class="err">' + esc(err.message) + '</p>'; }
+          return;
+        }
+        const dl = e.target.closest('[data-pbdel]');
+        if (dl) {
+          const id = Number(dl.dataset.pbdel);
+          if (!dl.classList.contains('confirm')) { dl.classList.add('confirm'); dl.textContent = 'Delete for good?'; setTimeout(() => { dl.classList.remove('confirm'); dl.textContent = 'Delete'; }, 4000); return; }
+          dl.disabled = true;
+          try {
+            await call('mutation', 'promptLibs:removeMine', { pid: id });
+            pbState.rows = pbState.rows.filter(r => r.pid !== id); pbState.open.delete(id); pbRender(); loadPrompts();
+          } catch (err) { dl.disabled = false; alert(err.message); }
           return;
         }
         const c = e.target.closest('[data-pbcopy]');
@@ -2365,9 +2379,15 @@
                     else if (r.status === 'again') { nAgain++; line('\u21BA Already saved', tab, t.title, 'first saved ' + esc(t.date || ''), t.id != null ? 't|' + t.id + '|' : ''); }
                     else { nAdd++; toolsAdded++; line('✓ Added to', tab, t.title, esc((CATS[t.cat] || CATS.other).label) + ' shelf', 't|' + t.id + '|'); }
                   }
+                } else if (tab === 'prompts' && it.prompt) {
+                  // One prompt (not a library): saved to "My prompts".
+                  const r = await call('mutation', 'promptLibs:saveMine', { title: it.name || '', desc: it.desc || '', text: it.prompt, source: (it.input || '') + ' ' + (pieces[i] || '') });
+                  if (r.status === 'exists') { nAgain++; line('\u21BA Already saved', tab, r.title, 'in My prompts', 'l|mine|'); }
+                  else { nAdd++; line('\u2713 Added to', tab, r.title, 'saved to My prompts', 'l|mine|'); }
                 } else if (tab === 'prompts') {
                   const r = await call('action', 'promptAdd:add', { text: it.input || pieces[i] });
                   if (r.status === 'exists') { nAgain++; line('↺ Already saved', tab, r.title, '', 'l|' + r.libId + '|'); }
+                  else if (r.why === 'mine') { nAdd++; line('✓ Added to', tab, r.title, 'saved to My prompts', 'l|mine|'); }
                   else { nAdd++; line('✓ Added to', tab, r.title, r.importing ? 'copying its prompts into Find a prompt now' : r.why === 'nolicense' ? 'its repo has no open license, so its prompts weren’t copied' : r.why === 'excluded' ? 'card only (it collects other companies’ system prompts)' : 'a website — the app will try to copy its prompts from the site', 'l|' + r.libId + '|'); }
                 } else {
                   const r = await call('action', 'tabAdd:add', { tab, text: it.input || pieces[i] });

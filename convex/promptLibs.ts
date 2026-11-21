@@ -345,3 +345,75 @@ export const clearPrompts = internalMutation({
     return idx.length + txt.length;
   },
 });
+
+// ---------- "My prompts": single prompts the user saves (from a post, screenshot or pasted text) ----------
+export const MINE = "mine";
+const mineData = () => ({
+  title: "My prompts",
+  summary: "Single prompts you saved yourself — from posts, screenshots or pasted text.",
+  bestFor: "Your own keepers: one-off prompts you found and want to reuse.",
+  sec: "mine",
+  kind: "mine",
+  license: "Your own copy",
+  format: "Saved prompts",
+  how: "Tap Browse prompts to read, copy or delete them. They also show up in Find a prompt and in Plan.",
+  links: [] as [string, string][],
+  added: nowIso().slice(0, 10),
+});
+const squash = (t: string) => t.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+
+export const addMine = internalMutation({
+  args: { title: v.string(), desc: v.string(), text: v.string(), url: v.string() },
+  handler: async (ctx, { title, desc, text, url }): Promise<{ status: "added" | "exists"; title: string; pid: number }> => {
+    await snapshotSoon(ctx);
+    let lib = await ctx.db.query("plibs").withIndex("by_libId", (q) => q.eq("libId", MINE)).first();
+    if (lib && lib.deleting) throw new ConvexError("My prompts is being deleted — try again in a minute.");
+    if (!lib) {
+      await ctx.db.insert("plibs", { libId: MINE, data: mineData(), imp: { state: "done", count: 0, note: "", at: nowIso() } });
+      lib = (await ctx.db.query("plibs").withIndex("by_libId", (q) => q.eq("libId", MINE)).first())!;
+    }
+    const have = await ctx.db.query("plText").withIndex("by_lib", (q) => q.eq("libId", MINE)).collect();
+    const key = squash(text);
+    const dup = have.find((r) => squash(r.text) === key);
+    if (dup) {
+      const ix = await ctx.db.query("plIndex").withIndex("by_pid", (q) => q.eq("pid", dup.pid)).first();
+      return { status: "exists", title: ix?.title || title, pid: dup.pid };
+    }
+    const seqRow = await getMeta(ctx, "plSeq");
+    const pid: number = (seqRow?.value || 0) + 1;
+    await ctx.db.insert("plIndex", { libId: MINE, pid, title: title.slice(0, 300), desc: desc.slice(0, 400) });
+    await ctx.db.insert("plText", { libId: MINE, pid, text, url });
+    await setMeta(ctx, "plSeq", pid);
+    await ctx.db.patch(lib._id, { imp: { state: "done", count: have.length + 1, note: "", at: nowIso() } });
+    return { status: "added", title, pid };
+  },
+});
+
+// Saves one prompt the page already read (the Add box found a single prompt).
+export const saveMine = mutation({
+  args: { key: v.string(), title: v.string(), desc: v.string(), text: v.string(), source: v.string() },
+  handler: async (ctx, { key, title, desc, text, source }): Promise<{ status: "added" | "exists"; title: string; pid: number }> => {
+    checkKey(key);
+    const t = text.trim();
+    if (t.length < 15) throw new ConvexError("I couldn’t read the prompt itself. Paste its text into the box.");
+    const url = ((source.match(/https?:\/\/[^\s<>"')\]]+/) || [""])[0]).replace(/[.,;]+$/, "");
+    return await ctx.runMutation(internal.promptLibs.addMine, { title: title.trim() || t.slice(0, 60), desc: desc.trim(), text: t.slice(0, 40000), url });
+  },
+});
+
+// Deletes one of "My prompts".
+export const removeMine = mutation({
+  args: { key: v.string(), pid: v.number() },
+  handler: async (ctx, { key, pid }) => {
+    checkKey(key);
+    await snapshotSoon(ctx);
+    const ix = await ctx.db.query("plIndex").withIndex("by_pid", (q) => q.eq("pid", pid)).first();
+    if (!ix || ix.libId !== MINE) throw new ConvexError("Only prompts you saved yourself can be deleted here.");
+    await ctx.db.delete(ix._id);
+    const tx = await ctx.db.query("plText").withIndex("by_pid", (q) => q.eq("pid", pid)).first();
+    if (tx) await ctx.db.delete(tx._id);
+    const lib = await ctx.db.query("plibs").withIndex("by_libId", (q) => q.eq("libId", MINE)).first();
+    if (lib) await ctx.db.patch(lib._id, { imp: { state: "done", count: Math.max(0, (lib.imp?.count || 1) - 1), note: "", at: nowIso() } });
+    return { ok: true };
+  },
+});

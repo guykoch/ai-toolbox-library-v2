@@ -28,11 +28,13 @@ const SPEC = `You add one prompt library to the user's list. Reply with JSON onl
  "links": [["short label", "https://..."]] (the main link first; include the GitHub repo if there is one),
  "repo": "https://github.com/owner/repo of the open-source repo that holds the prompts, or empty",
  "openSource": true only if the prompts themselves are published under an open license in that repo}
-If it isn't a prompt library at all, reply {"notALibrary": true, "why": "..."}. Never invent links: use only links you were given or found.`;
+If it is ONE ready-to-copy prompt (e.g. a post sharing a single prompt) rather than a library, reply {"singlePrompt": true, "title": "short name of the prompt", "desc": "one plain-English sentence: what it does", "prompt": "the full prompt text exactly as given, every line"}.
+If it isn't a prompt library or a prompt at all, reply {"notALibrary": true, "why": "..."}. Never invent links: use only links you were given or found.`;
 
 export const add = action({
   args: { key: v.string(), text: v.string() },
   handler: async (ctx, { key, text }): Promise<{ status: "added" | "exists"; libId: string; title: string; importing: boolean; why?: string }> => {
+    // (A single prompt goes to "My prompts" instead of becoming a library card.)
     checkKey(key);
     const input = text.trim();
     if (!input) throw new ConvexError("Paste a link to a prompt library (a GitHub repo or a website) first.");
@@ -55,9 +57,13 @@ export const add = action({
       turns: [{ role: "user", text: `WHAT THE USER PASTED:\n"""\n${input.slice(0, 6000)}\n"""\n\n` + (fetched.length ? `WHAT I FOUND AT THE LINKS:\n${fetched.map((f) => f.notes).join("\n---\n")}\n\n` : "") + "Return only the JSON." }],
       search: true,
       thinking: "medium",
-      maxTokens: 4096,
+      maxTokens: 8192,
     });
     const c = parseJson(res.text) || {};
+    if (c.singlePrompt && typeof c.prompt === "string" && c.prompt.trim().length >= 15) {
+      const r: { status: "added" | "exists"; title: string } = await ctx.runMutation(internal.promptLibs.addMine, { title: String(c.title || "").trim() || c.prompt.trim().slice(0, 60), desc: String(c.desc || "").trim(), text: c.prompt.trim().slice(0, 40000), url: urls[0] || "" });
+      return { status: r.status, libId: "mine", title: r.title, importing: false, why: "mine" };
+    }
     if (c.notALibrary) throw new ConvexError("That doesn't look like a prompt library" + (c.why ? ": " + String(c.why) : ".") + " To save a tool, use the Tools tab.");
     const str = (x: any) => (typeof x === "string" ? x.trim() : "");
     let links: [string, string][] = Array.isArray(c.links) ? c.links.filter((l: any) => Array.isArray(l) && /^https?:\/\//.test(String(l[1]))).map((l: any) => [str(l[0]) || "Link", str(l[1])] as [string, string]).slice(0, 4) : [];
