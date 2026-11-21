@@ -696,6 +696,8 @@
       .dc-body { flex: 1; overflow-y: auto; padding: 14px 18px 30px; min-height: 0; }
       .dc-sub { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
       .dc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+      .dc-h { font-size: 14px; margin: 18px 0 8px; }
+      .dc-h:first-child { margin-top: 4px; }
       .dc-term { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
       .dc-term b { font-size: 15px; }
       .dc-term p { margin: 4px 0 0; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
@@ -3821,7 +3823,7 @@
           ['Tokenization (data)', 'Replacing sensitive data with a meaningless stand-in, so the real value is stored only in one secure place. (Different from AI tokens.)', 'A card number becomes tok_123'],
         ] },
       ];
-      const dict = { tab: DICT[0].key, q: '' };
+      const dict = { tab: 'all', q: '' };
       function dictHTML() {
         const words = dict.q.toLowerCase().split(/\s+/).filter(Boolean);
         const hit = t => words.every(w => (t[0] + ' ' + t[1] + ' ' + t[2]).toLowerCase().includes(w));
@@ -3830,11 +3832,12 @@
           const res = DICT.flatMap(tab => tab.terms.filter(hit).map(t => termHTML(t, tab)));
           return res.length ? '<p class="dc-sub">' + res.length + ' matching term' + (res.length > 1 ? 's' : '') + '</p><div class="dc-grid">' + res.join('') + '</div>' : '<p class="dc-sub">No term matches “' + esc(dict.q) + '”.</p>';
         }
+        if (dict.tab === 'all') return DICT.map(tab => '<h3 class="dc-h">' + tab.icon + ' ' + esc(tab.name) + ' <span class="kc-n">' + tab.terms.length + '</span></h3><div class="dc-grid">' + tab.terms.map(t => termHTML(t)).join('') + '</div>').join('');
         const tab = DICT.find(t => t.key === dict.tab) || DICT[0];
         return '<p class="dc-sub">' + esc(tab.sub) + '</p><div class="dc-grid">' + tab.terms.map(t => termHTML(t)).join('') + '</div>';
       }
       function dictRender() {
-        document.getElementById('dc-tabs').innerHTML = DICT.map(t => '<button type="button" role="tab" data-dctab="' + t.key + '" aria-selected="' + (!dict.q && dict.tab === t.key) + '">' + t.icon + ' ' + esc(t.name) + ' <span class="kc-n">' + t.terms.length + '</span></button>').join('');
+        document.getElementById('dc-tabs').innerHTML = '<button type="button" role="tab" data-dctab="all" aria-selected="' + (!dict.q && dict.tab === 'all') + '">\u{1F4D6} All <span class="kc-n">' + DICT.reduce((n, t) => n + t.terms.length, 0) + '</span></button>' + DICT.map(t => '<button type="button" role="tab" data-dctab="' + t.key + '" aria-selected="' + (!dict.q && dict.tab === t.key) + '">' + t.icon + ' ' + esc(t.name) + ' <span class="kc-n">' + t.terms.length + '</span></button>').join('');
         const body = document.getElementById('dc-body'); body.innerHTML = dictHTML(); body.scrollTop = 0;
       }
       function dictOpen() { document.getElementById('dc-modal').hidden = false; document.body.style.overflow = 'hidden'; dictRender(); }
