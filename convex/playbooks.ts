@@ -4,6 +4,7 @@ import { v, ConvexError } from "convex/values";
 import { checkKey } from "./auth";
 import { snapshotSoon } from "./snapshot";
 import { PLAYBOOK_SEED, PLAYBOOK_SEED_VERSION, PB_TYPES } from "./playbookSeed";
+import { guessKind } from "./kinds";
 
 async function getMeta(ctx: any, key: string) {
   return await ctx.db.query("meta").withIndex("by_key", (q: any) => q.eq("key", key)).first();
@@ -158,4 +159,18 @@ export const setDefaults = mutation({
 export const all = internalQuery({
   args: {},
   handler: async (ctx) => (await ctx.db.query("playbooks").collect()).map((r) => ({ ...r.data, id: r.pbId })),
+});
+
+// A fuller picture of the library for the Plan chat: tools with their type (skill, connector…) and longer descriptions.
+export const libraryForPlan = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const tools = (await ctx.db.query("items").withIndex("by_status", (q: any) => q.eq("status", "active")).collect()).map((r: any) => {
+      const d = r.data || {};
+      return { id: String(d.id), name: String(d.title || ""), kind: guessKind(d), cat: String(d.cat || ""), info: String(d.summary || "").slice(0, 220), url: String(d.url || "") };
+    });
+    const libs = (await ctx.db.query("plibs").collect()).filter((r) => !r.deleting).map((r) => ({ id: r.libId, name: String(r.data?.title || ""), info: String(r.data?.bestFor || r.data?.summary || "").slice(0, 200), copied: r.imp?.state === "done" }));
+    const cards = (await ctx.db.query("tcards").collect()).filter((r) => !r.deleting).map((r) => ({ id: r.cid, tab: r.tab, name: String(r.data?.title || ""), info: String(r.data?.bestFor || r.data?.summary || "").slice(0, 200) }));
+    return { tools, libs, cards };
+  },
 });

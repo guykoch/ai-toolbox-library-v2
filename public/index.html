@@ -456,7 +456,7 @@
       .theme-btn:hover { border-color: var(--accent); color: var(--ink); }
       .theme-btn svg { flex: none; }
       /* On phones the switch sits at the top of the page and scrolls away with it. */
-      @media (max-width: 600px) { .top-actions { position: absolute; } .credit-pop { position: absolute; } .theme-btn { box-shadow: none; } header.hero { padding-top: 58px; } }
+      @media (max-width: 600px) { .top-actions { position: absolute; left: 12px; justify-content: flex-end; gap: 6px; } .top-actions .theme-btn { padding: 6px 10px; font-size: 13px; } .top-actions .theme-btn svg { display: none; } .credit-pop { position: absolute; } .theme-btn { box-shadow: none; } header.hero { padding-top: 58px; } }
       .theme-btn[disabled] { opacity: .6; cursor: progress; }
       .credit-pop { position: fixed; top: 54px; right: 12px; z-index: 85; width: min(320px, calc(100vw - 24px)); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 16px 40px -16px rgba(0,0,0,.45); padding: 14px 16px; font-size: 14px; }
       .credit-pop[hidden] { display: none; }
@@ -623,11 +623,124 @@
       .pbx-msg ul { margin: 4px 0 0; padding-left: 18px; }
       .pbx-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
       .pbx-bar .st { font-size: 13px; color: var(--muted); }
+      /* ---------- Plan pop-up ---------- */
+      .plan-btn { background: var(--accent); color: #fff; border-color: var(--accent); }
+      .plan-btn:hover { filter: brightness(1.08); color: #fff; }
+      .pl-modal { position: fixed; inset: 0; z-index: 1000; background: rgba(15, 18, 16, .45); display: flex; align-items: center; justify-content: center; padding: 18px; }
+      .pl-modal[hidden] { display: none; }
+      .pl-panel { width: min(1240px, 100%); height: min(92vh, 980px); background: var(--bg); border-radius: 18px; box-shadow: 0 20px 60px rgba(0,0,0,.25); display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); }
+      .pl-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--surface); flex-wrap: wrap; }
+      .pl-head h2 { margin: 0; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+      .pl-head .sub { font-size: 13px; color: var(--muted); }
+      .pl-head .grow { flex: 1; }
+      .pl-tbtn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+      .pl-tbtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent-ink); }
+      .pl-tbtn:disabled { opacity: .4; cursor: default; }
+      .pl-tbtn .sm { display: none; }
+      .pl-x { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+      .pl-x:hover { border-color: #b42318; color: #b42318; }
+      .pl-seg { display: none; margin: 8px 12px 0; background: var(--surface-2); border-radius: 999px; padding: 3px; gap: 3px; }
+      .pl-seg button { flex: 1; border: 0; background: transparent; border-radius: 999px; padding: 7px; font: inherit; font-size: 14px; font-weight: 650; color: var(--muted); cursor: pointer; }
+      .pl-seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+      .pl-body { flex: 1; display: grid; grid-template-columns: minmax(320px, 380px) 1fr; min-height: 0; }
+      .pl-chat { display: flex; flex-direction: column; border-right: 1px solid var(--line); background: var(--surface); min-height: 0; }
+      .pl-msgs { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+      .pl-m { max-width: 92%; padding: 9px 12px; border-radius: 14px; font-size: 14.2px; line-height: 1.5; white-space: pre-wrap; }
+      .pl-m.u { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+      .pl-m.a { align-self: flex-start; background: var(--surface-2); color: var(--ink); border-bottom-left-radius: 4px; }
+      .pl-m.n { align-self: center; background: transparent; color: var(--muted); font-size: 12.5px; padding: 0; white-space: normal; }
+      .pl-m ul { margin: 6px 0 0; padding-left: 18px; white-space: normal; }
+      .pl-qs { align-self: stretch; display: flex; flex-direction: column; gap: 10px; background: var(--surface-2); border-radius: 14px; padding: 10px 12px; }
+      .pl-q b { display: block; font-size: 14px; margin-bottom: 6px; }
+      .pl-opts { display: flex; flex-wrap: wrap; gap: 6px; }
+      .pl-opt { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 11px; font: inherit; font-size: 13px; cursor: pointer; }
+      .pl-opt:hover { border-color: var(--accent); }
+      .pl-opt[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .pl-empty { margin: auto 0; text-align: center; color: var(--muted); font-size: 14px; display: flex; flex-direction: column; gap: 10px; align-items: center; padding: 10px; }
+      .pl-empty .big { font-size: 34px; }
+      .pl-empty b { color: var(--ink); font-size: 16px; }
+      .pl-ex { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+      .pl-ex button { border: 1px dashed var(--line); background: var(--surface); color: var(--ink-2); border-radius: 12px; padding: 8px 10px; font: inherit; font-size: 13.5px; cursor: pointer; text-align: left; }
+      .pl-ex button:hover { border-color: var(--accent); color: var(--ink); }
+      .pl-comp { border-top: 1px solid var(--line); padding: 10px 12px; display: flex; gap: 8px; align-items: flex-end; }
+      .pl-comp textarea { flex: 1; resize: none; min-height: 44px; max-height: 180px; font: inherit; font-size: 14.5px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); box-sizing: border-box; }
+      .pl-comp textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+      .pl-comp .primary-btn { min-height: 44px; }
+      .pl-status { font-size: 12.5px; color: var(--muted); padding: 0 14px 6px; min-height: 0; }
+      .pl-view { overflow-y: auto; padding: 18px 22px 40px; min-height: 0; }
+      .pl-noplan { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--muted); gap: 8px; font-size: 14.5px; }
+      .pl-noplan .big { font-size: 44px; }
+      .pl-hero h3 { margin: 0; font-size: 24px; line-height: 1.25; }
+      .pl-hero .goal { margin: 6px 0 0; color: var(--ink-2); font-size: 15px; }
+      .pl-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+      .pl-pill { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-size: 13px; color: var(--ink-2); }
+      .pl-sec { margin-top: 22px; }
+      .pl-sec > h4 { margin: 0 0 8px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+      .pl-box { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; font-size: 14.5px; line-height: 1.55; }
+      .pl-box p { margin: 0; }
+      .pl-box ul { margin: 8px 0 0; padding-left: 20px; }
+      .pl-box li { margin: 3px 0; }
+      .pl-outcome { border-left: 4px solid var(--accent); }
+      .pl-map { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px; overflow-x: auto; }
+      .pl-map svg { display: block; margin: 0 auto; }
+      .pl-map .node { cursor: pointer; }
+      .pl-map .node:hover rect.bg { stroke-width: 2.5; }
+      .pl-phase { display: flex; align-items: center; gap: 8px; margin: 18px 0 8px; font-weight: 800; font-size: 15px; }
+      .pl-phase .dot { width: 10px; height: 10px; border-radius: 50%; }
+      .pl-step { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
+      .pl-step.changed { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+      .pl-sh { display: flex; gap: 10px; align-items: flex-start; }
+      .pl-num { flex: none; width: 28px; height: 28px; border-radius: 50%; color: #fff; font-weight: 800; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; }
+      .pl-sh h5 { margin: 3px 0 0; font-size: 16.5px; line-height: 1.3; }
+      .pl-why { margin: 0; color: var(--muted); font-size: 13.8px; font-style: italic; }
+      .pl-do { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--ink); }
+      .pl-out { margin: 0; font-size: 13.8px; color: var(--ink-2); }
+      .pl-out b { color: var(--accent-ink); }
+      .pl-items { display: flex; flex-direction: column; gap: 8px; }
+      .pl-item { border: 1px solid var(--line); border-radius: 12px; padding: 9px 11px; background: var(--surface-2); position: relative; }
+      .pl-it-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pl-type { font-size: 11.5px; font-weight: 700; letter-spacing: .03em; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+      .pl-swap { border: 0; background: transparent; padding: 0; font: inherit; font-size: 14.5px; font-weight: 750; color: var(--ink); cursor: pointer; display: inline-flex; align-items: center; gap: 5px; text-align: left; }
+      .pl-swap:hover { color: var(--accent-ink); }
+      .pl-swap .car { font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 1px 5px; background: var(--surface); }
+      .pl-where { font-size: 12.5px; color: var(--muted); }
+      .pl-role { margin: 5px 0 0; font-size: 13.8px; color: var(--ink-2); line-height: 1.5; }
+      .pl-acts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 7px; }
+      .pl-acts button { border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); border-radius: 999px; padding: 3px 10px; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+      .pl-acts button:hover { border-color: var(--accent); color: var(--accent-ink); }
+      .pl-dd { position: absolute; z-index: 5; left: 8px; right: 8px; top: calc(100% - 4px); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,.18); padding: 6px; display: flex; flex-direction: column; gap: 2px; }
+      .pl-dd .hd { font-size: 12px; color: var(--muted); padding: 4px 8px; }
+      .pl-dd button { all: unset; display: block; cursor: pointer; padding: 8px 10px; border-radius: 9px; font-size: 13.5px; }
+      .pl-dd button:hover, .pl-dd button:focus-visible { background: var(--accent-soft); }
+      .pl-dd button.cur { background: var(--surface-2); cursor: default; }
+      .pl-dd .nm { font-weight: 700; }
+      .pl-dd .rl { display: block; color: var(--ink-2); font-size: 12.8px; margin-top: 2px; }
+      .pl-text { margin-top: 8px; }
+      .pl-text pre { max-height: 320px; }
+      .pl-caveat li::marker { content: "\26A0\FE0F  "; }
+      .pl-gap li::marker { content: "\2795  "; }
+      @media (max-width: 820px) {
+        .pl-modal { padding: 0; }
+        .pl-panel { height: 100%; border-radius: 0; }
+        .pl-head { padding: 10px 12px; }
+        .pl-head .sub { display: none; }
+        .pl-tbtn { padding: 5px 9px; font-size: 12.5px; }
+        .pl-tbtn .lg { display: none; } .pl-tbtn .sm { display: inline; }
+        .pl-head { gap: 6px; } .pl-head .grow { display: none; } .pl-head h2 { margin-right: auto; }
+        .pl-head h2 { font-size: 16px; }
+        .pl-seg { display: flex; }
+        .pl-body { grid-template-columns: 1fr; }
+        .pl-body[data-show="chat"] .pl-view, .pl-body[data-show="plan"] .pl-chat { display: none; }
+        .pl-chat { border-right: 0; }
+        .pl-view { padding: 14px 14px 40px; }
+        .pl-hero h3 { font-size: 20px; }
+      }
     </style>
     <script src="config.js"></script>
   </head>
   <body>
     <div class="top-actions">
+      <button class="theme-btn plan-btn" id="plan-btn" type="button" aria-label="Make a plan" title="Plan anything with your library"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Plan</button>
       <button class="theme-btn" id="refresh-btn" type="button" aria-label="Reload the page" title="Reload the page from scratch"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>Refresh</button>
       <button class="theme-btn" id="hype-btn" type="button" aria-label="Update hype scores" aria-expanded="false" aria-controls="hype-pop" title="Re-check every tool's hype score"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Hype</button>
       <button class="theme-btn" id="credit-btn" type="button" aria-label="Check Gemini credit" aria-expanded="false" aria-controls="credit-pop"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></svg>Credit</button>
@@ -657,6 +770,28 @@
         <p class="err" id="lock-err"></p>
         <button class="primary-btn" type="submit">Open library</button>
       </form>
+    </div>
+    <div class="pl-modal" id="pl-modal" hidden role="dialog" aria-modal="true" aria-labelledby="pl-h">
+      <div class="pl-panel">
+        <div class="pl-head">
+          <h2 id="pl-h">&#129517; Plan</h2><span class="sub">Say what you want &mdash; get a step-by-step plan from your library</span>
+          <span class="grow"></span>
+          <button class="pl-tbtn" id="pl-undo" type="button" title="Undo the last change">&#8630; Undo</button>
+          <button class="pl-tbtn" id="pl-copy" type="button">Copy</button>
+          <button class="pl-tbtn" id="pl-saveas" type="button" title="Keep it on the Playbooks tab"><span class="lg">Save as playbook</span><span class="sm">Save</span></button>
+          <button class="pl-tbtn" id="pl-new" type="button"><span class="lg">New plan</span><span class="sm">New</span></button>
+          <button class="pl-x" id="pl-x" type="button" aria-label="Close">&times;</button>
+        </div>
+        <div class="pl-seg" role="tablist"><button type="button" data-plseg="chat" aria-pressed="true">&#128172; Chat</button><button type="button" data-plseg="plan" aria-pressed="false">&#128506;&#65039; Plan</button></div>
+        <div class="pl-body" id="pl-body" data-show="chat">
+          <div class="pl-chat">
+            <div class="pl-msgs" id="pl-msgs" aria-live="polite"></div>
+            <div class="pl-status" id="pl-status"></div>
+            <div class="pl-comp"><textarea id="pl-text" dir="auto" rows="1" placeholder="What do you want to get done?"></textarea><button class="primary-btn" id="pl-send" type="button">Send</button></div>
+          </div>
+          <div class="pl-view" id="pl-view"></div>
+        </div>
+      </div>
     </div>
     <div class="modal" id="tb" hidden role="dialog" aria-modal="true" aria-labelledby="tb-title">
       <div class="panel pb-panel">
@@ -2335,7 +2470,7 @@
         try { await navigator.clipboard.writeText(text); }
         catch (err) { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
       }
-      function flashCopied(btn, label) { const old = btn.textContent; btn.textContent = label || 'Copied ✓'; setTimeout(() => { btn.textContent = old; }, 2000); }
+      function flashCopied(btn, label) { const old = btn.innerHTML; btn.textContent = label || 'Copied ✓'; setTimeout(() => { btn.innerHTML = old; }, 2000); }
       // Same small "x" clear button as the other text boxes.
       function addClearX(el) {
         if (!el || el.dataset.clearx) return; el.dataset.clearx = '1';
@@ -2921,6 +3056,268 @@
       document.getElementById('pbl-q').addEventListener('input', e => { pbs.q = e.target.value.trim().toLowerCase(); pblRender(); });
       addClearX(document.getElementById('pbl-q')); addClearX(document.getElementById('mk-goal')); addClearX(document.getElementById('tb-q'));
       renderDefaults();
+      // =====================================================================
+      // "Plan" pop-up: free text → questions if needed → explained plan from your library → tweak → map
+      // =====================================================================
+      const PLAN_STORE = 'aicm-plan-v1';
+      const PL_TYPE_ICON = { 'Skill': '\u{1F9E9}', 'Connector (MCP)': '\u{1F50C}', 'Plugin / extension': '\u{1F9F1}', 'Web app': '\u{1F310}', 'Desktop / phone app': '\u{1F4BB}', 'Developer tool': '\u{1F6E0}️', 'AI model': '\u{1F9E0}', 'Learn': '\u{1F4DA}', 'News': '\u{1F4F0}', 'Prompt library': '\u{1F4DD}', 'Prompt': '\u{1F4AC}', 'Rule file': '\u{1F4CF}', 'Agent': '\u{1F916}', 'Automation': '⚙️', 'Workflow': '⚙️' };
+      const PL_COLORS = ['#2f6db3', '#7c5cbf', '#3d8b4f', '#b45309', '#be4b7a'];
+      const PL_EXAMPLES = [
+        'Prepare me for a product manager interview at a fintech startup in two weeks',
+        'Build a landing page for my startup idea and get the first 50 sign-ups',
+        'Every week, turn the articles I save into a short summary I can listen to',
+        'אני רוצה להכין מצגת למשקיעים על הסטארטאפ שלי'
+      ];
+      const pl = { history: [], plan: null, undo: [], busy: false, open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat' };
+      try { const sv = JSON.parse(localStorage.getItem(PLAN_STORE) || 'null'); if (sv) { pl.history = sv.history || []; pl.plan = sv.plan || null; pl.undo = sv.undo || []; } } catch (e) {}
+      function plSave() { try { localStorage.setItem(PLAN_STORE, JSON.stringify({ history: pl.history.slice(-60), plan: pl.plan, undo: pl.undo.slice(-15) })); } catch (e) {} }
+      const plIcon = t => PL_TYPE_ICON[t] || '\u{1F4E6}';
+      const phaseColor = (plan, id) => PL_COLORS[Math.max(0, (plan.phases || []).findIndex(p => p.id === id)) % PL_COLORS.length];
+
+      function plOpen() {
+        document.getElementById('pl-modal').hidden = false; document.body.style.overflow = 'hidden';
+        pl.show = pl.plan ? 'plan' : 'chat'; plRender();
+        setTimeout(() => { const t = document.getElementById('pl-text'); if (t && (!pl.plan || window.innerWidth > 820)) t.focus(); }, 50);
+      }
+      function plClose() { document.getElementById('pl-modal').hidden = true; document.body.style.overflow = ''; pl.open = null; }
+
+      // ---------- chat ----------
+      function plChatHTML() {
+        if (!pl.history.length) {
+          return '<div class="pl-empty"><div class="big">\u{1F9ED}</div><b>What do you want to get done?</b><span>Write it in your own words. I&rsquo;ll ask a quick question if I need to, then build a step-by-step plan from the tools, skills, connectors, prompts, rules, agents and automations in your library.</span>' +
+            '<div class="pl-ex">' + PL_EXAMPLES.map(x => '<button type="button" data-plex="' + esc(x) + '" dir="auto">' + esc(x) + '</button>').join('') + '</div></div>';
+        }
+        const last = pl.history.length - 1;
+        return pl.history.map((m, i) => {
+          if (m.note) return '<div class="pl-m n" dir="auto">' + esc(m.text) + '</div>';
+          let h = '<div class="pl-m ' + (m.role === 'user' ? 'u' : 'a') + '" dir="auto">' + esc(m.text) + (m.changes && m.changes.length ? '<ul>' + m.changes.map(c => '<li>' + esc(c) + '</li>').join('') + '</ul>' : '') + '</div>';
+          if (m.questions && m.questions.length && i === last) {
+            h += '<div class="pl-qs">' + m.questions.map((q, qi) => '<div class="pl-q"><b dir="auto">' + esc(q.q) + '</b><div class="pl-opts">' +
+              q.options.map(o => '<button type="button" class="pl-opt" data-plans="' + qi + '" data-v="' + esc(o) + '" aria-pressed="' + (pl.answers[qi] === o) + '" dir="auto">' + esc(o) + '</button>').join('') + '</div></div>').join('') +
+              '<div class="pl-opts"><button type="button" class="primary-btn" style="min-height:34px;padding:5px 14px;font-size:13.5px" data-plsendans="1">Send answers</button><button type="button" class="pl-opt" data-pljust="1">Skip &mdash; just make the plan</button></div>' +
+              '<span style="font-size:12.5px;color:var(--muted)">Pick options, type your own answer below, or both.</span></div>';
+          }
+          return h;
+        }).join('');
+      }
+      async function plSend(text) {
+        text = (text || '').trim(); if (!text || pl.busy) return;
+        const prior = pl.history.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', text: m.note ? '[' + m.text + ']' : m.text + (m.questions && m.questions.length ? '\n' + m.questions.map(q => '- ' + q.q + ' (' + q.options.join(' / ') + ')').join('\n') : '') }));
+        pl.history.push({ role: 'user', text }); pl.answers = {}; pl.busy = true; pl.show = 'chat'; plRender();
+        const t0 = Date.now(), st = document.getElementById('pl-status');
+        const tick = () => { const s = Math.round((Date.now() - t0) / 1000); if (st) st.textContent = (s < 6 ? 'Reading your library…' : s < 20 ? 'Thinking it through…' : 'Writing the plan…') + ' ' + s + 's'; };
+        tick(); const timer = setInterval(tick, 1000);
+        try {
+          const r = await call('action', 'planAi:chat', { history: prior, message: text, plan: pl.plan || undefined, defaults: typeof PB_DEFAULTS !== 'undefined' ? PB_DEFAULTS : [] });
+          const msg = { role: 'assistant', text: r.reply, questions: r.questions || [], changes: r.changes || [] };
+          if (r.plan) {
+            if (pl.plan) { pl.undo.push(pl.plan); plDiff(pl.plan, r.plan); } else pl.changed = new Set();
+            pl.plan = r.plan; pl.open = null; pl.show = 'plan';
+          }
+          pl.history.push(msg);
+        } catch (e) { pl.history.push({ role: 'assistant', text: 'Sorry — that didn’t work: ' + String(e.message || e).replace(/^.*ConvexError:\s*/, '') + '. Try again.' }); }
+        clearInterval(timer); pl.busy = false; plSave(); plRender();
+        const ta = document.getElementById('pl-text'); if (ta && window.innerWidth > 820) ta.focus();
+      }
+      function plDiff(a, b) {
+        const key = s => JSON.stringify([s.title, s.do, (s.items || []).map(i => i.ref)]);
+        const old = new Set((a.steps || []).map(key)); pl.changed = new Set((b.steps || []).filter(s => !old.has(key(s))).map(s => s.id));
+      }
+
+      // ---------- the plan ----------
+      function plItemHTML(s, it, j) {
+        const k = s.id + ':' + j, open = pl.open === k;
+        const isText = /^[pi]:/.test(it.ref);
+        const tx = pl.texts[it.ref];
+        let h = '<div class="pl-item"><div class="pl-it-top"><span class="pl-type">' + plIcon(it.type) + ' ' + esc(it.type) + '</span>' +
+          '<button type="button" class="pl-swap" data-plswap="' + esc(k) + '" aria-expanded="' + open + '" title="Switch to an alternative" dir="auto">' + esc(it.name) + (it.alts && it.alts.length ? ' <span class="car">▾ ' + it.alts.length + ' other' + (it.alts.length > 1 ? 's' : '') + '</span>' : '') + '</button>' +
+          (it.where ? '<span class="pl-where" dir="auto">in ' + esc(it.where) + '</span>' : '') + '</div>' +
+          (it.role ? '<p class="pl-role" dir="auto">' + esc(it.role) + '</p>' : '') +
+          '<div class="pl-acts">' + (isText ? '<button type="button" data-pltext="' + esc(it.ref) + '">' + (tx && tx.shown ? 'Hide' : 'Show') + ' ' + (it.type === 'Prompt' ? 'prompt' : 'file') + '</button>' + (tx && tx.text ? '<button type="button" data-plcopy="' + esc(it.ref) + '">Copy</button>' : '') : '') +
+          '<button type="button" data-plopen="' + esc(it.ref + '|' + (it.where || '')) + '">Open in library ↗</button></div>';
+        if (isText && tx && tx.shown) h += '<div class="pl-text">' + (tx.err ? '<p class="err">' + esc(tx.err) + '</p>' : tx.text ? '<pre class="pf-pre" dir="auto">' + esc(tx.text) + '</pre>' : '<p class="pf-why">Loading…</p>') + '</div>';
+        if (open) {
+          h += '<div class="pl-dd" role="menu"><div class="hd">Switch for this step:</div>' + [it].concat(it.alts || []).map((a, ai) =>
+            '<button type="button" role="menuitem" class="' + (ai === 0 ? 'cur' : '') + '" ' + (ai === 0 ? 'disabled' : 'data-plpick="' + esc(k + ':' + (ai - 1)) + '"') + '><span class="nm" dir="auto">' + (ai === 0 ? '✓ ' : '') + esc(a.name) + '</span> <span class="pl-where">' + plIcon(a.type) + ' ' + esc(a.type) + (a.where ? ' · ' + esc(a.where) : '') + '</span>' +
+            (a.role ? '<span class="rl" dir="auto">' + esc(a.role) + '</span>' : '') + '</button>').join('') +
+            (it.alts && it.alts.length ? '' : '<div class="hd">No close alternatives in your library.</div>') + '</div>';
+        }
+        return h + '</div>';
+      }
+      function plStepHTML(plan, s, i) {
+        const c = phaseColor(plan, s.phase);
+        return '<article class="pl-step' + (pl.changed.has(s.id) ? ' changed' : '') + '" id="pl-step-' + esc(s.id) + '">' +
+          '<div class="pl-sh"><span class="pl-num" style="background:' + c + '">' + (i + 1) + '</span><div style="flex:1;min-width:0"><h5 dir="auto">' + esc(s.title) + '</h5>' + (s.why ? '<p class="pl-why" dir="auto">' + esc(s.why) + '</p>' : '') + '</div></div>' +
+          (s.do ? '<p class="pl-do" dir="auto">' + esc(s.do) + '</p>' : '') +
+          (s.items && s.items.length ? '<div class="pl-items">' + s.items.map((it, j) => plItemHTML(s, it, j)).join('') + '</div>' : '') +
+          (s.output ? '<p class="pl-out" dir="auto"><b>You get:</b> ' + esc(s.output) + '</p>' : '') +
+          (s.prompt ? '<details class="st-p"><summary>Prompt for this step</summary><pre class="pf-pre" dir="auto">' + esc(s.prompt) + '</pre><div class="pf-actions"><button class="expand-btn" type="button" data-plstepprompt="' + esc(s.id) + '">Copy prompt</button></div></details>' : '') +
+          (s.tip ? '<p class="pl-out" dir="auto">\u{1F4A1} ' + esc(s.tip) + '</p>' : '') + '</article>';
+      }
+      // The map: phases as columns (or rows on a phone), steps as boxes, arrows for "do this first".
+      function plMapSVG(plan, narrow) {
+        const steps = plan.steps, phases = plan.phases.filter(p => steps.some(s => s.phase === p.id));
+        const NW = narrow ? 300 : 210, NH = 76, GX = 56, GY = 16, HEAD = 30, PAD = 12;
+        const pos = {};
+        let W, H;
+        const wrap = (t, n) => { const w = String(t).split(/\s+/); const out = ['']; for (const x of w) { if ((out[out.length - 1] + ' ' + x).trim().length > n && out[out.length - 1]) { if (out.length === 2) { out[1] += '…'; break; } out.push(x); } else out[out.length - 1] = (out[out.length - 1] + ' ' + x).trim(); } return out; };
+        if (!narrow) {
+          const cols = phases.map(p => steps.filter(s => s.phase === p.id));
+          const maxRows = Math.max(...cols.map(c => c.length));
+          W = PAD * 2 + phases.length * NW + (phases.length - 1) * GX; H = PAD * 2 + HEAD + maxRows * NH + (maxRows - 1) * GY;
+          cols.forEach((c, ci) => { const off = (maxRows - c.length) * (NH + GY) / 2; c.forEach((s, ri) => { pos[s.id] = { x: PAD + ci * (NW + GX), y: PAD + HEAD + off + ri * (NH + GY), col: ci }; }); });
+        } else {
+          W = NW + PAD * 2 + 30; let y = PAD;
+          phases.forEach((p, pi) => { y += HEAD; steps.filter(s => s.phase === p.id).forEach(s => { pos[s.id] = { x: PAD, y, col: pi }; y += NH + GY; }); });
+          H = y + PAD - GY;
+        }
+        let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="Map of the plan"><defs><marker id="pl-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker></defs>';
+        // arrows (default: one after another)
+        const edges = [];
+        steps.forEach((s, i) => { const deps = s.after && s.after.length ? s.after : i ? [steps[i - 1].id] : []; deps.forEach(d => { if (pos[d] && pos[s.id]) edges.push([d, s.id]); }); });
+        for (const [a, b] of edges) {
+          const A = pos[a], B = pos[b]; let d;
+          if (!narrow && B.col !== A.col) { const x1 = A.x + NW, y1 = A.y + NH / 2, x2 = B.x - 2, y2 = B.y + NH / 2, mx = (x1 + x2) / 2; d = 'M' + x1 + ',' + y1 + ' C' + mx + ',' + y1 + ' ' + mx + ',' + y2 + ' ' + x2 + ',' + y2; }
+          else if (B.y > A.y && Math.abs(B.y - A.y - (NH + GY)) < 2 || (narrow && B.y - A.y > 0 && B.y - A.y <= NH + GY + HEAD + 1)) { const x = A.x + NW / 2; d = 'M' + x + ',' + (A.y + NH) + ' L' + x + ',' + (B.y - 2); }
+          else { const x1 = A.x + NW, y1 = A.y + NH / 2, x2 = B.x + NW, y2 = B.y + NH / 2, bx = x1 + 22; d = 'M' + x1 + ',' + y1 + ' C' + bx + ',' + y1 + ' ' + bx + ',' + y2 + ' ' + (x2 + 2) + ',' + y2; }
+          svg += '<path d="' + d + '" fill="none" stroke="var(--muted)" stroke-width="1.6" opacity=".7" marker-end="url(#pl-arrow)"/>';
+        }
+        phases.forEach((p, pi) => {
+          const c = PL_COLORS[plan.phases.indexOf(p) % PL_COLORS.length];
+          if (!narrow) { const x = PAD + pi * (NW + GX); svg += '<rect x="' + x + '" y="' + PAD + '" width="' + NW + '" height="22" rx="11" fill="var(--surface)"/><rect x="' + x + '" y="' + PAD + '" width="' + NW + '" height="22" rx="11" fill="' + c + '" opacity=".16"/><text x="' + (x + NW / 2) + '" y="' + (PAD + 15) + '" text-anchor="middle" font-size="12" font-weight="800" fill="' + c + '">' + esc(p.name.toUpperCase()) + '</text>'; }
+          else { const first = steps.find(s => s.phase === p.id); const y = pos[first.id].y - HEAD + 4; svg += '<rect x="' + PAD + '" y="' + y + '" width="' + NW + '" height="22" rx="11" fill="var(--surface)"/><rect x="' + PAD + '" y="' + y + '" width="' + NW + '" height="22" rx="11" fill="' + c + '" opacity=".16"/><text x="' + (PAD + NW / 2) + '" y="' + (y + 15) + '" text-anchor="middle" font-size="12" font-weight="800" fill="' + c + '">' + esc(p.name.toUpperCase()) + '</text>'; }
+        });
+        steps.forEach((s, i) => {
+          const P = pos[s.id], c = phaseColor(plan, s.phase), lines = wrap(s.title, narrow ? 34 : 24);
+          const icons = (s.items || []).map(it => plIcon(it.type)).slice(0, 4).join(' ');
+          svg += '<g class="node" data-plgo="' + esc(s.id) + '" tabindex="0" role="link" aria-label="Step ' + (i + 1) + ': ' + esc(s.title) + '"><rect class="bg" x="' + P.x + '" y="' + P.y + '" width="' + NW + '" height="' + NH + '" rx="12" fill="var(--surface-2)" stroke="' + c + '" stroke-width="1.5"/>' +
+            '<circle cx="' + (P.x + 18) + '" cy="' + (P.y + 20) + '" r="11" fill="' + c + '"/><text x="' + (P.x + 18) + '" y="' + (P.y + 24) + '" text-anchor="middle" font-size="12" font-weight="800" fill="#fff">' + (i + 1) + '</text>' +
+            lines.map((l, li) => '<text x="' + (P.x + 36) + '" y="' + (P.y + 24 + li * 16) + '" font-size="13" font-weight="700" fill="var(--ink)">' + esc(l) + '</text>').join('') +
+            '<text x="' + (P.x + 36) + '" y="' + (P.y + NH - 10) + '" font-size="13">' + icons + '</text></g>';
+        });
+        return svg + '</svg>';
+      }
+      function plViewHTML() {
+        const p = pl.plan;
+        if (!p) return '<div class="pl-noplan"><div class="big">\u{1F5FA}️</div><b style="color:var(--ink)">Your plan will appear here</b><span>Tell me what you want to get done in the chat.</span></div>';
+        const narrow = (document.getElementById('pl-view') || {}).clientWidth < 600;
+        let h = '<div class="pl-hero"><h3 dir="auto">' + esc(p.title) + '</h3>' + (p.goal ? '<p class="goal" dir="auto">' + esc(p.goal) + '</p>' : '') +
+          '<div class="pl-pills"><span class="pl-pill">\u{1F9ED} ' + p.steps.length + ' steps</span>' + (p.time ? '<span class="pl-pill">⏱ ' + esc(p.time) + '</span>' : '') + (p.cost ? '<span class="pl-pill">\u{1F4B2} ' + esc(p.cost) + '</span>' : '') + '</div></div>';
+        if (p.outcome) h += '<div class="pl-sec"><h4>You&rsquo;ll end up with</h4><div class="pl-box pl-outcome"><p dir="auto">' + esc(p.outcome) + '</p></div></div>';
+        if (p.summary || p.approach.length) h += '<div class="pl-sec"><h4>The approach</h4><div class="pl-box">' + (p.summary ? '<p dir="auto">' + esc(p.summary) + '</p>' : '') + (p.approach.length ? '<ul>' + p.approach.map(x => '<li dir="auto">' + esc(x) + '</li>').join('') + '</ul>' : '') +
+          (p.assumptions.length ? '<p style="margin-top:8px;font-size:13px;color:var(--muted)" dir="auto"><b>Assumed:</b> ' + p.assumptions.map(esc).join(' · ') + '</p>' : '') + '</div></div>';
+        h += '<div class="pl-sec"><h4>The map <span style="text-transform:none;letter-spacing:0;font-weight:500">&mdash; tap a box to jump to its step</span></h4><div class="pl-map">' + plMapSVG(p, narrow) + '</div></div>';
+        h += '<div class="pl-sec"><h4>Step by step <span style="text-transform:none;letter-spacing:0;font-weight:500">&mdash; tap a tool&rsquo;s name to switch it</span></h4>';
+        let n = 0;
+        p.phases.forEach(ph => {
+          const ss = p.steps.filter(s => s.phase === ph.id); if (!ss.length) return;
+          h += '<div class="pl-phase"><span class="dot" style="background:' + phaseColor(p, ph.id) + '"></span><span dir="auto">' + esc(ph.name) + '</span></div>';
+          ss.forEach(s => { h += plStepHTML(p, s, p.steps.indexOf(s)); n++; });
+        });
+        h += '</div>';
+        if (p.caveats.length) h += '<div class="pl-sec"><h4>Watch out for</h4><div class="pl-box"><ul class="pl-caveat">' + p.caveats.map(x => '<li dir="auto">' + esc(x) + '</li>').join('') + '</ul></div></div>';
+        if (p.gaps.length) h += '<div class="pl-sec"><h4>Not in your library (yet)</h4><div class="pl-box"><ul class="pl-gap">' + p.gaps.map(x => '<li dir="auto">' + esc(x) + '</li>').join('') + '</ul></div></div>';
+        return h;
+      }
+      function plRender() {
+        const body = document.getElementById('pl-body'); if (!body) return;
+        body.dataset.show = pl.show;
+        document.querySelectorAll('[data-plseg]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.plseg === pl.show)));
+        document.getElementById('pl-msgs').innerHTML = plChatHTML();
+        const m = document.getElementById('pl-msgs'); m.scrollTop = m.scrollHeight;
+        const view = document.getElementById('pl-view'), top = view.scrollTop;
+        view.innerHTML = plViewHTML(); view.scrollTop = top;
+        document.getElementById('pl-undo').disabled = !pl.undo.length;
+        ['pl-saveas', 'pl-copy'].forEach(id => { document.getElementById(id).disabled = !pl.plan; });
+        document.getElementById('pl-new').disabled = !pl.plan && !pl.history.length;
+        const send = document.getElementById('pl-send'), ta = document.getElementById('pl-text');
+        send.disabled = pl.busy; ta.disabled = pl.busy; send.textContent = pl.busy ? 'Thinking…' : 'Send';
+        if (!pl.busy) document.getElementById('pl-status').textContent = '';
+      }
+      function plAsText(p) {
+        return '# ' + p.title + '\n' + (p.goal ? p.goal + '\n' : '') + (p.outcome ? '\nYou’ll end up with: ' + p.outcome + '\n' : '') + (p.summary ? '\nApproach: ' + p.summary + '\n' : '') +
+          p.approach.map(x => '- ' + x).join('\n') + '\n\n' + p.steps.map((s, i) => (i + 1) + '. ' + s.title + (s.why ? ' — ' + s.why : '') + '\n' + (s.do ? '   ' + s.do + '\n' : '') +
+          (s.items || []).map(it => '   • ' + it.name + ' (' + it.type + ')' + (it.role ? ': ' + it.role : '')).join('\n') + ((s.items || []).length ? '\n' : '') +
+          (s.output ? '   You get: ' + s.output + '\n' : '') + (s.prompt ? '   Prompt:\n' + s.prompt.split('\n').map(l => '      ' + l).join('\n') + '\n' : '')).join('\n') +
+          (p.caveats.length ? '\nWatch out for:\n' + p.caveats.map(x => '- ' + x).join('\n') + '\n' : '') + (p.gaps.length ? '\nNot in the library:\n' + p.gaps.map(x => '- ' + x).join('\n') + '\n' : '');
+      }
+      function plRefToJump(ref) {
+        const [k, a, b] = ref.split(':');
+        if (k === 't' || k === 'l' || k === 'c') return [k, a];
+        if (k === 'i') return ['c', a];
+        return null;
+      }
+      async function plLoadText(ref) {
+        const [k, a, b] = ref.split(':'); const cur = pl.texts[ref] || {};
+        if (cur.text || cur.loading) { cur.shown = !cur.shown; pl.texts[ref] = cur; plRender(); return; }
+        pl.texts[ref] = { shown: true, loading: true }; plRender();
+        try { const r = k === 'p' ? await call('query', 'promptLibs:promptText', { pid: Number(a) }) : await call('query', 'tabs:itemText', { cid: a, n: Number(b) }); pl.texts[ref] = { shown: true, text: r.text, url: r.url }; }
+        catch (e) { pl.texts[ref] = { shown: true, err: String(e.message || e).replace(/^.*ConvexError:\s*/, '') }; }
+        plRender();
+      }
+      function plToPlaybook(p) {
+        const libByName = new Map(PROMPT_LIBS.map(l => [l.title, l.id]));
+        return { title: p.title, goal: p.goal, type: p.type, topics: [], time: p.time, steps: p.steps.map(s => ({
+          title: s.title, do: [s.why, s.do, s.output ? 'You get: ' + s.output : ''].filter(Boolean).join(' '), prompt: s.prompt, tip: s.tip,
+          use: (s.items || []).map(it => { const [k, a] = it.ref.split(':'); return k === 'p' ? (libByName.has(it.where) ? { k: 'l', id: libByName.get(it.where) } : null) : k === 'i' ? { k: 'c', id: a } : { k, id: a, name: it.name }; }).filter(Boolean)
+        })) };
+      }
+      document.getElementById('plan-btn').addEventListener('click', plOpen);
+      document.getElementById('pl-x').addEventListener('click', plClose);
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && !document.getElementById('pl-modal').hidden) { if (pl.open) { pl.open = null; plRender(); } else plClose(); } });
+      const plText = document.getElementById('pl-text');
+      plText.addEventListener('input', () => { plText.style.height = 'auto'; plText.style.height = Math.min(180, Math.max(44, plText.scrollHeight + 2)) + 'px'; });
+      plText.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('pl-send').click(); } });
+      document.getElementById('pl-modal').addEventListener('click', async e => {
+        const t = e.target;
+        if (t.id === 'pl-modal') { plClose(); return; }
+        if (t.id === 'pl-send') {
+          const ans = Object.keys(pl.answers).length ? plAnswerText() : '';
+          const v = [ans, plText.value.trim()].filter(Boolean).join('\n'); if (!v) { plText.focus(); return; }
+          plText.value = ''; plText.style.height = ''; plSend(v); return;
+        }
+        const seg = t.closest('[data-plseg]'); if (seg) { pl.show = seg.dataset.plseg; plRender(); return; }
+        const ex = t.closest('[data-plex]'); if (ex) { plSend(ex.dataset.plex); return; }
+        const op = t.closest('[data-plans]'); if (op) { const qi = op.dataset.plans; pl.answers[qi] = pl.answers[qi] === op.dataset.v ? undefined : op.dataset.v; if (pl.answers[qi] === undefined) delete pl.answers[qi]; plRender(); return; }
+        if (t.closest('[data-plsendans]')) { const v = [plAnswerText(), plText.value.trim()].filter(Boolean).join('\n'); if (!v) return; plText.value = ''; plSend(v); return; }
+        if (t.closest('[data-pljust]')) { plSend([plAnswerText(), plText.value.trim(), 'Just make the plan now with sensible assumptions.'].filter(Boolean).join('\n')); plText.value = ''; return; }
+        if (t.id === 'pl-new') { if ((pl.plan || pl.history.length) && !confirm('Start a new plan? The current one will be cleared (save it as a playbook first if you want to keep it).')) return; Object.assign(pl, { history: [], plan: null, undo: [], open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat' }); plSave(); plRender(); plText.focus(); return; }
+        if (t.id === 'pl-undo') { if (!pl.undo.length) return; pl.plan = pl.undo.pop(); pl.changed = new Set(); pl.open = null; pl.history.push({ role: 'user', text: 'Undo: went back one change', note: true }); plSave(); plRender(); return; }
+        if (t.id === 'pl-copy') { copyText(plAsText(pl.plan)).then(() => flashCopied(t)); return; }
+        if (t.id === 'pl-saveas') {
+          t.disabled = true;
+          try { const r = await call('mutation', 'playbooks:save', { playbook: plToPlaybook(pl.plan) }); await loadPlaybooks(); flashCopied(t, 'Saved ✓ (Playbooks tab)'); pl.history.push({ role: 'user', text: 'Saved as a playbook', note: true }); plSave(); setTimeout(plRender, 2000); }
+          catch (err) { alert('Couldn’t save: ' + err.message); t.disabled = false; }
+          return;
+        }
+        const go = t.closest('[data-plgo]'); if (go) { const el = document.getElementById('pl-step-' + go.dataset.plgo); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); } return; }
+        const sw = t.closest('[data-plswap]'); if (sw) { pl.open = pl.open === sw.dataset.plswap ? null : sw.dataset.plswap; plRender(); return; }
+        const pk = t.closest('[data-plpick]');
+        if (pk) {
+          const [sid, j, ai] = pk.dataset.plpick.split(':'); const s = pl.plan.steps.find(x => x.id === sid); const it = s.items[Number(j)]; const alt = it.alts[Number(ai)];
+          pl.undo.push(JSON.parse(JSON.stringify(pl.plan)));
+          const others = it.alts.filter((_, x) => x !== Number(ai)); const { alts, ...cur } = it;
+          s.items[Number(j)] = { ...alt, alts: [cur].concat(others) };
+          pl.history.push({ role: 'user', text: 'I switched “' + it.name + '” to “' + alt.name + '” in step ' + (pl.plan.steps.indexOf(s) + 1), note: true });
+          pl.open = null; pl.changed = new Set([sid]); plSave(); plRender(); return;
+        }
+        const tx = t.closest('[data-pltext]'); if (tx) { plLoadText(tx.dataset.pltext); return; }
+        const cp = t.closest('[data-plcopy]'); if (cp) { const x = pl.texts[cp.dataset.plcopy]; if (x && x.text) copyText(x.text).then(() => flashCopied(cp)); return; }
+        const sp = t.closest('[data-plstepprompt]'); if (sp) { const s = pl.plan.steps.find(x => x.id === sp.dataset.plstepprompt); if (s) copyText(s.prompt).then(() => flashCopied(sp)); return; }
+        const oo = t.closest('[data-plopen]');
+        if (oo) {
+          const [ref, where] = oo.dataset.plopen.split('|'); let j = plRefToJump(ref);
+          if (!j) { const lib = PROMPT_LIBS.find(l => l.title === where); if (lib) j = ['l', lib.id]; }
+          if (!j) { plLoadText(ref); return; }
+          plClose(); jumpTo(j[0], j[1]); return;
+        }
+        if (pl.open && !t.closest('.pl-dd')) { pl.open = null; plRender(); }
+      });
+      function plAnswerText() {
+        const last = pl.history[pl.history.length - 1]; if (!last || !last.questions) return '';
+        return last.questions.map((q, i) => pl.answers[i] ? q.q + ' → ' + pl.answers[i] : '').filter(Boolean).join('\n');
+      }
+      window.addEventListener('resize', () => { if (!document.getElementById('pl-modal').hidden && pl.plan) plRender(); });
       // The Tools tab may have finished loading before this part of the page ran.
       if (items.length && !window.__tabsStarted) { window.__tabsStarted = true; loadTabs(); }
     </script>

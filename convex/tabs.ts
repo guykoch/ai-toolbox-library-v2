@@ -229,3 +229,14 @@ export const all = internalQuery({
   args: {},
   handler: async (ctx) => (await ctx.db.query("tcards").collect()).filter((r) => !r.deleting).map((r) => ({ ...r.data, id: r.cid, tab: r.tab, imp: r.imp || NONE })),
 });
+
+// Every copied file (agents, rule files, workflows) — small fields only — for the Plan chat's search.
+export const itemIndex = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const tabOf = new Map((await ctx.db.query("tcards").collect()).filter((c) => !c.deleting).map((c) => [c.cid, { tab: c.tab, title: String(c.data?.title || "") }]));
+    return (await ctx.db.query("tcItems").collect())
+      .filter((r) => tabOf.has(r.cid))
+      .map((r) => ({ cid: r.cid, n: r.n, title: r.title, desc: r.desc.slice(0, 200), tag: r.tag, tab: tabOf.get(r.cid)!.tab, card: tabOf.get(r.cid)!.title }));
+  },
+});
