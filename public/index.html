@@ -703,6 +703,24 @@
           <button class="subtab" role="tab" id="tabbtn-playbooks" data-tab="playbooks" aria-controls="tab-playbooks" type="button">Playbooks</button>
         </div>
       </header>
+      <section class="addbox" id="addbox-all" aria-labelledby="add-h">
+        <h2 id="add-h">Add to the library</h2>
+        <p class="sub">One box for everything &mdash; tools, prompt libraries, rules, agents and automations. Paste a link (several: separate with commas or spaces), a name, a post&rsquo;s text or a screenshot. The app decides which tab each one goes on &mdash; sometimes more than one, like a repo with both rule files and agents.</p>
+        <textarea id="add-text" dir="auto" placeholder="e.g. https://github.com/owner/repo, https://n8n.io/workflows/123  &middot;  a post&rsquo;s text + link  &middot;  &ldquo;Granola meeting notes app&rdquo;  &middot;  or paste a screenshot (Ctrl/Cmd+V)"></textarea>
+        <div class="shots" id="shots"></div>
+        <div class="row">
+          <button class="primary-btn" id="add-btn" type="button">Add to library</button>
+          <label class="mini-btn" style="display:inline-flex;align-items:center;cursor:pointer">Add screenshot<input type="file" id="shot-input" accept="image/*" multiple hidden /></label>
+          <span class="add-status" id="add-status" role="status" aria-live="polite"></span>
+        </div>
+        <div class="add-result" id="add-result" hidden role="status" aria-live="polite">
+          <span class="ar-icon" id="ar-icon" aria-hidden="true"></span>
+          <p class="ar-head" id="ar-head"></p>
+          <button class="ar-close" id="ar-close" type="button" aria-label="Dismiss">&times;</button>
+          <p class="ar-body" id="ar-body"></p>
+          <div class="ar-actions" id="ar-actions"></div>
+        </div>
+      </section>
       <div id="tab-tools" role="tabpanel" aria-labelledby="tabbtn-tools">
         <p class="statline" id="statline"></p>
         <div class="hypebar" id="hypebar" hidden aria-live="polite">
@@ -725,24 +743,6 @@
         <div class="convo" id="convo" aria-live="polite"></div>
       </section>
 
-      <section class="addbox" aria-labelledby="add-h">
-        <h2 id="add-h">Add to the library</h2>
-        <p class="sub">Paste anything &mdash; a Facebook post, a GitHub repo, a YouTube video, any link, a tool name, or a few words of context. It&rsquo;s identified and shelved in the same format as everything else.</p>
-        <textarea id="add-text" dir="auto" placeholder="e.g. https://github.com/owner/repo  &middot;  a Facebook post&rsquo;s text + link  &middot;  &ldquo;Granola meeting notes app&rdquo;  &middot;  or paste a screenshot (Ctrl/Cmd+V)"></textarea>
-        <div class="shots" id="shots"></div>
-        <div class="row">
-          <button class="primary-btn" id="add-btn" type="button">Add to library</button>
-          <label class="mini-btn" style="display:inline-flex;align-items:center;cursor:pointer">Add screenshot<input type="file" id="shot-input" accept="image/*" multiple hidden /></label>
-          <span class="add-status" id="add-status" role="status" aria-live="polite"></span>
-        </div>
-        <div class="add-result" id="add-result" hidden role="status" aria-live="polite">
-          <span class="ar-icon" id="ar-icon" aria-hidden="true"></span>
-          <p class="ar-head" id="ar-head"></p>
-          <button class="ar-close" id="ar-close" type="button" aria-label="Dismiss">&times;</button>
-          <p class="ar-body" id="ar-body"></p>
-          <div class="ar-actions" id="ar-actions"></div>
-        </div>
-      </section>
 
       <div class="controls" id="library" style="margin-top:28px">
         <div class="search-row">
@@ -867,15 +867,6 @@
             <button class="primary-btn" id="pf-btn" type="button">Find</button>
           </div>
           <div id="pf-out" aria-live="polite"></div>
-        </section>
-        <section class="addbox" aria-labelledby="padd-h">
-          <h2 id="padd-h">Add a prompt library</h2>
-          <p class="sub">Paste a GitHub repo or website of a prompt library &mdash; or several links separated by commas or spaces. Each gets a card below; if it&rsquo;s <b>open source on GitHub</b>, its prompts are copied into &ldquo;Find a prompt&rdquo; automatically. Deleting a library removes its prompts too.</p>
-          <div class="ask-row">
-            <textarea id="padd-text" dir="auto" rows="1" placeholder="e.g. https://github.com/owner/awesome-prompts"></textarea>
-            <button class="primary-btn" id="padd-btn" type="button">Add</button>
-          </div>
-          <div class="pf-why" id="padd-out" aria-live="polite" hidden></div>
         </section>
         <p class="statline" id="p-statline" style="margin-top:22px"></p>
         <div class="controls" style="margin-top:22px">
@@ -1810,46 +1801,11 @@
         return [text];
       }
       const pAddLabel = s => { const u = s.match(/^(?:https?:\/\/)?(?:www\.)?([^\s]+)/i); return u && /^https?:\/\/|^[\w-]+\./.test(s) ? u[1].replace(/\/$/, '').slice(0, 60) : (s.length > 50 ? s.slice(0, 50) + '\u2026' : s); };
-      async function pAdd() {
-        const ta = document.getElementById('padd-text'), btn = document.getElementById('padd-btn'), out = document.getElementById('padd-out');
-        const text = ta.value.trim(); if (!text) { ta.focus(); return; }
-        const list = pAddItems(text), results = [];
-        btn.disabled = true; ta.disabled = true; out.hidden = false;
-        const STEPS = ['reading the page', 'checking for duplicates', 'writing the card', 'checking the license'];
-        let n = 0, started = 0, timer = null;
-        const status = () => {
-          const secs = Math.round((Date.now() - started) / 1000);
-          const done = results.map(r => '<div>' + r + '</div>').join('');
-          out.innerHTML = done + '<div class="padd-status">\u23F3 ' + (list.length > 1 ? 'Adding <b>' + (n + 1) + ' of ' + list.length + '</b>: ' : 'Adding ') + '<b>' + esc(pAddLabel(list[n])) + '</b> \u00b7 ' + STEPS[Math.min(STEPS.length - 1, Math.floor(secs / 5))] + '\u2026 <span style="color:var(--muted)">' + secs + 's</span></div>';
-        };
-        let lastId = null, anyAdded = false;
-        for (n = 0; n < list.length; n++) {
-          started = Date.now(); status(); clearInterval(timer); timer = setInterval(status, 1000);
-          const label = '<b>' + esc(pAddLabel(list[n])) + '</b>';
-          try {
-            const r = await call('action', 'promptAdd:add', { text: list[n] });
-            lastId = r.libId;
-            if (r.status === 'exists') results.push('\u2139\ufe0f ' + esc(r.title) + ' is already in your list.');
-            else { anyAdded = true; results.push('\u2713 Added <b>' + esc(r.title) + '</b>.' + (r.importing ? ' Copying its prompts into Find a prompt now.' : r.why === 'nolicense' ? ' Its GitHub repo has no open license, so its prompts weren\u2019t copied (the card has a Check again button).' : r.why === 'excluded' ? ' Card only: this repo collects other companies\u2019 system prompts, so they aren\u2019t copied.' : ' It\u2019s a website, so its prompts stay there.')); }
-          } catch (e) { results.push('<span style="color:#b42318">\u2715 ' + label + ': ' + esc(e.message) + '</span>'); }
-        }
-        clearInterval(timer);
-        out.innerHTML = results.map(r => '<div>' + r + '</div>').join('') + (list.length > 1 ? '<div style="color:var(--muted);margin-top:4px">Done: ' + list.length + ' links processed.</div>' : '');
-        if (anyAdded) ta.value = '';
-        btn.disabled = false; ta.disabled = false;
-        await loadPrompts();
-        if (lastId) {
-          pClear(); if (list.length === 1) pstate.expanded.add(lastId); renderPrompts();
-          if (list.length === 1) { const el = document.getElementById('pcard-' + lastId); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-        }
-      }
-      document.getElementById('padd-btn').addEventListener('click', pAdd);
-      document.getElementById('padd-text').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); pAdd(); } });
       renderPrompts();
 
       // ---------- "x" to clear each text box ----------
       (function () {
-        const ids = ['ask-text', 'add-text', 'q', 'pg-text', 'pf-text', 'padd-text', 'pq', 'pb-q'];
+        const ids = ['ask-text', 'add-text', 'q', 'pg-text', 'pf-text', 'pq', 'pb-q'];
         const boxes = [];
         for (const id of ids) {
           const el = document.getElementById(id); if (!el) continue;
@@ -1879,6 +1835,7 @@
           b.setAttribute('aria-selected', t === name ? 'true' : 'false');
           b.tabIndex = t === name ? 0 : -1;
         }
+        const ab = document.getElementById('addbox-all'); if (ab) ab.hidden = name === 'playbooks';
         try { localStorage.setItem(TAB_STORE, name); } catch (e) {}
       }
       document.querySelectorAll('.subtab').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
@@ -2047,59 +2004,66 @@
         const i = e.target.closest('[data-install]'); if (i) openInstall(Number(i.dataset.install), false);
       });
 
+      // One box for every tab: each pasted thing is sorted (Tools / Prompts / Rules / Agents / Automations, or several)
+      // and then added with that tab's own add step.
+      const ADD_TAB_LABEL = { tools: 'Tools', prompts: 'Prompts', rules: 'Rules', agents: 'Agents', autos: 'Automations' };
       async function addFromText() {
         const text = addText.value.trim();
         addResult.hidden = true;
         if (!text && !shots.length) { showResult('fail', 'Nothing to add yet', friendlyError('Paste a link')); return; }
         addBtn.disabled = true; addStatus.className = 'add-status';
-        addStatus.textContent = 'Working on it \u2014 opening the link and identifying the tool\u2026 (usually 10\u201340 seconds)';
-        try {
-          const shotsSent = shots.length;
-          const res = await call('action', 'ingest:addFromText', { text: text, today: todayISO(), images: shots.map(s => ({ mime: s.mime, data: s.data })) });
-          addText.value = ''; shots = []; renderShots();
-          addStatus.textContent = '';
-          resetFilters();
-          state.justAdded = res.item.id;
-          state.expanded.add(res.item.id);
-          await load();
-          const results = (res.results && res.results.length) ? res.results : [res];
-          const actionsFor = it => '<button type="button" class="mini-btn" data-show="' + it.id + '">Show it in the library</button>' +
-            '<button type="button" class="mini-btn" data-install="' + it.id + '">Install prompt</button>' +
-            '<a class="mini-btn" style="text-decoration:none;display:inline-flex;align-items:center" href="' + esc(it.url) + '" target="_blank" rel="noopener">Open</a>';
-          const shotNote = shotsSent > 1 ? ' (All ' + shotsSent + ' screenshots were read.)' : '';
-          if (results.length === 1) {
-            const it = res.item;
-            const shelf = (CATS[it.cat] || CATS.other).label;
-            if (res.status === 'again') {
-              showResult('again', 'Already in your library',
-                '<b dir="auto">' + esc(it.title) + '</b> was first saved on ' + esc(it.date) + ', so no duplicate was added' +
-                (res.wasArchived ? '. It was brought back from the archive.' : '.') + shotNote, actionsFor(it));
-            } else {
-              showResult('ok', 'Tool added',
-                '<b dir="auto">' + esc(it.title) + '</b> is now on the <b>' + esc(shelf) + '</b> shelf' + (it.os === true ? ' (open source)' : '') + '. ' +
-                'Its install prompt is being written and will be ready in about a minute.' + shotNote, actionsFor(it));
+        const pics = shots.map(s => ({ mime: s.mime, data: s.data })), shotsSent = shots.length;
+        const pieces = pics.length ? [text] : pAddItems(text);
+        const lines = [], jumps = []; let nAdd = 0, nAgain = 0, nFail = 0, toolsAdded = 0, stage = '';
+        const t0 = Date.now();
+        const tick = () => { addStatus.textContent = '⏳ ' + stage + ' (' + Math.round((Date.now() - t0) / 1000) + 's)'; };
+        const timer = setInterval(tick, 1000);
+        const line = (icon, tab, name, note, jump) => {
+          lines.push('<span style="display:block;margin-top:6px"><b>' + icon + (tab ? ' ' + ADD_TAB_LABEL[tab] + ':' : '') + '</b> <span dir="auto">' + esc(name || '') + '</span>' + (note ? ' — ' + note : '') +
+            (jump ? ' <button type="button" class="mini-btn" style="min-height:26px;padding:2px 10px;font-size:12.5px" data-jump="' + esc(jump) + '">Show</button>' : '') + '</span>');
+          if (jump) jumps.push(jump);
+        };
+        for (let i = 0; i < pieces.length; i++) {
+          stage = 'Working out what ' + (pieces.length > 1 ? 'item ' + (i + 1) + ' of ' + pieces.length : 'it') + ' is…'; tick();
+          let found;
+          try { found = (await call('action', 'addAny:classify', { text: pieces[i], images: pics })).items; }
+          catch (e) { nFail++; line('✕ Couldn’t add', '', pAddLabel(pieces[i] || 'screenshot'), friendlyError(e.message)); continue; }
+          for (const it of found) {
+            const single = found.length === 1;
+            for (const tab of it.tabs) {
+              stage = 'Adding ' + (it.name || 'it') + ' to ' + ADD_TAB_LABEL[tab] + '…'; tick();
+              try {
+                if (tab === 'tools') {
+                  const res = await call('action', 'ingest:addFromText', { text: single ? (pieces[i] || it.input) : it.input, today: todayISO(), images: single ? pics : [] });
+                  for (const r of (res.results && res.results.length ? res.results : [res])) {
+                    const t = r.item || {};
+                    if (r.status === 'failed') { nFail++; line('✕ Couldn’t add', tab, t.title || it.name, 'no link found for it'); }
+                    else if (r.status === 'again') { nAgain++; line('\u21BA Already saved', tab, t.title, 'first saved ' + esc(t.date || ''), t.id != null ? 't|' + t.id + '|' : ''); }
+                    else { nAdd++; toolsAdded++; line('✓ Added to', tab, t.title, esc((CATS[t.cat] || CATS.other).label) + ' shelf', 't|' + t.id + '|'); }
+                  }
+                } else if (tab === 'prompts') {
+                  const r = await call('action', 'promptAdd:add', { text: it.input || pieces[i] });
+                  if (r.status === 'exists') { nAgain++; line('↺ Already saved', tab, r.title, '', 'l|' + r.libId + '|'); }
+                  else { nAdd++; line('✓ Added to', tab, r.title, r.importing ? 'copying its prompts into Find a prompt now' : r.why === 'nolicense' ? 'its repo has no open license, so its prompts weren’t copied' : r.why === 'excluded' ? 'card only (it collects other companies’ system prompts)' : 'a website — the app will try to copy its prompts from the site', 'l|' + r.libId + '|'); }
+                } else {
+                  const r = await call('action', 'tabAdd:add', { tab, text: it.input || pieces[i] });
+                  if (r.status === 'exists') { nAgain++; line('↺ Already saved', tab, r.title, '', 'c|' + r.cid + '|' + tab); }
+                  else { nAdd++; line('✓ Added to', tab, r.title, r.importing ? 'copying its ' + TAB_DEFS[tab].itemWord + ' into the app now' : r.why === 'nolicense' ? 'its repo has no open license, so its files weren’t copied' : '', 'c|' + r.cid + '|' + tab); }
+                }
+              } catch (e) { nFail++; line('✕ Couldn’t add to', tab, it.name, esc(String(e.message || e).replace(/^.*ConvexError:\s*/, ''))); }
             }
-          } else {
-            const nAdd = results.filter(r => r.status === 'added').length, nAgain = results.filter(r => r.status === 'again').length, nFail = results.filter(r => r.status === 'failed').length;
-            const head = [nAdd ? nAdd + (nAdd === 1 ? ' tool added' : ' tools added') : '', nAgain ? nAgain + ' already in your library' : '', nFail ? nFail + ' couldn\u2019t be added' : ''].filter(Boolean).join(' \u00b7 ');
-            const lines = results.map(r => {
-              const it = r.item || {};
-              const tag = r.status === 'added' ? '\u2713 Added' : r.status === 'again' ? '\u21BA Already saved' : '! Couldn\u2019t add';
-              const extra = r.status === 'added' ? ' \u2014 ' + esc((CATS[it.cat] || CATS.other).label) + ' shelf'
-                : r.status === 'again' ? ' \u2014 first saved ' + esc(it.date) : ' \u2014 no link found for it';
-              const btn = r.status === 'failed' ? '' : ' <button type="button" class="mini-btn" style="min-height:26px;padding:2px 10px;font-size:12.5px" data-show="' + it.id + '">Show</button>';
-              return '<span style="display:block;margin-top:6px"><b>' + tag + ':</b> <span dir="auto">' + esc(it.title || '') + '</span>' + extra + btn + '</span>';
-            }).join('');
-            showResult(nAdd ? 'ok' : (nAgain ? 'again' : 'fail'), head,
-              'Found ' + results.length + ' different tools in what you added.' + shotNote + lines +
-              (nAdd ? '<span style="display:block;margin-top:8px">Install prompts for the new ones are being written and will be ready in about a minute.</span>' : ''), '');
           }
-        } catch (e) {
-          addStatus.textContent = '';
-          showResult('fail', 'Couldn\u2019t be added', friendlyError(e.message) + ' Your text is still in the box.');
-        } finally {
-          addBtn.disabled = false;
         }
+        clearInterval(timer); addStatus.textContent = '';
+        if (nAdd || nAgain) { addText.value = ''; shots = []; renderShots(); }
+        try { await load(); await loadPrompts(); await loadTabs(true); } catch (e) {}
+        const head = [nAdd ? nAdd + (nAdd === 1 ? ' card added' : ' cards added') : '', nAgain ? nAgain + ' already in your library' : '', nFail ? nFail + ' couldn’t be added' : ''].filter(Boolean).join(' · ') || 'Nothing added';
+        const shotNote = shotsSent > 1 ? '<span style="display:block;margin-top:4px">All ' + shotsSent + ' screenshots were read.</span>' : '';
+        showResult(nAdd ? 'ok' : nAgain ? 'again' : 'fail', head, lines.join('') + shotNote +
+          (toolsAdded ? '<span style="display:block;margin-top:8px">Install prompts for new tools are being written and will be ready in about a minute.</span>' : '') +
+          (nFail && !nAdd && !nAgain ? '<span style="display:block;margin-top:6px">Your text is still in the box.</span>' : ''), '');
+        addBtn.disabled = false;
+        if (jumps.length === 1) { const [k, id, tab] = jumps[0].split('|'); jumpTo(k, id, tab); }
       }
       addBtn.addEventListener('click', addFromText);
       addText.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) addFromText(); });
@@ -2429,9 +2393,6 @@
       function tPanelHTML(tab) {
         const d = TAB_DEFS[tab];
         return '<p class="tab-intro">' + d.intro + '</p>' +
-          '<section class="addbox" aria-labelledby="tadd-h-' + tab + '"><h2 id="tadd-h-' + tab + '">' + d.addH + '</h2><p class="sub">' + d.addSub + '</p>' +
-          '<div class="ask-row"><textarea id="tadd-text-' + tab + '" dir="auto" rows="1" placeholder="' + esc(d.ph) + '"></textarea><button class="primary-btn" type="button" data-tadd="' + tab + '">Add</button></div>' +
-          '<div class="pf-why" id="tadd-out-' + tab + '" aria-live="polite" hidden></div></section>' +
           '<p class="statline" id="tstat-' + tab + '" style="margin-top:22px"></p>' +
           '<div class="controls" style="margin-top:22px"><div class="search-row"><div class="search-box">' + SEARCH_SVG + '<input id="tq-' + tab + '" type="search" placeholder="' + d.search + '" aria-label="Search ' + d.name + '" /></div></div>' +
           '<div class="toggle-row"><button class="showall-btn" type="button" data-tclear="' + tab + '">Show all</button></div></div>' +
@@ -2525,41 +2486,12 @@
         document.getElementById('tgroups-' + tab).innerHTML = !tLoadedOnce ? '<p class="p-empty">Loading&hellip;</p>' : (html || '<p class="p-empty">Nothing matches. <button class="showall-btn" type="button" data-tclear="' + tab + '">Show all</button></p>');
       }
       function tClear(tab) { const st = tstate[tab]; st.q = ''; st.sec = 'all'; st.kind = 'all'; const qi = document.getElementById('tq-' + tab); if (qi) qi.value = ''; tRender(tab); }
-      async function tAdd(tab) {
-        const ta = document.getElementById('tadd-text-' + tab), btn = document.querySelector('[data-tadd="' + tab + '"]'), out = document.getElementById('tadd-out-' + tab);
-        const text = ta.value.trim(); if (!text) { ta.focus(); return; }
-        const list = pAddItems(text), results = [];
-        btn.disabled = true; ta.disabled = true; out.hidden = false;
-        const STEPS = ['reading the page', 'checking for duplicates', 'writing the card', 'checking the license'];
-        let n = 0, started = 0, timer = null;
-        const status = () => {
-          const secs = Math.round((Date.now() - started) / 1000);
-          out.innerHTML = results.map(r => '<div>' + r + '</div>').join('') + '<div class="padd-status">⏳ ' + (list.length > 1 ? 'Adding <b>' + (n + 1) + ' of ' + list.length + '</b>: ' : 'Adding ') + '<b>' + esc(pAddLabel(list[n])) + '</b> · ' + STEPS[Math.min(STEPS.length - 1, Math.floor(secs / 5))] + '… <span style="color:var(--muted)">' + secs + 's</span></div>';
-        };
-        let lastId = null, anyAdded = false;
-        for (n = 0; n < list.length; n++) {
-          started = Date.now(); status(); clearInterval(timer); timer = setInterval(status, 1000);
-          try {
-            const r = await call('action', 'tabAdd:add', { tab, text: list[n] });
-            lastId = r.cid;
-            if (r.status === 'exists') results.push('ℹ️ <b>' + esc(r.title) + '</b> is already in your list.');
-            else { anyAdded = true; results.push('✓ Added <b>' + esc(r.title) + '</b>.' + (r.importing ? ' Copying its ' + TAB_DEFS[tab].itemWord + ' into the app now.' : r.why === 'nolicense' ? ' Its GitHub repo has no open license, so its files weren’t copied.' : '')); }
-          } catch (e) { results.push('<span style="color:#b42318">✕ <b>' + esc(pAddLabel(list[n])) + '</b>: ' + esc(e.message) + '</span>'); }
-        }
-        clearInterval(timer);
-        out.innerHTML = results.map(r => '<div>' + r + '</div>').join('') + (list.length > 1 ? '<div style="color:var(--muted);margin-top:4px">Done: ' + list.length + ' links processed.</div>' : '');
-        btn.disabled = false; ta.disabled = false;
-        if (anyAdded) ta.value = '';
-        await loadTabs(true);
-        if (lastId) jumpTo('c', lastId);
-      }
       document.addEventListener('click', e => {
         const panel = e.target.closest('#tab-rules, #tab-agents, #tab-autos'); if (!panel) return;
         const tab = panel.id.slice(4), st = tstate[tab];
         const sc = e.target.closest('[data-tsec]'); if (sc) { st.sec = sc.dataset.tsec; tRender(tab); return; }
         const kc = e.target.closest('[data-tkind]'); if (kc) { st.kind = kc.dataset.tkind; tRender(tab); return; }
         if (e.target.closest('[data-tclear]')) { tClear(tab); return; }
-        const ad = e.target.closest('[data-tadd]'); if (ad) { tAdd(tab); return; }
         const ex = e.target.closest('[data-texpand]'); if (ex) { const id = ex.dataset.texpand; st.expanded.has(id) ? st.expanded.delete(id) : st.expanded.add(id); tRender(tab); return; }
         const br = e.target.closest('[data-tbrowse]'); if (br) { tbOpen(br.dataset.tbrowse); return; }
         const ce = e.target.closest('[data-tcopyex]'); if (ce) { const c = TCARDS[tab].find(x => x.id === ce.dataset.tcopyex); if (c) copyText(c.example).then(() => flashCopied(ce)); return; }
@@ -2572,10 +2504,6 @@
           TCARDS[tab] = TCARDS[tab].filter(x => x.id !== c.id); tRender(tab); pblRender();
           call('mutation', 'tabs:remove', { cid: c.id }).catch(err => { alert('Couldn’t delete: ' + err.message); loadTabs(true); });
         }
-      });
-      document.addEventListener('keydown', e => {
-        if (e.key !== 'Enter' || e.shiftKey || !e.target.id) return;
-        const m = e.target.id.match(/^tadd-text-(rules|agents|autos)$/); if (m) { e.preventDefault(); tAdd(m[1]); }
       });
 
       // ---------- "Browse" pop-up for copied files ----------
@@ -2976,7 +2904,7 @@
         document.getElementById('tab-' + t).innerHTML = tPanelHTML(t);
         const q = document.getElementById('tq-' + t);
         q.addEventListener('input', e => { tstate[t].q = e.target.value.trim().toLowerCase(); tRender(t); });
-        addClearX(q); addClearX(document.getElementById('tadd-text-' + t));
+        addClearX(q);
       });
       document.getElementById('tab-playbooks').innerHTML = pbPanelHTML();
       document.getElementById('pbl-q').addEventListener('input', e => { pbs.q = e.target.value.trim().toLowerCase(); pblRender(); });
