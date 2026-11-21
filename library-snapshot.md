@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-21 20:57 UTC.
-Tools: 262 active, 1 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-21 21:09 UTC.
+Tools: 263 active, 1 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
 Rules: 12. Agents: 12. Automations: 7. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 263 | ossu/computer-science: Path to a free self-taught education in Computer Science! | Learn | Courses & guides | yes | 92 | 21 Nov 2026 | https://github.com/ossu/computer-science |  |
 | 262 | shinyobjectz/raea: Render Anything Engine for videos, 3D, and games | Developer tool | Video | yes | 64 | 21 Nov 2026 | https://github.com/shinyobjectz/raea | Remotion, Motion Canvas, Runway |
 | 261 | Tencent/WeKnora: turn raw documents into a queryable RAG, an autonomous reasoning agent, and a self-maintaining Wiki | Developer tool | Knowledge & RAG | yes | 80 | 21 Nov 2026 | https://github.com/Tencent/WeKnora | Dify, NotebookLM, AnythingLLM |
 | 260 | Vaultite: The open-source Obsidian alternative | Desktop / phone app | Productivity | yes | 46 | 21 Nov 2026 | https://vaultite.com/ | Obsidian, Notion, Logseq |
