@@ -1,8 +1,8 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-21 17:21 UTC.
-Tools: 261 active, 0 archived. Prompt libraries: 45 (14 open source, 9,141 prompts copied into Find a prompt).
-Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
+Updated automatically by the app: 2026-11-21 17:30 UTC.
+Tools: 260 active, 1 archived. Prompt libraries: 45 (14 open source, 9,141 prompts copied into Find a prompt).
+Rules: 12. Agents: 12. Automations: 7. Playbooks: 17.
 
 ## Tools (active)
 
@@ -10,11 +10,11 @@ Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 |---|---|---|---|---|---|---|---|---|
 | 260 | Vaultite: The open-source Obsidian alternative | Desktop / phone app | Productivity | yes | 46 | 21 Nov 2026 | https://vaultite.com/ | Obsidian, Notion, Logseq |
 | 259 | davila7/claude-code-templates: open-source registry and CLI for Claude Code components | Developer tool | Agent skills | yes | 78 | 20 Nov 2026 | https://github.com/davila7/claude-code-templates | Cursor Rules, Cline Rules, GitHub Copilot Instructions |
-| 258 | D4Vinci/Scrapling: adaptive Web Scraping framework from a single request to full-scale crawl | Developer tool | Productivity | yes | 88 | 20 Nov 2026 | https://github.com/D4Vinci/Scrapling | Scrapy, Firecrawl, Playwright |
+| 258 | D4Vinci/Scrapling: adaptive Web Scraping framework from a single request to full-scale crawl | Developer tool | APIs & scraping | yes | 88 | 20 Nov 2026 | https://github.com/D4Vinci/Scrapling | Scrapy, Firecrawl, Playwright |
 | 257 | Vancete/gitcraft: visual git client, simple to use yet powerful | Desktop / phone app | Productivity | yes | 38 | 20 Nov 2026 | https://github.com/Vancete/gitcraft | GitKraken, SourceTree, Fork |
 | 256 | mattpocock/skills: Skills for Real Engineers | Skill | Agent skills | yes | 88 | 20 Nov 2026 | https://github.com/mattpocock/skills | obra/superpowers, Cursor Rules, GitHub Copilot Instructions |
 | 255 | OpenCut-app/OpenCut: The open-source CapCut alternative | Desktop / phone app | Video | yes | 82 | 20 Nov 2026 | https://github.com/OpenCut-app/OpenCut | CapCut, Descript, Adobe Premiere Pro |
-| 254 | leepokai/Codync: open-source Grok Bot alternative for messaging coding agents from your phone | Developer tool | Coding agents | yes | 60 | 20 Nov 2026 | https://github.com/leepokai/Codync | Grok Bot, Dots, Muse |
+| 254 | leepokai/Codync: open-source Grok Bot alternative for messaging coding agents from your phone | Developer tool | Agent infrastructure | yes | 60 | 20 Nov 2026 | https://github.com/leepokai/Codync | Grok Bot, Dots, Muse |
 | 253 | FlashML-org/FreeVideo: Make videos on the computer you already own | Developer tool | Video | yes | 65 | 19 Nov 2026 | https://github.com/FlashML-org/FreeVideo | Runway, Kling AI, Luma Dream Machine |
 | 252 | janhq/jan: open-source ChatGPT alternative that runs 100% offline on your computer | Desktop / phone app | AI models | yes | 85 | 19 Nov 2026 | https://github.com/janhq/jan | ChatGPT, LM Studio, Ollama |
 | 251 | nilbuild/stick-scene: Skill to draw stick figure animated visuals | Skill | Agent skills | yes | 58 | 19 Nov 2026 | https://github.com/nilbuild/stick-scene | Lottie, Rive, Excalidraw |
@@ -31,13 +31,13 @@ Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 | 240 | Anil-matcha/Open-Generative-AI: free AI image and video generation studio with hundreds of models | Developer tool | Video | yes | 68 | 18 Nov 2026 | https://github.com/Anil-matcha/Open-Generative-AI | Midjourney, Runway, Leonardo.ai |
 | 239 | Dodaios/ste80-humanizer: agent skill that removes AI tells and rewrites text 80% of the way to ASD-STE100 | Skill | Agent skills | yes | 60 | 18 Nov 2026 | https://github.com/Dodaios/ste80-humanizer | Undetectable AI, QuillBot, Grammarly |
 | 238 | google-research/paper-orchestra: multi-agent framework for automated AI research paper writing | Developer tool | Productivity | yes | 72 | 18 Nov 2026 | https://github.com/google-research/paper-orchestra | Overleaf, Typeset.io, Jenni AI |
-| 237 | public-apis/public-apis: a collective list of free APIs for use in software and web development | Developer tool | App building | yes | 96 | 18 Nov 2026 | https://github.com/public-apis/public-apis | RapidAPI, Postman Public API Network |
+| 237 | public-apis/public-apis: a collective list of free APIs for use in software and web development | Developer tool | APIs & scraping | yes | 96 | 18 Nov 2026 | https://github.com/public-apis/public-apis | RapidAPI, Postman Public API Network |
 | 236 | nilbuild/developer-roadmap: interactive roadmaps, guides, and educational paths for developer career growth | Learn | Courses & guides | yes | 95 | 18 Nov 2026 | https://github.com/nilbuild/developer-roadmap |  |
 | 235 | erkamyaman/rust-anything: rewrite your whole app in Rust, one piece at a time | Developer tool | Coding agents | yes | 58 | 17 Nov 2026 | https://github.com/erkamyaman/rust-anything | GitHub Copilot, Claude Code, Cursor |
 | 234 | Ansphare: Design Tool With One-Click Prompts and Designs | Web app | Agent skills | no | 45 | 17 Nov 2026 | https://ansphare.com/ | v0 by Vercel, Relume, Uizard |
 | 233 | ACE Music v1 | Web app | Audio | no | 72 | 17 Nov 2026 | https://acemusic.ai/ | Suno, Udio, ElevenLabs Music |
 | 232 | kajisho5/ffmpeg-skill: Local video editor for coding agents: 42 FFmpeg tools with a machine-readable contract and an MCP server | Skill | Agent skills | yes | 68 | 17 Nov 2026 | https://github.com/kajisho5/ffmpeg-skill | Descript, CapCut, Adobe Premiere Pro |
-| 231 | HKUDS/CLI-Anything: Making ALL Software Agent-Native | Developer tool | Coding agents | yes | 88 | 17 Nov 2026 | https://github.com/HKUDS/CLI-Anything | Playwright, Puppeteer, Selenium |
+| 231 | HKUDS/CLI-Anything: Making ALL Software Agent-Native | Developer tool | Agent infrastructure | yes | 88 | 17 Nov 2026 | https://github.com/HKUDS/CLI-Anything | Playwright, Puppeteer, Selenium |
 | 230 | makeplane/plane: Open-source Jira, Linear, Monday, and ClickUp alternative | Developer tool | Productivity | yes | 86 | 17 Nov 2026 | https://github.com/makeplane/plane | Jira, Linear, ClickUp |
 | 229 | From a Skill to a Plugin | Learn | Agent skills | no | 34 | 16 Nov 2026 | https://zoharurian.com/11/from-a-skill-to-a-plugin/ |  |
 | 228 | NVIDIA/SkillEvaluator: multi-tier framework for evaluating AI agent skills | Skill | Agent skills | yes | 78 | 16 Nov 2026 | https://github.com/NVIDIA/SkillEvaluator | LangSmith, DeepEval, Promptfoo |
@@ -52,14 +52,14 @@ Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 | 219 | CopilotKit/OpenBot: Open-source AI coworkers with their own workspace | Developer tool | Productivity | yes | 69 | 14 Nov 2026 | https://github.com/CopilotKit/OpenBot | Devin, Manus, Adept AI |
 | 218 | cursor/plugins: Cursor plugin specification and official plugins | Plugin / extension | Coding agents | yes | 81 | 14 Nov 2026 | https://github.com/cursor/plugins | VS Code Extensions, IntelliJ Plugins |
 | 217 | NVIDIA/SkillSpector: Security scanner for AI agent skills | Skill | Agent skills | yes | 83 | 14 Nov 2026 | https://github.com/NVIDIA/SkillSpector | Snyk, Checkmarx, Palo Alto Networks Prisma Cloud |
-| 216 | ranxianglei/billion-context: context-compression plugin for long-running agent sessions | Plugin / extension | Coding agents | yes | 49 | 14 Nov 2026 | https://github.com/ranxianglei/billion-context | MemGPT, LangChain, LlamaIndex |
+| 216 | ranxianglei/billion-context: context-compression plugin for long-running agent sessions | Plugin / extension | Agent infrastructure | yes | 49 | 14 Nov 2026 | https://github.com/ranxianglei/billion-context | MemGPT, LangChain, LlamaIndex |
 | 215 | anthropics/knowledge-work-plugins: plugins for knowledge workers in Claude Cowork | Skill | Agent skills | yes | 86 | 14 Nov 2026 | https://github.com/anthropics/knowledge-work-plugins | ChatGPT Plugins, Microsoft Copilot Studio, Slack Integrations |
 | 214 | earthtojake/text-to-cad: Design physical products with AI | Skill | Agent skills | yes | 66 | 14 Nov 2026 | https://github.com/earthtojake/text-to-cad | Zoo Text-to-CAD, Autodesk Fusion 360, Onshape |
 | 213 | 666ghj/MiroFish: A Simple and Universal Swarm Intelligence Engine, Predicting Anything | Developer tool | Productivity | yes | 78 | 14 Nov 2026 | https://github.com/666ghj/MiroFish | Polymarket, Metaculus, AnyLogic |
 | 212 | anomalyco/opencode: The open source AI coding agent | Developer tool | Coding agents | yes | 89 | 14 Nov 2026 | https://github.com/anomalyco/opencode | Aider, Claude Code, Cursor |
 | 211 | HKUDS/DeepTutor: Lifelong Personalized Tutoring | Developer tool | Courses & guides | yes | 76 | 14 Nov 2026 | https://github.com/HKUDS/DeepTutor | Khanmigo, Duolingo, Chegg |
 | 210 | genspark-ai/genoffice: Free, open-source AI Office suite | Developer tool | Productivity | yes | 70 | 14 Nov 2026 | https://github.com/genspark-ai/genoffice | Microsoft 365 Copilot, Google Workspace Gemini, LibreOffice |
-| 209 | paperclipai/paperclip: Open-source orchestration for zero-human companies | Developer tool | Coding agents | yes | 92 | 14 Nov 2026 | https://github.com/paperclipai/paperclip | CrewAI, AutoGPT, MultiOn |
+| 209 | paperclipai/paperclip: Open-source orchestration for zero-human companies | Developer tool | Agent infrastructure | yes | 92 | 14 Nov 2026 | https://github.com/paperclipai/paperclip | CrewAI, AutoGPT, MultiOn |
 | 208 | neilsonnn/image-blaster: An image-to-world skillset for Claude. | Skill | Agent skills | yes | 70 | 14 Nov 2026 | https://github.com/neilsonnn/image-blaster | Luma Dream Machine, Runway Gen-3, CSM 3D |
 | 201 | ComposioHQ/awesome-claude-skills: Awesome Claude Skills | Skill | Agent skills | yes | 84 | 14 Nov 2026 | https://github.com/ComposioHQ/awesome-claude-skills | Anthropic Skills, SkillsMP, Smithery |
 | 200 | Stirling PDF (Stirling-Tools/Stirling-PDF) | Desktop / phone app | Productivity | yes | 82 | 14 Nov 2026 | https://github.com/Stirling-Tools/Stirling-PDF | Adobe Acrobat, Smallpdf, iLovePDF |
@@ -67,19 +67,19 @@ Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 | 198 | Leonxlnx/taste-skill: Taste Skill | Skill | Agent skills | yes | 90 | 14 Nov 2026 | https://github.com/Leonxlnx/taste-skill | v0, Figma, Framer AI |
 | 197 | nextlevelbuilder/ui-ux-pro-max-skill: UI UX Pro Max | Skill | Agent skills | yes | 93 | 14 Nov 2026 | https://github.com/nextlevelbuilder/ui-ux-pro-max-skill | v0, Figma, Framer AI |
 | 196 | 3D Style Atlas: 37 3D Explainer Video Styles (Futurepedia) | Learn | Video | yes | 42 | 13 Nov 2026 | https://www.futurepedia.io/resources/3d-style-atlas/view |  |
-| 195 | How to build a team of AI coding agents: a tech lead, two developers and a reviewer | Learn | Coding agents | no | 46 | 13 Nov 2026 | https://dev.to/roidayan/how-to-build-a-team-of-ai-coding-agents-a-tech-lead-two-developers-and-a-reviewer-2g3l |  |
+| 195 | How to build a team of AI coding agents: a tech lead, two developers and a reviewer | Learn | Courses & guides | no | 46 | 13 Nov 2026 | https://dev.to/roidayan/how-to-build-a-team-of-ai-coding-agents-a-tech-lead-two-developers-and-a-reviewer-2g3l |  |
 | 193 | צייד הטיסות (Flight Hunter) — cheapest flight of the year, in two questions | Skill | Agent skills | yes | 38 | 13 Nov 2026 | https://brainai.co.il/guides/cheap-flights-guide/ | Google Flights, Skyscanner, Kayak |
 | 191 | מסדר התמונות של אמירוס (Amiros Photo Sorter) | Learn | Productivity | yes | 45 | 13 Nov 2026 | https://bina4us.amiros.ai/articles/photo-sorter |  |
 | 190 | haydenschmitty/floorplan: interactive plain-English map of your codebase for Claude Code and Codex | Plugin / extension | Coding agents | yes | 54 | 12 Nov 2026 | https://github.com/haydenschmitty/floorplan | Sourcegraph, CodeSee, GitHub Copilot |
 | 189 | ModRetro Chromatic plugin for Codex | Plugin / extension | App building | yes | 42 | 12 Nov 2026 | https://developers.openai.com/blog/build-a-game-with-modretro-chromatic | GB Studio, Unity, Rosebud AI |
 | 192 | anthropics/skills: Anthropic's official collection of Claude Skills | Skill | Agent skills | yes | 97 | 11 Nov 2026 | https://github.com/anthropics/skills | Cursor Rules, OpenAI Custom GPTs, Gemini Gems |
 | 188 | MotionClone | Web app | Video | yes | 35 | 11 Nov 2026 | https://facebook.com/reel/1812758193280520/ | Runway, Adobe After Effects, Higgsfield |
-| 187 | 7 GitHub repos for AI agents | Learn | Coding agents | yes | 41 | 10 Nov 2026 | https://facebook.com/reel/1739497490685118/ |  |
+| 187 | 7 GitHub repos for AI agents | Learn | Courses & guides | yes | 41 | 10 Nov 2026 | https://facebook.com/reel/1739497490685118/ |  |
 | 186 | Free open AI access reel | Learn | Other | yes | 44 | 10 Nov 2026 | https://facebook.com/reel/1599397228263229/ |  |
 | 185 | Raea | Developer tool | Video | yes | 64 | 9 Nov 2026 | https://facebook.com/reel/1467689748790348/ | Remotion, After Effects, Motion Canvas |
 | 184 | 23 fastest-trending AI GitHub repos | Learn | News & analysis | yes | 78 | 9 Nov 2026 | https://facebook.com/61584541064067/posts/pfbid023W2UhoNWdonbpy3efwhBkSnxy4c3dKLqq3x7TZ8FEff2oHaG9FUKQPiqcTYokSQBl/ |  |
-| 194 | Job Data APIs and Scrapers (cporter202/job-data-apis-and-scrapers) | Developer tool | Other | yes | 58 | 8 Nov 2026 | https://github.com/cporter202/job-data-apis-and-scrapers | LinkedIn API, Indeed API, Apify |
-| 183 | Claude token economy guide | Learn | Coding agents | yes | 43 | 8 Nov 2026 | https://facebook.com/685119124/posts/pfbid0eMHgZEYaAmqzKVWoprPSujS5aPw5uZrQYg9KH6ejYPK1mBUcpbZczgSrrApwuXvPl/ |  |
+| 194 | Job Data APIs and Scrapers (cporter202/job-data-apis-and-scrapers) | Developer tool | APIs & scraping | yes | 58 | 8 Nov 2026 | https://github.com/cporter202/job-data-apis-and-scrapers | LinkedIn API, Indeed API, Apify |
+| 183 | Claude token economy guide | Learn | Courses & guides | yes | 43 | 8 Nov 2026 | https://facebook.com/685119124/posts/pfbid0eMHgZEYaAmqzKVWoprPSujS5aPw5uZrQYg9KH6ejYPK1mBUcpbZczgSrrApwuXvPl/ |  |
 | 182 | Leonxlnx/cinetic: agent skill that makes coding agents direct short films | Skill | Video | yes | 49 | 8 Nov 2026 | https://github.com/Leonxlnx/cinetic | Runway, Synthesia, Remotion |
 | 181 | israelio/claude-usage-widget: Claude Usage menu bar app | Desktop / phone app | Coding agents | yes | 56 | 7 Nov 2026 | https://github.com/israelio/claude-usage-widget | Claude usage page, ccusage, Raycast |
 | 180 | p1ngul1n0/blackbird: OSINT tool to find accounts by username or email | Developer tool | Other | yes | 69 | 6 Nov 2026 | https://github.com/p1ngul1n0/blackbird | Sherlock, Maltego, Pipl |
@@ -87,14 +87,14 @@ Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 | 178 | 5 הסקילים לקלוד שחובה להתקין עכשיו | Learn | Agent skills | no | 51 | 5 Nov 2026 | https://eilon.co/claude-skills-top-5/ |  |
 | 177 | 5 essential Claude skills | Learn | Agent skills | yes | 48 | 5 Nov 2026 | https://facebook.com/reel/974944511862394/ |  |
 | 176 | Prompts vs loops | Learn | Other | yes | 33 | 5 Nov 2026 | https://facebook.com/reel/807628379112146/ |  |
-| 175 | Claude desktop 11 updates guide | Learn | Coding agents | yes | 45 | 5 Nov 2026 | https://facebook.com/reel/1116222541331567/ |  |
+| 175 | Claude desktop 11 updates guide | Learn | Courses & guides | yes | 45 | 5 Nov 2026 | https://facebook.com/reel/1116222541331567/ |  |
 | 174 | wheresryan22/anatomy: Claude Code skill for interactive 3D technical illustrations | Skill | Agent skills | yes | 49 | 5 Nov 2026 | https://github.com/wheresryan22/anatomy | Figma, Spline, Canva |
 | 173 | storytold/craft-anything: AI studies a site, app or game and rebuilds it | Developer tool | App building | yes | 42 | 4 Nov 2026 | https://github.com/storytold/craft-anything | Bolt.new, v0, Lovable |
 | 172 | microsoft/markitdown: Convert files and office documents to Markdown | Developer tool | Knowledge & RAG | yes | 39 | 3 Nov 2026 | https://github.com/microsoft/markitdown | Adobe Acrobat, Pandoc, LlamaParse |
 | 171 | Idealab.ai | Web app | Productivity | no | 36 | 3 Nov 2026 | https://idealab.ai | IdeaBrowser, Exploding Topics, Y Combinator Requests for Startups |
 | 170 | Freefield | Web app | Video | yes | 42 | 2 Nov 2026 | https://facebook.com/reel/1579962273880465/ | Higgsfield, Runway, Krea |
-| 169 | vercel-labs/agent-desktop: desktop computer use for AI agents via the accessibility tree | Developer tool | Coding agents | yes | 72 | 31 Oct 2026 | https://github.com/vercel-labs/agent-desktop | Claude Computer Use, OpenAI Operator, UiPath |
-| 168 | cporter202/agentic-ai-apis: Curated collection of APIs for building AI agents | Developer tool | Coding agents | yes | 74 | 31 Oct 2026 | https://github.com/cporter202/agentic-ai-apis | RapidAPI, Apify Store, Smithery |
+| 169 | vercel-labs/agent-desktop: desktop computer use for AI agents via the accessibility tree | Developer tool | Agent infrastructure | yes | 72 | 31 Oct 2026 | https://github.com/vercel-labs/agent-desktop | Claude Computer Use, OpenAI Operator, UiPath |
+| 168 | cporter202/agentic-ai-apis: Curated collection of APIs for building AI agents | Developer tool | APIs & scraping | yes | 74 | 31 Oct 2026 | https://github.com/cporter202/agentic-ai-apis | RapidAPI, Apify Store, Smithery |
 | 167 | Skills | Skill | Agent skills | yes | 39 | 29 Oct 2026 | https://jakub.kr/skills | v0, Figma, Framer AI |
 | 166 | Teardown (agent skill by Jakub Krehel) | Skill | Image | yes | 40 | 29 Oct 2026 | https://aiuxplayground.com/skills/teardown | Midjourney, Adobe Illustrator, Figma |
 | 165 | AI jailbreak prompts collection | Learn | Other | yes | 45 | 29 Oct 2026 | https://facebook.com/61572558090421/posts/pfbid036M9i31dau2YZjG2B3AtNiLEcvdobZi9tPUmJ3AL5C2xJ8PVWzNTeo7ahjYZrkpufl/ |  |
@@ -105,10 +105,10 @@ Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 | 160 | elayadesign/ai-design-skills: design skills that make coding agents build polished landing pages | Skill | Agent skills | yes | 55 | 26 Oct 2026 | https://github.com/elayadesign/ai-design-skills | v0, Figma, Framer AI |
 | 159 | ככה תגרמו לקלוד לכתוב בדיוק כמוכם (אף אחד לא יזהה שזה AI) | Learn | Agent skills | no | 48 | 25 Oct 2026 | https://eilon.co/claude-write-like-you/ |  |
 | 158 | Gemini project workflow guide | Learn | Productivity | yes | 42 | 25 Oct 2026 | https://facebook.com/685119124/posts/pfbid02rFAgGGJjFFxKzQdUFdmWdcsZNwZLY64r3pUtoHg2ZS6zWBa7kKvxZZUR8pjjBpkUl/ |  |
-| 157 | Firecrawl Alexandria | Connector (MCP) | Productivity | no | 74 | 23 Oct 2026 | https://www.firecrawl.dev/alexandria | Apollo.io, ZoomInfo, Clearbit |
-| 156 | cporter202/API-mega-list: Curated directory of ready-to-use APIs | Developer tool | Other | yes | 79 | 19 Oct 2026 | https://github.com/cporter202/API-mega-list |  |
+| 157 | Firecrawl Alexandria | Connector (MCP) | APIs & scraping | no | 74 | 23 Oct 2026 | https://www.firecrawl.dev/alexandria | Apollo.io, ZoomInfo, Clearbit |
+| 156 | cporter202/API-mega-list: Curated directory of ready-to-use APIs | Developer tool | APIs & scraping | yes | 79 | 19 Oct 2026 | https://github.com/cporter202/API-mega-list |  |
 | 155 | Impeccable | Skill | Agent skills | yes | 89 | 19 Oct 2026 | https://github.com/pbakaus/impeccable | v0, Figma, Cursor Rules |
-| 154 | OpenAI Codex hardware builds gallery | News | Coding agents | yes | 36 | 19 Oct 2026 | https://facebook.com/61572558090421/posts/pfbid08ZFq1BjYjmMqQgdsGrb2B7TyRgc7apHRTMCii3g4UgdHSLGiWh5QruTMG5ajoFjul/ |  |
+| 154 | OpenAI Codex hardware builds gallery | News | News & analysis | yes | 36 | 19 Oct 2026 | https://facebook.com/61572558090421/posts/pfbid08ZFq1BjYjmMqQgdsGrb2B7TyRgc7apHRTMCii3g4UgdHSLGiWh5QruTMG5ajoFjul/ |  |
 | 153 | Claude code-generated motion design | Learn | Video | yes | 42 | 19 Oct 2026 | https://facebook.com/reel/1123646423345440/ |  |
 | 152 | Fish Audio Drama 3 | AI model | Audio | no | 68 | 15 Oct 2026 | https://fish.audio/blog/fish-audio-drama-3/ | ElevenLabs, OpenAI TTS, Murf AI |
 | 151 | ponytail/skills/ponytail/SKILL.md at main · DietrichGebert/ponytail | Skill | Agent skills | yes | 63 | 15 Oct 2026 | https://github.com/DietrichGebert/ponytail/blob/main/skills/ponytail/SKILL.md | Cursor Rules, GitHub Copilot Instructions, Cline Rules |
@@ -141,7 +141,7 @@ Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 | 125 | virgiliojr94/book-to-skill: turn technical books into agent skills | Skill | Agent skills | yes | 66 | 29 Aug 2026 | https://github.com/virgiliojr94/book-to-skill | NotebookLM, ChatGPT Projects, Blinkist |
 | 124 | Claude 101 · Claude Academy | Learn | Courses & guides | no | 84 | 27 Aug 2026 | https://academy.claude.com/courses/claude-101 |  |
 | 123 | htdt/godogen: AI pipeline that builds complete games from a prompt | Skill | App building | yes | 67 | 26 Aug 2026 | https://github.com/htdt/godogen | Unity Muse, Roblox Assistant, Rosebud AI |
-| 122 | Ox Alpha (free stealth model on OpenRouter) | AI model | Coding agents | no | 46 | 23 Aug 2026 | https://openrouter.ai/stealth/ox-alpha:free | GPT-5, Claude Sonnet, Gemini Pro |
+| 122 | Ox Alpha (free stealth model on OpenRouter) | AI model | AI models | no | 46 | 23 Aug 2026 | https://openrouter.ai/stealth/ox-alpha:free | GPT-5, Claude Sonnet, Gemini Pro |
 | 121 | Code animation question | Learn | Other | yes | 16 | 4 Aug 2026 | https://facebook.com/groups/1684554685829832/permalink/2098106504474646/ |  |
 | 120 | ShenSeanChen/waku-agent: local-first personal AI assistant | Developer tool | Agent skills | yes | 48 | 2 Aug 2026 | https://github.com/ShenSeanChen/waku-agent | ChatGPT, OpenClaw, Lindy |
 | 119 | Gemini Spark | Web app | Coding agents | no | 78 | 31 Jul 2026 | https://gemini.google/overview/agent/spark/ | ChatGPT Tasks, Manus, Zapier Agents |
@@ -154,11 +154,10 @@ Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 | 112 | 24 Claude plugins, skills and MCP tools | Learn | Agent skills | yes | 40 | 16 Jun 2026 | https://facebook.com/750547861/posts/pfbid02DMjwgmQgeec3ACcV4ZhUJVU3iSyAqFnEesATmRvebWAaKjtjKFFx1BSQSqiTrJdjl/ |  |
 | 111 | Claude Fable 5 animated websites tutorial | Learn | App building | yes | 49 | 12 Jun 2026 | https://facebook.com/reel/1630394814696082/ |  |
 | 110 | Work Trend Index | News | News & analysis | no | 39 | 10 Jun 2026 | https://aka.ms/WTI |  |
-| 109 | yan-yanko/rainman: local token-free memory layer for AI coding tools | Developer tool | Coding agents | yes | 44 | 7 Jun 2026 | https://github.com/yan-yanko/rainman | mem0, Zep, Letta |
+| 109 | yan-yanko/rainman: local token-free memory layer for AI coding tools | Developer tool | Agent infrastructure | yes | 44 | 7 Jun 2026 | https://github.com/yan-yanko/rainman | mem0, Zep, Letta |
 | 108 | Databases for AI-built apps | Learn | App building | yes | 39 | 1 Jun 2026 | https://facebook.com/groups/1684554685829832/permalink/2042819693336661/ |  |
-| 107 | API-mega-list · cporter202 | Developer tool | App building | yes | 75 | 30 May 2026 | https://repodir.com/repo/cporter202-api-mega-list | RapidAPI, Postman API Network, public-apis |
 | 106 | Cursor · Students | Web app | Coding agents | no | 41 | 28 May 2026 | https://cursor.com/students | GitHub Copilot Student, Windsurf, Replit |
-| 105 | Six leading AI web scrapers | Learn | Productivity | yes | 48 | 27 May 2026 | https://facebook.com/61572558090421/posts/pfbid02NnLa4MVnyeKis5HXzajmE8xdkAXHqP5rb8VsACbzbjZSK9etRyMiHcgKkue19dpVl/ |  |
+| 105 | Six leading AI web scrapers | Learn | APIs & scraping | yes | 48 | 27 May 2026 | https://facebook.com/61572558090421/posts/pfbid02NnLa4MVnyeKis5HXzajmE8xdkAXHqP5rb8VsACbzbjZSK9etRyMiHcgKkue19dpVl/ |  |
 | 104 | Granola Alternative — Local, Open Source AI Meeting Notes | Desktop / phone app | Productivity | yes | 64 | 27 May 2026 | https://openwhispr.com/compare/granola | Granola, Otter.ai, Fireflies.ai |
 | 103 | fastrepl/anarlog: Open source Granola AI Alternative | Desktop / phone app | Productivity | yes | 73 | 27 May 2026 | https://github.com/fastrepl/anarlog | Granola, Otter.ai, Fireflies.ai |
 | 102 | Vibe and Verify | Web app | Coding agents | yes | 35 | 26 May 2026 | https://facebook.com/685119124/posts/pfbid02rQfj8fL2BDNYTcduW4mdF8sRyXWiYjdqjCHb5Mny5xQC5Uvt3gpraxwNGmVkue8Hl/ | ChatGPT, ValidatorAI, IdeaBuddy |
@@ -166,28 +165,28 @@ Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 | 100 | Bridgy | Desktop / phone app | Coding agents | yes | 53 | 23 May 2026 | https://facebook.com/groups/cladue/permalink/1371890934997555/ | Claude mobile app, Termius, Happy Coder |
 | 99 | NotebookLM Slide Deck hack | Learn | Productivity | no | 36 | 22 May 2026 | https://facebook.com/685119124/posts/pfbid031LymvXJQDj6Uv53Taw2BeuSamN9gsEdWRRBztrATnV4h98g5K4jsDaX86B1R91Qol/ |  |
 | 98 | Mastering Claude Code in 30 minutes | Learn | Courses & guides | no | 85 | 20 May 2026 | https://www.youtube.com/live/6eBSHbLKuN0 |  |
-| 97 | Scraping APIs for Developers (cporter202/scraping-apis-for-devs) | Developer tool | Other | yes | 72 | 17 May 2026 | https://repodir.com/repo/cporter202-scraping-apis-for-devs | Apify, ScrapingBee, Bright Data |
-| 96 | Claude Code Hooks | Learn | Coding agents | no | 45 | 17 May 2026 | https://code.claude.com/docs/en/hooks-guide |  |
+| 97 | Scraping APIs for Developers (cporter202/scraping-apis-for-devs) | Developer tool | APIs & scraping | yes | 72 | 17 May 2026 | https://repodir.com/repo/cporter202-scraping-apis-for-devs | Apify, ScrapingBee, Bright Data |
+| 96 | Claude Code Hooks | Learn | Courses & guides | no | 45 | 17 May 2026 | https://code.claude.com/docs/en/hooks-guide |  |
 | 95 | Voice Generator AI - Unlimited | Desktop / phone app | Audio | no | 53 | 16 May 2026 | https://www.producthunt.com/products/voice-generator-ai-unlimited | ElevenLabs, Speechify, Murf AI |
 | 94 | Skills IL \| ספריית הסקילס הישראלית לסוכני AI | Skill | Agent skills | yes | 78 | 16 May 2026 | https://agentskills.co.il/he | Anthropic Skills, ComposioHQ Awesome Claude Skills, SkillsMP |
 | 93 | Virlo | Web app | Video | no | 46 | 16 May 2026 | https://virlo.ai/ | Exploding Topics, Tubebuddy, VidIQ |
 | 92 | 1weiho/open-slide: Slide framework built for AI coding agents | Developer tool | App building | yes | 51 | 11 May 2026 | https://github.com/1weiho/open-slide | Gamma, Slidev, Reveal.js |
 | 91 | OpenClaw | Learn | Coding agents | yes | 79 | 28 Apr 2026 | https://openclaw.ai/ |  |
 | 90 | Claude Design | Web app | App building | no | 80 | 19 Apr 2026 | https://claude.ai/design | Figma, Canva, v0 |
-| 89 | Claude Code: Structuring Projects for Faster Execution | Learn | Coding agents | no | 44 | 17 Apr 2026 | https://www.linkedin.com/posts/abdullah-nabil-51a6a727a_most-people-are-using-claude-code-like-a-share-7450756788884398080-8Fic |  |
+| 89 | Claude Code: Structuring Projects for Faster Execution | Learn | Courses & guides | no | 44 | 17 Apr 2026 | https://www.linkedin.com/posts/abdullah-nabil-51a6a727a_most-people-are-using-claude-code-like-a-share-7450756788884398080-8Fic |  |
 | 88 | AI-SHIPR — free Claude Code system for product managers (Yaniv Yaakubovich) | Skill | Agent skills | no | 36 | 17 Apr 2026 | https://www.linkedin.com/posts/yanivy9h_%D7%A2%D7%93%D7%9B%D7%95%D7%9F-%D7%94%D7%A4%D7%95%D7%A1%D7%98-%D7%A7%D7%99%D7%91%D7%9C-%D7%94%D7%9E%D7%95%D7%9F-%D7%AA%D7%92%D7%95%D7%91%D7%95%D7%AA-%D7%95%D7%94%D7%97%D7%9C%D7%98%D7%AA%D7%99-%D7%9C%D7%A9%D7%AA%D7%A3-share-7450157432594563072-gysZ | ChatPRD, Productboard, Notion AI |
-| 87 | אתם חוזרים על עצמכם מחדש בכל שיחה עם קלוד קוד? | Learn | Coding agents | no | 49 | 17 Apr 2026 | https://www.linkedin.com/posts/itay-rose-ari-994a83b8_%D7%90%D7%AA%D7%9D-%D7%97%D7%95%D7%96%D7%A8%D7%99%D7%9D-%D7%A2%D7%9C-%D7%A2%D7%A6%D7%9E%D7%9B%D7%9D-%D7%9E%D7%97%D7%93%D7%A9-%D7%91%D7%9B%D7%9C-%D7%A9%D7%99%D7%97%D7%94-%D7%A2%D7%9D-%D7%A7%D7%9C%D7%95%D7%93-ugcPost-7449302794651688960-hNHE |  |
+| 87 | אתם חוזרים על עצמכם מחדש בכל שיחה עם קלוד קוד? | Learn | Courses & guides | no | 49 | 17 Apr 2026 | https://www.linkedin.com/posts/itay-rose-ari-994a83b8_%D7%90%D7%AA%D7%9D-%D7%97%D7%95%D7%96%D7%A8%D7%99%D7%9D-%D7%A2%D7%9C-%D7%A2%D7%A6%D7%9E%D7%9B%D7%9D-%D7%9E%D7%97%D7%93%D7%A9-%D7%91%D7%9B%D7%9C-%D7%A9%D7%99%D7%97%D7%94-%D7%A2%D7%9D-%D7%A7%D7%9C%D7%95%D7%93-ugcPost-7449302794651688960-hNHE |  |
 | 86 | Treat AI skills like code | Learn | Agent skills | yes | 32 | 16 Apr 2026 | https://facebook.com/100064954741071/posts/pfbid0CVPwgZNk6yo9dH8xjfDc1kxRsp3To6jo1ferCgrSgcQXZpSR4RasA65raQH9V4qPl/ |  |
 | 85 | Claude anti-glazing prompt | Learn | Agent skills | no | 47 | 16 Apr 2026 | https://facebook.com/reel/955735520376190/ |  |
 | 84 | ClawBud | Web app | Coding agents | no | 43 | 15 Apr 2026 | https://clawbud.ai | Manus, Lindy, ChatGPT Agent |
-| 83 | Claude Managed Agents | Developer tool | Coding agents | no | 84 | 12 Apr 2026 | https://platform.claude.com/docs/en/managed-agents/overview | OpenAI Agents SDK, AWS Bedrock Agents, Google Vertex AI Agent Builder |
+| 83 | Claude Managed Agents | Developer tool | Agent infrastructure | no | 84 | 12 Apr 2026 | https://platform.claude.com/docs/en/managed-agents/overview | OpenAI Agents SDK, AWS Bedrock Agents, Google Vertex AI Agent Builder |
 | 82 | עידן הענן הסתיים? גוגל חושפת את Gemma 4 – הבינה המלאכותית העוצמתית שרצה ישירות על המכשיר | News | News & analysis | no | 72 | 12 Apr 2026 | https://yznews.store/article/0deb64e2-4ea2-45f2-bd2a-742b2d36aad3 |  |
 | 81 | Claude Code image skill (Nano Banana / Gemini) | Skill | Image | yes | 46 | 4 Apr 2026 | https://facebook.com/685119124/posts/pfbid025XkjNGyZR3BTLEkHBS87LyHu69GwduxGXmDt8xR8iCF31WbmWcg4RqKdzbAtcbAUl/ | Midjourney, DALL-E, Ideogram |
 | 80 | ClaudeCode Launchpad CLI — Claude Code Installer | Developer tool | Coding agents | yes | 49 | 30 Mar 2026 | https://kivun-terminal.netlify.app/ | Homebrew, Claude Desktop, Warp |
-| 79 | Claude Code: Terminal vs Desktop vs VS Code | Learn | Coding agents | yes | 46 | 29 Mar 2026 | https://facebook.com/groups/715153780127233/permalink/1520115042964432/ |  |
+| 79 | Claude Code: Terminal vs Desktop vs VS Code | Learn | Courses & guides | yes | 46 | 29 Mar 2026 | https://facebook.com/groups/715153780127233/permalink/1520115042964432/ |  |
 | 78 | Claude Code + NotebookLM daily briefing | Learn | Coding agents | yes | 40 | 29 Mar 2026 | https://facebook.com/685119124/posts/pfbid02j3L4Dd3uU3YMC5GZbfnMTqSbGVpUqdZH5D6pCuBiexZPHbdjDbE7Vrz3bE9RvCqPl/ |  |
-| 77 | claw.ilindex — OpenClaw Hebrew hub | Learn | Coding agents | yes | 43 | 29 Mar 2026 | https://facebook.com/groups/715153780127233/permalink/1519816902994246/ |  |
-| 76 | Personal OS | Learn | Coding agents | no | 45 | 27 Mar 2026 | https://facebook.com/groups/1684554685829832/permalink/1987622355523062/ |  |
+| 77 | claw.ilindex — OpenClaw Hebrew hub | Learn | Courses & guides | yes | 43 | 29 Mar 2026 | https://facebook.com/groups/715153780127233/permalink/1519816902994246/ |  |
+| 76 | Personal OS | Learn | Courses & guides | no | 45 | 27 Mar 2026 | https://facebook.com/groups/1684554685829832/permalink/1987622355523062/ |  |
 | 75 | Unified SaaS dashboard with Gemini | Learn | App building | yes | 53 | 24 Mar 2026 | https://facebook.com/groups/715153780127233/permalink/1516183536690916/ |  |
 | 74 | Skills IL | Skill | Agent skills | yes | 76 | 24 Mar 2026 | https://agentskills.co.il/ | Anthropic Skills, ComposioHQ Awesome Claude Skills, SkillsMP |
 | 73 | Google Stitch Builds UI From Scratch | Learn | App building | no | 82 | 21 Mar 2026 | https://youtube.com/shorts/UGT3u2jkqCY |  |
@@ -195,7 +194,7 @@ Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 | 71 | Dispatch in Claude Cowork | Desktop / phone app | Coding agents | no | 41 | 20 Mar 2026 | https://claude.com/resources/tutorials/dispatch-in-claude-cowork | ChatGPT Agent, Manus, Microsoft Copilot |
 | 70 | fal MCP Server | Connector (MCP) | Image | no | 85 | 20 Mar 2026 | https://fal.ai/docs/documentation/setting-up/mcp | Replicate, Hugging Face Inference, Runway API |
 | 69 | karpathy/autoresearch: AI agents running autonomous LLM training research | Developer tool | Coding agents | yes | 57 | 19 Mar 2026 | https://github.com/karpathy/autoresearch | Weights & Biases, Optuna, Google AutoML |
-| 68 | Claude Architect Trivia | Web app | Coding agents | yes | 47 | 19 Mar 2026 | https://facebook.com/groups/1684554685829832/permalink/1980404759578155/ | Kahoot, Quizlet, Anthropic Academy |
+| 68 | Claude Architect Trivia | Web app | Courses & guides | yes | 47 | 19 Mar 2026 | https://facebook.com/groups/1684554685829832/permalink/1980404759578155/ | Kahoot, Quizlet, Anthropic Academy |
 | 67 | Dispatch in Claude Cowork | Desktop / phone app | Coding agents | no | 38 | 18 Mar 2026 | https://support.claude.com/en/articles/13947068-assign-tasks-from-anywhere-in-claude-cowork | ChatGPT Agent, Manus, Microsoft Copilot |
 | 66 | Skills IL | Skill | Agent skills | yes | 72 | 16 Mar 2026 | https://github.com/skills-il | Anthropic Skills, ComposioHQ Awesome Claude Skills, SkillsMP |
 | 65 | 6 Ways AI Kills Software Stocks | Learn | News & analysis | no | 43 | 14 Mar 2026 | https://youtu.be/j9iItmg0t1c |  |
@@ -203,7 +202,7 @@ Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 | 63 | Gemini stock analysis prompts | Learn | News & analysis | no | 51 | 13 Mar 2026 | https://facebook.com/61571991616735/posts/pfbid02g9Fk5iWkhucB8v5ptETFfBJRtUZkcx6rkvDTzmzV27FTYMTaGLetYksFx1QixWbtl/ |  |
 | 62 | Wispr Flow | Desktop / phone app | Agent skills | no | 49 | 13 Mar 2026 | https://wisprflow.ai | Superwhisper, Apple Dictation, Otter.ai |
 | 61 | teng-lin/notebooklm-py: Unofficial Python API and skill for Google NotebookLM | Developer tool | Knowledge & RAG | yes | 72 | 13 Mar 2026 | https://github.com/teng-lin/notebooklm-py | Google NotebookLM API, Zapier, Make |
-| 60 | Building AI Agents — March 2026 Stack | Learn | Coding agents | yes | 50 | 13 Mar 2026 | https://facebook.com/61571060319687/posts/pfbid02XmNyRHLYEAppks8wwAzReNCbEgdcXDwGZ3yGjQQbEnT9zxhAbm2mKEvU9TVGhtBul/ |  |
+| 60 | Building AI Agents — March 2026 Stack | Learn | Courses & guides | yes | 50 | 13 Mar 2026 | https://facebook.com/61571060319687/posts/pfbid02XmNyRHLYEAppks8wwAzReNCbEgdcXDwGZ3yGjQQbEnT9zxhAbm2mKEvU9TVGhtBul/ |  |
 | 59 | blader/humanizer: Claude skill that removes signs of AI writing | Skill | Agent skills | yes | 47 | 10 Mar 2026 | https://github.com/blader/humanizer | Undetectable AI, QuillBot, Grammarly |
 | 58 | Website explainer video skill | Skill | Agent skills | yes | 43 | 6 Mar 2026 | https://facebook.com/1704588976/posts/pfbid026RXAFaMqJTayJHge5PjVGu2w9xnLNSBu2FyuEH6mJ5naYaJE5SBZRsPb6nE7BaSyl/ | Loom, Arcade, Synthesia |
 | 57 | סוכני GEMINI - אלעד שילה הדרכה | Learn | Courses & guides | no | 42 | 6 Mar 2026 | https://human-ai.ravpage.co.il/gemini-guide |  |
@@ -222,22 +221,22 @@ Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 | 46 | הטמעת AI בעסק, אסטרטגיה, הטמעה וליווי צמוד | Web app | Other | no | 20 | 25 Feb 2026 | https://claude.danielai.co.il/offers | Accenture, Deloitte AI Institute, McKinsey QuantumBlack |
 | 45 | תוסף Claude Code RTL \| עברית מלאה ב-VS Code \| דניאל נחמיה ובני פרבר | Plugin / extension | Coding agents | no | 39 | 25 Feb 2026 | https://claude.danielai.co.il/claudecodertl | GitHub Copilot Chat, Cline, Continue |
 | 44 | קורס Claude Code מתקדם — 4 מפגשים \| דניאל נחמיה ובני פרבר | Learn | Courses & guides | no | 37 | 25 Feb 2026 | https://claude.danielai.co.il/course |  |
-| 43 | סדנת Claude Code מעשית \| דניאל נחמיה ובני פרבר | Learn | Coding agents | no | 36 | 25 Feb 2026 | https://claude.danielai.co.il/members/guides |  |
-| 42 | מצגת סדנת Claude Code \| דניאל נחמיה ובני פרבר | Learn | Coding agents | no | 33 | 25 Feb 2026 | https://claude.danielai.co.il/guides/workshop-presentation.html |  |
+| 43 | סדנת Claude Code מעשית \| דניאל נחמיה ובני פרבר | Learn | Courses & guides | no | 36 | 25 Feb 2026 | https://claude.danielai.co.il/members/guides |  |
+| 42 | מצגת סדנת Claude Code \| דניאל נחמיה ובני פרבר | Learn | Courses & guides | no | 33 | 25 Feb 2026 | https://claude.danielai.co.il/guides/workshop-presentation.html |  |
 | 41 | TESTAMIND - YouTube | Learn | Courses & guides | no | 40 | 24 Feb 2026 | https://www.youtube.com/@liortesta |  |
 | 40 | OpenClaw in practice | Developer tool | Coding agents | yes | 38 | 23 Feb 2026 | https://facebook.com/1016607780/posts/pfbid0yvxtLn2vHRkvBnRRmAqD6w4puufnV9RNJTWhumScfQh9WKZBLkRpYiFTHpQniDDul/ | Manus, ChatGPT Agent, Lindy |
-| 39 | מדריך התקנה למתחילים \| Claude Code | Learn | Coding agents | no | 31 | 22 Feb 2026 | https://claude.danielai.co.il/guides/installation-guide.html |  |
+| 39 | מדריך התקנה למתחילים \| Claude Code | Learn | Courses & guides | no | 31 | 22 Feb 2026 | https://claude.danielai.co.il/guides/installation-guide.html |  |
 | 38 | Claude AI קורס מודול 1: קלוד צ'אט \| TESTAMIND | Learn | Courses & guides | no | 42 | 22 Feb 2026 | https://www.youtube.com/playlist?list=PLC2VHNE-Inkgu4U5DERlrA0AEX8yvbjjT |  |
 | 37 | The Complete Guide to Building Skills for Claude | Learn | Agent skills | no | 80 | 22 Feb 2026 | https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf |  |
 | 36 | 10 פרומפטים ל- NotebookLM שאתם חייבים להכיר! | Learn | Courses & guides | no | 76 | 22 Feb 2026 | https://eilon.co/10-%d7%a4%d7%a8%d7%95%d7%9e%d7%a4%d7%98%d7%99%d7%9d-%d7%9c-notebooklm-%d7%a9%d7%a9%d7%99%d7%a0%d7%95/ |  |
-| 35 | המדריך הבטיחותי להתקנת OpenClaw | Learn | Coding agents | no | 51 | 22 Feb 2026 | https://www.youtube.com/watch?v=_gT52fgXq-g |  |
+| 35 | המדריך הבטיחותי להתקנת OpenClaw | Learn | Courses & guides | no | 51 | 22 Feb 2026 | https://www.youtube.com/watch?v=_gT52fgXq-g |  |
 | 34 | Camply | Web app | App building | no | 55 | 21 Feb 2026 | https://camply.ai/ | AdEspresso, Madgicx, Meta Advantage+ |
-| 33 | OpenClaw efficiency command | Learn | Coding agents | yes | 43 | 21 Feb 2026 | https://facebook.com/100000383469166/posts/pfbid024dSf1CTWjDtZmRadk8amwo1h8hjRcTeiYocX6tkn5ySstVwN1fdjWY5peDJEwZBql/ |  |
-| 32 | OpenClaw security hardening | Learn | Coding agents | yes | 38 | 20 Feb 2026 | https://facebook.com/100002717045940/posts/pfbid02jwe8ahZx9zBd9HCPAi35agyCPWzwDPH3crgwhuex234QGQceW5WdtZQWH3p6ukvil/ |  |
-| 31 | Five Claude Code tips | Learn | Coding agents | no | 40 | 20 Feb 2026 | https://facebook.com/groups/1684554685829832/permalink/1959006055051359/ |  |
-| 30 | Claude Desktop + Claude Code | Learn | Coding agents | no | 51 | 20 Feb 2026 | https://facebook.com/reel/1544123853331530/ |  |
+| 33 | OpenClaw efficiency command | Learn | Courses & guides | yes | 43 | 21 Feb 2026 | https://facebook.com/100000383469166/posts/pfbid024dSf1CTWjDtZmRadk8amwo1h8hjRcTeiYocX6tkn5ySstVwN1fdjWY5peDJEwZBql/ |  |
+| 32 | OpenClaw security hardening | Learn | Courses & guides | yes | 38 | 20 Feb 2026 | https://facebook.com/100002717045940/posts/pfbid02jwe8ahZx9zBd9HCPAi35agyCPWzwDPH3crgwhuex234QGQceW5WdtZQWH3p6ukvil/ |  |
+| 31 | Five Claude Code tips | Learn | Courses & guides | no | 40 | 20 Feb 2026 | https://facebook.com/groups/1684554685829832/permalink/1959006055051359/ |  |
+| 30 | Claude Desktop + Claude Code | Learn | Courses & guides | no | 51 | 20 Feb 2026 | https://facebook.com/reel/1544123853331530/ |  |
 | 29 | YouTube to NotebookLM (Chrome extension) | Plugin / extension | Knowledge & RAG | no | 47 | 19 Feb 2026 | https://chromewebstore.google.com/detail/youtube-to-notebooklm/dfleaiflbbfhlknlolhllcobaelgoajd | Eightify, NoteGPT, Glasp |
-| 28 | vercel-labs/agent-browser: Browser automation CLI for AI agents | Developer tool | Coding agents | yes | 83 | 18 Feb 2026 | https://github.com/vercel-labs/agent-browser | Playwright, Selenium, Browserbase |
+| 28 | vercel-labs/agent-browser: Browser automation CLI for AI agents | Developer tool | Agent infrastructure | yes | 83 | 18 Feb 2026 | https://github.com/vercel-labs/agent-browser | Playwright, Selenium, Browserbase |
 | 27 | trailofbits/skills: Trail of Bits skills for security research, vulnerability detection, and audit workflows | Skill | Agent skills | yes | 82 | 18 Feb 2026 | https://github.com/trailofbits/skills | Snyk, Semgrep, GitHub Advanced Security |
 | 26 | vercel-labs/agent-skills: Vercel's official collection of agent skills | Skill | Agent skills | yes | 86 | 18 Feb 2026 | https://github.com/vercel-labs/agent-skills | Cursor Rules, v0, GitHub Copilot Instructions |
 | 25 | writing-skills skill — obra/superpowers | Skill | Agent skills | yes | 47 | 18 Feb 2026 | https://github.com/obra/superpowers/blob/main/skills/writing-skills/SKILL.md | OpenAI Custom GPTs, Cursor Rules, Gemini Gems |
@@ -272,7 +271,9 @@ Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 
 ## Tools (archived)
 
-None.
+| id | Name | Link |
+|---|---|---|
+| 107 | API-mega-list · cporter202 | https://repodir.com/repo/cporter202-api-mega-list |
 
 ## Prompt libraries
 
@@ -324,7 +325,7 @@ None.
 | p42 | Claude anti-sycophancy prompt | Thinking patterns | Community | no | copy failed | Making Claude a real sparring partner: a settings prompt that tells it to push back instead of flatter. | https://facebook.com/100002717045940/posts/pfbid0YbYQht5K5Darmt7KtZASH29yAxQwa1yqo3TC8UdtUQccmLmM4E6eqgijxWmvgbjHl/ |
 | p43 | Claude anti-glazing prompt | Thinking patterns | Community | no | copy failed | Stopping Claude from flattering you: it stress-tests ideas and leads with weaknesses. | https://facebook.com/reel/955735520376190/ |
 
-## Rules
+## Rules & guardrails
 
 | id | Name | Section | Source | Files copied | Best for | Link |
 |---|---|---|---|---|---|---|
@@ -335,6 +336,8 @@ None.
 | r5 | Windsurf rules & memories | coding | Official | — | Setting Windsurf's coding style per project; each rule file can be up to 12,000 characters. | https://docs.windsurf.com/windsurf/cascade/memories |
 | r6 | Cline Rules | coding | Official | — | Giving Cline project rules, and reusing rules you already wrote for Cursor or Windsurf. | https://docs.cline.bot/features/cline-rules |
 | r7 | GEMINI.md (Gemini CLI context) | coding | Open source | — | Giving Gemini CLI your project's instructions; it can also be set to read AGENTS.md instead. | https://geminicli.com/docs/cli/gemini-md/ |
+| r11 | Claude Code hooks | guardrails | Official | — | Guardrails that can't be skipped: block risky commands (like rm -rf), auto-format every edited file, get notified when Claude needs you. | https://code.claude.com/docs/en/hooks-guide |
+| r12 | Claude Code permission settings | guardrails | Official | — | Letting Claude work faster on safe commands (git status, tests) while blocking dangerous ones and protected folders. | https://code.claude.com/docs/en/permissions |
 | r8 | Awesome Cursor Rules | collections | Open source | 257 | Starting a project's rules from a proven file for your exact stack instead of a blank page. | https://github.com/PatrickJS/awesome-cursorrules |
 | r9 | cursor.directory | collections | Community | — | Quickly finding a rule set for a stack (e.g. Next.js + Supabase) and copying it. | https://cursor.directory |
 | r10 | DESIGN.md brand rules (awesome-design-md) | design | Open source | — | Making an AI-built site look like a known brand: drop one DESIGN.md in your project and point the agent at it. | https://github.com/VoltAgent/awesome-design-md |
