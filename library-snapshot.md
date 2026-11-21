@@ -362,7 +362,7 @@ None.
 | w2 | Zapier templates | templates | Official | — | No-code automations between everyday apps (Gmail, Slack, Sheets, HubSpot) in a few minutes. | https://zapier.com/templates |
 | w3 | Make templates | templates | Official | — | Visual, multi-step automations with branches and filters, built by dragging modules. | https://www.make.com/en/templates |
 | w4 | Awesome n8n Templates | collections | Open source | 358 | Ready AI workflows (email triage, chatbots, RAG) you can download and import into n8n. | https://github.com/enescingoz/awesome-n8n-templates |
-| w5 | n8n-workflows (Zie619) | collections | Open source | copying… | Seeing how other people automated a specific app before building your own. | https://github.com/Zie619/n8n-workflows |
+| w5 | n8n-workflows (Zie619) | collections | Open source | 2065 | Seeing how other people automated a specific app before building your own. | https://github.com/Zie619/n8n-workflows |
 | w6 | Daily briefing: Claude Code + NotebookLM | ai | Community | — | A personal morning briefing on your topics without opening ten sites. | https://facebook.com/685119124/posts/pfbid02j3L4Dd3uU3YMC5GZbfnMTqSbGVpUqdZH5D6pCuBiexZPHbdjDbE7Vrz3bE9RvCqPl/ |
 | w7 | Gemini Spark (agent that runs tasks) | ai | Official | — | Handing off an errand (research, booking, collecting info) instead of building a workflow. | https://gemini.google/overview/agent/spark/ |
 
