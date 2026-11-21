@@ -456,7 +456,7 @@
       .theme-btn:hover { border-color: var(--accent); color: var(--ink); }
       .theme-btn svg { flex: none; }
       /* On phones the switch sits at the top of the page and scrolls away with it. */
-      @media (max-width: 600px) { .top-actions { position: absolute; left: 12px; justify-content: flex-end; gap: 6px; } .top-actions .theme-btn { padding: 6px 10px; font-size: 13px; } .top-actions .theme-btn svg { display: none; } .credit-pop { position: absolute; } .theme-btn { box-shadow: none; } header.hero { padding-top: 58px; } }
+      @media (max-width: 600px) { .top-actions { position: absolute; left: 8px; right: 8px; justify-content: flex-end; gap: 5px; } .top-actions .theme-btn { padding: 6px 8px; font-size: 12.5px; } .top-actions .theme-btn svg { display: none; } .credit-pop { position: absolute; } .theme-btn { box-shadow: none; } header.hero { padding-top: 58px; } }
       .theme-btn[disabled] { opacity: .6; cursor: progress; }
       .credit-pop { position: fixed; top: 54px; right: 12px; z-index: 85; width: min(320px, calc(100vw - 24px)); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 16px 40px -16px rgba(0,0,0,.45); padding: 14px 16px; font-size: 14px; }
       .credit-pop[hidden] { display: none; }
@@ -686,6 +686,21 @@
       .pl-attach:hover { border-color: var(--accent); }
       .pl-chat.dragover { outline: 2px dashed var(--accent); outline-offset: -6px; }
       .pl-mfiles { display: block; font-size: 12.5px; opacity: .85; margin-bottom: 2px; }
+      .dc-panel { width: min(1000px, 100%); }
+      .dc-top { padding: 10px 16px 0; background: var(--surface); border-bottom: 1px solid var(--line); }
+      .dc-tabs { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 0; }
+      @media (max-width: 820px) { .dc-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; } }
+      .dc-tabs button { flex: none; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13.5px; font-weight: 650; cursor: pointer; white-space: nowrap; }
+      .dc-tabs button[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+      .dc-tabs button[aria-selected="true"] .kc-n { color: inherit; opacity: .7; }
+      .dc-body { flex: 1; overflow-y: auto; padding: 14px 18px 30px; min-height: 0; }
+      .dc-sub { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+      .dc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+      .dc-term { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+      .dc-term b { font-size: 15px; }
+      .dc-term p { margin: 4px 0 0; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+      .dc-term .dc-ex { color: var(--muted); font-size: 13px; font-style: italic; }
+      .dc-from { font-size: 12px; color: var(--muted); font-weight: 600; }
       .pl-status { font-size: 12.5px; color: var(--muted); padding: 0 14px 6px; min-height: 0; }
       .pl-view { overflow-y: auto; padding: 18px 22px 40px; min-height: 0; }
       .pl-noplan { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--muted); gap: 8px; font-size: 14.5px; }
@@ -781,6 +796,7 @@
   </head>
   <body>
     <div class="top-actions">
+      <button class="theme-btn" id="dict-btn" type="button" aria-label="Open the dictionary" title="Dictionary of basic AI, code and cloud terms"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>Dictionary</button>
       <button class="theme-btn" id="refresh-btn" type="button" aria-label="Reload the page" title="Reload the page from scratch"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>Refresh</button>
       <button class="theme-btn" id="hype-btn" type="button" aria-label="Update hype scores" aria-expanded="false" aria-controls="hype-pop" title="Re-check every tool's hype score"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Hype</button>
       <button class="theme-btn" id="credit-btn" type="button" aria-label="Check Gemini credit" aria-expanded="false" aria-controls="credit-pop"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></svg>Credit</button>
@@ -812,6 +828,14 @@
       </form>
     </div>
     <button class="to-top" id="to-top" type="button" aria-label="Back to top" title="Back to top"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+    <div class="pl-modal" id="dc-modal" hidden role="dialog" aria-modal="true" aria-labelledby="dc-h">
+      <div class="pl-panel dc-panel">
+        <div class="pl-head"><h2 id="dc-h">&#128214; Dictionary</h2><span class="grow"></span><button class="pl-x" id="dc-x" type="button" aria-label="Close">&times;</button></div>
+        <div class="dc-top"><div class="search-box"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.8-3.8"/></svg><input id="dc-q" type="search" placeholder="Search all terms&hellip; e.g. token, Docker, RAG" aria-label="Search the dictionary" /></div>
+        <div class="dc-tabs" id="dc-tabs" role="tablist"></div></div>
+        <div class="dc-body" id="dc-body"></div>
+      </div>
+    </div>
     <div class="pl-modal" id="pl-modal" hidden role="dialog" aria-modal="true" aria-labelledby="pl-h">
       <div class="pl-panel">
         <div class="pl-head">
@@ -3665,6 +3689,166 @@
         window.addEventListener('scroll', sync, { passive: true }); sync();
         b.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
       })();
+      // =====================================================================
+      // Dictionary pop-up: the basic AI, code and cloud terms, by topic
+      // =====================================================================
+      const DICT = [
+        { key: 'basics', icon: '\u{1F9E0}', name: 'AI basics', sub: 'How AI models work and talk to you.', terms: [
+          ['LLM (Large Language Model)', 'An AI trained on huge amounts of text to understand and write language.', 'Claude, GPT, Gemini'],
+          ['Prompt', 'The instruction or question you give the AI.', '“Summarize this email in 3 bullets”'],
+          ['System prompt', 'Hidden base instructions that set how the AI behaves in every reply.', '“You are a friendly support agent…”'],
+          ['Token', 'The small piece of text an AI reads and writes (about ¾ of a word). Usage and limits are counted in tokens.', '1,000 tokens ≈ 750 words'],
+          ['Context window', 'How much text the AI can keep in mind at once — the chat, files and instructions together.', 'Past the limit, early parts get dropped'],
+          ['Temperature', 'A setting for how creative vs. predictable the answers are.', 'Low = consistent, high = varied'],
+          ['Reasoning model', 'A model that “thinks” step by step before answering — slower, better at hard problems.', 'Math, planning, debugging'],
+          ['Multimodal AI', 'AI that understands and creates more than text: images, audio, video, files.', 'Ask a question about a photo'],
+          ['Embedding', 'Turning text or images into numbers that capture their meaning, so similar things can be found.', 'Powers semantic search and RAG'],
+          ['Fine-tuning', 'Extra training of a model on your own examples to specialise it.', 'A model tuned on your support tickets'],
+          ['Hallucination', 'When the AI states something false with confidence.', 'A made-up quote or source'],
+        ] },
+        { key: 'using', icon: '\u{1F9F0}', name: 'Using AI tools', sub: 'Features you meet in Claude, ChatGPT, Gemini and others.', terms: [
+          ['Projects', 'A workspace with its own files and instructions that every chat inside it uses.', 'A project per course or client'],
+          ['Memory', 'The AI remembering facts and preferences about you across chats.', '“Remembers you prefer short answers”'],
+          ['Skills', 'Ready packages of instructions (and sometimes scripts) that teach the AI a specific task.', 'A skill for making Excel files'],
+          ['Artifacts / Canvas', 'A side panel where the AI builds a document, code or app you can view and edit.', 'A one-page site you can share'],
+          ['Deep Research', 'A mode where the AI searches many sources over several minutes and writes a cited report.', 'Market research in one go'],
+          ['Plugins / Apps', 'Add-ons that give an AI tool new abilities or link it to other services.', 'A Slack plugin'],
+          ['Connectors', 'Links between the AI and your accounts so it can read or act in them.', 'Gmail, Google Drive, Notion'],
+          ['MCP (Model Context Protocol)', 'An open standard for plugging tools and data into any AI app — like USB-C for AI.', 'One MCP server works in Claude, Cursor…'],
+          ['Scheduled tasks', 'Prompts that run by themselves on a schedule.', 'A news summary every morning at 8'],
+          ['Automation', 'Letting software do a repeated job with no one clicking each step.', 'New form entry → add to sheet → send email'],
+        ] },
+        { key: 'agents', icon: '\u{1F916}', name: 'Agents', sub: 'AI that takes actions, not just answers.', terms: [
+          ['Agent', 'An AI that plans and carries out a task on its own using tools (browsing, files, code).', '“Book a table and add it to my calendar”'],
+          ['Sub-agent', 'A specialist agent the main agent hands part of the job to.', 'A “reviewer” sub-agent checks the code'],
+          ['Agent mode / Cowork', 'A mode where the AI works through a multi-step task for you and reports back.', 'Claude Cowork, ChatGPT agent mode'],
+          ['Human-in-the-loop', 'A person approves or corrects the AI at key steps.', 'You confirm before it sends the email'],
+          ['Skill (for an agent)', 'A specific ability added to an AI agent.', 'Making slides, reading PDFs'],
+        ] },
+        { key: 'knowledge', icon: '\u{1F4DA}', name: 'Knowledge & accuracy', sub: 'Making AI answer from your facts.', terms: [
+          ['RAG (Retrieval-Augmented Generation)', 'The AI first looks up relevant passages in your documents, then answers from them.', 'Chat with your company handbook'],
+          ['Knowledge base', 'An organised collection of documents the AI can draw on.', 'All your policies in one place'],
+          ['Vector database', 'A database that stores embeddings and finds items by meaning.', 'Pinecone, pgvector'],
+          ['Semantic search', 'Search by meaning, not exact words.', '“car” also finds “vehicle”'],
+          ['Grounding', 'Tying the AI’s answer to real sources so it can cite them and hallucinate less.', 'Answers with links to the source'],
+        ] },
+        { key: 'code', icon: '\u{1F4BB}', name: 'Code & Git', sub: 'How code is written, saved and shared.', terms: [
+          ['Git', 'A system that tracks every change to code, so you can go back and work in parallel.', ''],
+          ['GitHub', 'A website that hosts Git projects and lets people collaborate on them.', ''],
+          ['Repository (repo)', 'The project folder with all its files and their history.', ''],
+          ['Commit', 'A saved snapshot of changes, with a short note.', '“Fix login button”'],
+          ['Branch', 'A separate line of work inside the project, so changes don’t touch the main version yet.', ''],
+          ['Merge', 'Combining the changes from one branch into another.', ''],
+          ['Pull request (PR)', 'A request to merge your branch, where others review the changes first.', ''],
+          ['Clone', 'Downloading a full copy of a repo to your computer.', ''],
+          ['Fork', 'Copying someone else’s repo to your own account to change it freely.', ''],
+          ['.gitignore', 'A file listing what Git should not track.', 'Passwords, big build folders'],
+          ['IDE', 'A code editor with built-in tools to write, run and debug code.', ''],
+          ['VS Code', 'Microsoft’s free, very popular code editor.', 'Cursor is built on it'],
+          ['Package manager', 'A tool that installs and updates the code libraries a project uses.', 'npm, pip'],
+          ['SDK', 'A ready kit of code and tools for building on a platform.', 'The Stripe SDK'],
+          ['Open source', 'Code anyone can see, use and change (under its licence).', ''],
+          ['Refactoring', 'Cleaning up code’s structure without changing what it does.', ''],
+          ['Legacy code', 'Old code still in use, often hard to change.', ''],
+          ['Localhost', 'Your own computer acting as the server while you develop.', 'localhost:3000'],
+          ['Staging', 'A test copy of the app that mirrors the real one, for checks before launch.', ''],
+          ['Production', 'The live app real users use.', ''],
+          ['Deployment', 'Putting a new version of the code onto a server so it goes live.', ''],
+          ['Environment variables', 'Settings and secrets kept outside the code.', 'API keys'],
+          ['CI/CD', 'Automatic testing (CI) and releasing (CD) of every code change.', ''],
+          ['GitHub Actions', 'GitHub’s built-in way to run automatic jobs on your code.', 'Run tests on every commit'],
+          ['DevOps', 'Developers and operations working together to ship fast and reliably.', ''],
+          ['Agile', 'Working in short cycles with frequent feedback instead of one big plan.', ''],
+          ['Scrum', 'A popular Agile method: short sprints, daily stand-ups, set roles.', ''],
+        ] },
+        { key: 'data', icon: '\u{1F517}', name: 'APIs & data', sub: 'How apps talk to each other and store information.', terms: [
+          ['API', 'A defined way for one program to talk to another.', 'An app getting weather data'],
+          ['Endpoint', 'One specific address of an API.', '/api/users'],
+          ['REST API', 'The most common API style: simple web addresses plus HTTP methods.', ''],
+          ['HTTP methods', 'The verbs of web requests: GET reads, POST creates, PUT/PATCH updates, DELETE removes.', ''],
+          ['GraphQL', 'An API style where you ask for exactly the fields you want in one request.', ''],
+          ['Webhook', 'An automatic message one app sends another when something happens.', '“Payment received” → your app'],
+          ['JSON', 'The most common text format for sending data.', '{ "name": "Guy" }'],
+          ['API key', 'A secret code that identifies your app when it calls an API.', 'Keep it out of your code'],
+          ['OAuth', 'Letting an app access your account without giving it your password.', '“Sign in with Google”'],
+          ['Database', 'An organised store of data.', ''],
+          ['SQL', 'The standard language for working with table-based databases.', 'SELECT * FROM users'],
+          ['NoSQL', 'Databases that don’t use tables — documents, key-value and more.', 'MongoDB'],
+          ['Schema', 'The defined structure of the data: which fields, of what type.', ''],
+          ['Query', 'A request to get or change data.', ''],
+          ['Cache', 'A fast temporary copy of data, to avoid recomputing or refetching it.', ''],
+          ['Redis', 'A very fast in-memory database, often used as a cache.', ''],
+          ['ETL', 'Extract, Transform, Load: moving data from sources, cleaning it, loading it elsewhere.', ''],
+          ['Data pipeline', 'An automated flow that moves and processes data step by step.', ''],
+        ] },
+        { key: 'cloud', icon: '☁️', name: 'Cloud & servers', sub: 'Where apps run and how they scale.', terms: [
+          ['Cloud computing', 'Renting computing power and storage over the internet instead of owning machines.', ''],
+          ['AWS / Azure / GCP', 'The three biggest cloud platforms: Amazon, Microsoft and Google.', ''],
+          ['Server', 'A computer that serves apps or data to others over a network.', ''],
+          ['Virtual machine (VM)', 'A software-only computer running inside a real one.', ''],
+          ['Container', 'A packaged app with everything it needs, so it runs the same anywhere.', ''],
+          ['Docker', 'The most popular tool for building and running containers.', ''],
+          ['Kubernetes', 'A system that runs and manages many containers automatically.', ''],
+          ['Monolith', 'An app built as one big piece.', ''],
+          ['Microservices', 'An app split into small independent services that talk to each other.', ''],
+          ['Serverless', 'Running code without managing servers — the cloud handles it and you pay per use.', ''],
+          ['Serverless database', 'A database that scales up and down by itself with no server to manage.', 'Convex, which this app uses'],
+          ['IaaS / PaaS / SaaS', 'Renting raw machines / a ready platform to deploy on / finished software in the browser.', 'AWS EC2 / Vercel / Gmail'],
+          ['Load balancer', 'Spreads incoming traffic across several servers so none is overloaded.', ''],
+          ['Autoscaling', 'Adding or removing servers automatically as traffic changes.', ''],
+          ['Edge computing', 'Running code close to the user for speed.', ''],
+          ['CDN', 'A worldwide network of servers that delivers files from the nearest location.', 'Faster image loading'],
+          ['VPC', 'Your own private, isolated network inside a public cloud.', ''],
+          ['Object storage (S3)', 'Simple cloud storage for files of any size.', ''],
+          ['Replication', 'Keeping copies of data on several servers so nothing is lost.', ''],
+          ['Backup', 'A saved copy of data you can restore after a failure.', ''],
+          ['Infrastructure as Code (IaC)', 'Setting up servers and networks with code files instead of clicking.', 'Terraform'],
+          ['Observability', 'Being able to see what’s happening inside a system from its logs, metrics and traces.', ''],
+          ['Telemetry', 'Data a system automatically sends about its own health and usage.', ''],
+          ['Rate limiting', 'Capping how many requests someone can make in a time window.', '100 requests per minute'],
+        ] },
+        { key: 'security', icon: '\u{1F6E1}\uFE0F', name: 'Safety & security', sub: 'Keeping AI use safe and under control, and protecting systems, accounts and data.', terms: [
+          ['Guardrails', 'Rules and checks that stop an AI from producing or doing harmful or unwanted things.', 'Blocking it from sharing personal data'],
+          ['AI governance', 'An organisation’s policies for how AI is chosen, used and monitored.', 'Which tools staff may use, with what data'],
+
+          ['IAM', 'Managing who can access what (identities and permissions).', ''],
+          ['MFA', 'Signing in with two or more proofs.', 'Password + phone code'],
+          ['Encryption', 'Scrambling data so only someone with the key can read it.', ''],
+          ['SSL / TLS', 'The protocol that encrypts traffic between your browser and a site (the padlock / https).', ''],
+          ['Firewall', 'A filter that blocks unwanted network traffic.', ''],
+          ['Zero Trust', 'Never trust automatically — check every user and device every time.', ''],
+          ['Vulnerability', 'A weakness in code or a system that attackers could use.', ''],
+          ['Penetration testing', 'Ethical hackers attacking a system on purpose to find weaknesses first.', ''],
+          ['Tokenization (data)', 'Replacing sensitive data with a meaningless stand-in.', 'A card number becomes tok_123'],
+        ] },
+      ];
+      const dict = { tab: DICT[0].key, q: '' };
+      function dictHTML() {
+        const words = dict.q.toLowerCase().split(/\s+/).filter(Boolean);
+        const hit = t => words.every(w => (t[0] + ' ' + t[1] + ' ' + t[2]).toLowerCase().includes(w));
+        const termHTML = (t, tab) => '<div class="dc-term"><b>' + esc(t[0]) + '</b>' + (tab ? ' <span class="dc-from">' + tab.icon + ' ' + esc(tab.name) + '</span>' : '') + '<p>' + esc(t[1]) + '</p>' + (t[2] ? '<p class="dc-ex">e.g. ' + esc(t[2]) + '</p>' : '') + '</div>';
+        if (words.length) {
+          const res = DICT.flatMap(tab => tab.terms.filter(hit).map(t => termHTML(t, tab)));
+          return res.length ? '<p class="dc-sub">' + res.length + ' matching term' + (res.length > 1 ? 's' : '') + '</p><div class="dc-grid">' + res.join('') + '</div>' : '<p class="dc-sub">No term matches “' + esc(dict.q) + '”.</p>';
+        }
+        const tab = DICT.find(t => t.key === dict.tab) || DICT[0];
+        return '<p class="dc-sub">' + esc(tab.sub) + '</p><div class="dc-grid">' + tab.terms.map(t => termHTML(t)).join('') + '</div>';
+      }
+      function dictRender() {
+        document.getElementById('dc-tabs').innerHTML = DICT.map(t => '<button type="button" role="tab" data-dctab="' + t.key + '" aria-selected="' + (!dict.q && dict.tab === t.key) + '">' + t.icon + ' ' + esc(t.name) + ' <span class="kc-n">' + t.terms.length + '</span></button>').join('');
+        const body = document.getElementById('dc-body'); body.innerHTML = dictHTML(); body.scrollTop = 0;
+      }
+      function dictOpen() { document.getElementById('dc-modal').hidden = false; document.body.style.overflow = 'hidden'; dictRender(); }
+      function dictClose() { document.getElementById('dc-modal').hidden = true; document.body.style.overflow = ''; }
+      document.getElementById('dict-btn').addEventListener('click', dictOpen);
+      document.getElementById('dc-x').addEventListener('click', dictClose);
+      document.getElementById('dc-modal').addEventListener('click', e => {
+        if (e.target.id === 'dc-modal') { dictClose(); return; }
+        const t = e.target.closest('[data-dctab]'); if (t) { dict.tab = t.dataset.dctab; dict.q = ''; document.getElementById('dc-q').value = ''; dictRender(); }
+      });
+      document.getElementById('dc-q').addEventListener('input', e => { dict.q = e.target.value.trim(); dictRender(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && !document.getElementById('dc-modal').hidden) dictClose(); });
+      addClearX(document.getElementById('dc-q'));
       // The Tools tab may have finished loading before this part of the page ran.
       if (items.length && !window.__tabsStarted) { window.__tabsStarted = true; loadTabs(); }
     </script>
