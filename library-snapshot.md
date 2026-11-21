@@ -1,8 +1,8 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-21 00:02 UTC.
+Updated automatically by the app: 2026-11-21 11:12 UTC.
 Tools: 260 active, 0 archived. Prompt libraries: 45 (14 open source, 9,141 prompts copied into Find a prompt).
-Rules: 10. Agents: 11. Automations: 7. Playbooks: 17.
+Rules: 10. Agents: 12. Automations: 7. Playbooks: 17.
 
 ## Tools (active)
 
@@ -348,6 +348,7 @@ None.
 | a4 | Claude Code sub-agents (lst97) | subagents | Open source | 37 | A ready dev team (frontend, backend, data, product manager) coordinated by one organizer agent. | https://github.com/lst97/claude-code-sub-agents |
 | a5 | claude-agents (iannuttall) | subagents | Open source | 7 | A handful of useful agents to start with, without wading through hundreds. | https://github.com/iannuttall/claude-agents |
 | a6 | Claude Code Templates (davila7) | subagents | Open source | — | Browsing components on a website and installing them with npx instead of copying files by hand. | https://github.com/davila7/claude-code-templates |
+| a12 | autoresearch | subagents | Open source | copy failed | Automating overnight LLM training experiments; includes program.md instructions, training harness, and git rollback. | https://github.com/karpathy/autoresearch |
 | a7 | Gemini Gems (premade and your own) | assistants | Official | — | A repeat task you keep explaining to Gemini: save it once as a Gem; copy a premade Gem to start fast. | https://support.google.com/gemini/answer/15236321 |
 | a8 | GPT Store (custom GPTs) | assistants | Official | — | Finding a ready assistant for a niche job (paper search, diagrams, tutoring) before building your own. | https://chatgpt.com/gpts |
 | a9 | Claude Projects | assistants | Official | — | A standing assistant for one job (a course, a client, a product) with its documents always at hand. | https://support.claude.com/en/articles/9519177 |
