@@ -342,3 +342,24 @@ export const setTheme = mutation({
     else await ctx.db.insert("meta", { key: "theme", value: theme });
   },
 });
+
+// One-time shelf moves the user approved (runs once per version, from the page).
+const SHELF_MOVES_VERSION = "knowledge-rag 21 Nov 2026";
+const SHELF_MOVES: { id: number; cat: string }[] = [114, 172, 115, 61, 29, 3, 203].map((id) => ({ id, cat: "knowledge-rag" }));
+export const applyShelfMoves = mutation({
+  args: { key: v.string() },
+  handler: async (ctx, { key }) => {
+    checkKey(key);
+    const m = await ctx.db.query("meta").withIndex("by_key", (q) => q.eq("key", "shelfMoves")).first();
+    if (m?.value === SHELF_MOVES_VERSION) return { moved: 0 };
+    let moved = 0;
+    for (const { id, cat } of SHELF_MOVES) {
+      const row = await ctx.db.query("items").withIndex("by_itemId", (q) => q.eq("itemId", id)).first();
+      if (row && row.data?.cat !== cat) { await ctx.db.patch(row._id, { data: { ...row.data, cat } }); moved++; }
+    }
+    if (m) await ctx.db.patch(m._id, { value: SHELF_MOVES_VERSION });
+    else await ctx.db.insert("meta", { key: "shelfMoves", value: SHELF_MOVES_VERSION });
+    if (moved) await snapshotSoon(ctx);
+    return { moved };
+  },
+});

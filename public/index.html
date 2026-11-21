@@ -2081,6 +2081,11 @@
             el.hidden = false;
           }).catch(() => {});
         }
+        if (!window.__shelfMoves) {
+          // One-time shelf moves you approved (e.g. tools onto Knowledge & RAG); reloads the list if anything moved.
+          window.__shelfMoves = true;
+          call('mutation', 'items:applyShelfMoves', {}).then(r => { if (r && r.moved) load(); }).catch(() => {});
+        }
         if (res.altsMissing > 0 && !altsAsked) {
           // Some cards still lack "Alternative for": ask the server to fill them, then pick up the result quietly.
           altsAsked = true;
