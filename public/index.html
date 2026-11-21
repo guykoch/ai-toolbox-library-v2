@@ -789,7 +789,7 @@
           <button class="pl-tbtn" id="pl-copy" type="button">Copy</button>
           <button class="pl-tbtn" id="pl-defaults" type="button" title="Preferences every plan follows">&#128204; <span class="lg">Defaults</span></button>
           <button class="pl-tbtn" id="pl-saveas" type="button" title="Keep it on the Playbooks tab"><span class="lg">Save as playbook</span><span class="sm">Save</span></button>
-          <button class="pl-tbtn" id="pl-new" type="button"><span class="lg">New plan</span><span class="sm">New</span></button>
+          <button class="pl-tbtn" id="pl-new" type="button" title="Clear the chat and the plan, and start fresh">&#10227; <span class="lg">Start fresh</span><span class="sm">Clear</span></button>
           <button class="pl-x" id="pl-x" type="button" aria-label="Close">&times;</button>
         </div>
         <div class="pl-seg" role="tablist"><button type="button" data-plseg="chat" aria-pressed="true">&#128172; Chat</button><button type="button" data-plseg="plan" aria-pressed="false">&#128506;&#65039; Plan</button></div>
@@ -3373,7 +3373,7 @@
         const op = t.closest('[data-plans]'); if (op) { const qi = op.dataset.plans; pl.answers[qi] = pl.answers[qi] === op.dataset.v ? undefined : op.dataset.v; if (pl.answers[qi] === undefined) delete pl.answers[qi]; plRender(); return; }
         if (t.closest('[data-plsendans]')) { const v = [plAnswerText(), plText.value.trim()].filter(Boolean).join('\n'); if (!v) return; plText.value = ''; plSend(v); return; }
         if (t.closest('[data-pljust]')) { plSend([plAnswerText(), plText.value.trim(), 'Just make the plan now with sensible assumptions.'].filter(Boolean).join('\n')); plText.value = ''; return; }
-        if (t.closest('#pl-new')) { if ((pl.plan || pl.history.length) && !confirm('Start a new plan? The current one will be cleared (save it as a playbook first if you want to keep it).')) return; Object.assign(pl, { history: [], plan: null, undo: [], open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat', pbId: null, dirty: false, editing: new Set(), adding: null, addQ: '' }); plSave(); plRender(); plText.focus(); return; }
+        if (t.closest('#pl-new')) { if (pl.plan && pl.dirty && !confirm('Clear everything and start fresh? Your plan has unsaved changes — press Save first if you want to keep it.')) return; Object.assign(pl, { history: [], plan: null, undo: [], open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat', pbId: null, dirty: false, editing: new Set(), adding: null, addQ: '' }); plSave(); plRender(); plText.focus(); return; }
         if (t.id === 'pl-undo') { if (!pl.undo.length) return; pl.plan = pl.undo.pop(); pl.dirty = true; pl.editing = new Set(); pl.adding = null; pl.changed = new Set(); pl.open = null; pl.history.push({ role: 'user', text: 'Undo: went back one change', note: true }); plSave(); plRender(); return; }
         if (t.id === 'pl-copy') { copyText(plAsText(pl.plan)).then(() => flashCopied(t)); return; }
         if (t.closest('#pl-saveas')) {
