@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-22 13:09 UTC.
-Tools: 272 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
-Rules: 13. Agents: 13. Automations: 7. Playbooks: 17.
+Updated automatically by the app: 2026-11-22 13:12 UTC.
+Tools: 273 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Rules: 13. Agents: 14. Automations: 7. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 272 | stablyai/orca: run a fleet of coding agents in isolated Git worktrees | Desktop / phone app | Agent infrastructure | yes | 88 | 22 Nov 2026 | https://github.com/stablyai/orca | Cursor, Devin, Windsurf |
 | 271 | emircesur/Linnea: Linnea Video Suite, editable js videos and clipping | Desktop / phone app | Video | yes | 45 | 22 Nov 2026 | https://github.com/emircesur/Linnea | Descript, CapCut, Remotion |
 | 270 | cporter202/google-maps-scraping-apis: ready-to-use Google Maps scraping APIs | Developer tool | APIs & scraping | yes | 45 | 22 Nov 2026 | https://github.com/cporter202/google-maps-scraping-apis | Outscraper, Bright Data, Octoparse |
 | 269 | Egonex-AI/Understand-Anything: turn any code into an interactive knowledge graph | Plugin / extension | Coding agents | yes | 86 | 22 Nov 2026 | https://github.com/Egonex-AI/Understand-Anything | Sourcegraph, Augment Code, CodeSee |
@@ -371,6 +372,7 @@ None.
 | a9 | Claude Projects | assistants | Official | — | A standing assistant for one job (a course, a client, a product) with its documents always at hand. | https://support.claude.com/en/articles/9519177 |
 | a10 | Paperclip (agent company orchestration) | teams | Open source | — | Experimenting with many agents working together on a long project. | https://github.com/paperclipai/paperclip |
 | a11 | Claude Managed Agents | teams | Official | — | Putting an agent into production for a product or an internal workflow. | https://platform.claude.com/docs/en/managed-agents/overview |
+| a14 | Orca | teams | Open source | 23 | Running multiple coding agents simultaneously in isolated git worktrees with visual diff reviews and mobile controls. | https://github.com/stablyai/orca |
 
 ## Automations
 
