@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-22 17:54 UTC.
-Tools: 276 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
-Rules: 14. Agents: 15. Automations: 7. Playbooks: 17.
+Updated automatically by the app: 2026-11-22 18:00 UTC.
+Tools: 277 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Rules: 14. Agents: 16. Automations: 8. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 276 | github/gh-aw: GitHub Agentic Workflows | Developer tool | Agent infrastructure | yes | 85 | 22 Nov 2026 | https://github.com/github/gh-aw | Devin, Sweep, GitHub Actions |
 | 275 | flameshot-org/flameshot: Powerful yet simple to use screenshot software | Desktop / phone app | Productivity | yes | 76 | 22 Nov 2026 | https://github.com/flameshot-org/flameshot | Lightshot, Snagit, ShareX |
 | 274 | affaan-m/ECC: The agent harness performance optimization system | Plugin / extension | Coding agents | yes | 86 | 22 Nov 2026 | https://github.com/affaan-m/ECC | Superpowers, Cursor Rules, Cline Rules |
 | 273 | jellyfin/jellyfin: The Free Software Media System | Developer tool | Video | yes | 78 | 22 Nov 2026 | https://github.com/jellyfin/jellyfin | Plex, Emby |
@@ -378,6 +379,7 @@ None.
 | a10 | Paperclip (agent company orchestration) | teams | Open source | — | Experimenting with many agents working together on a long project. | https://github.com/paperclipai/paperclip |
 | a11 | Claude Managed Agents | teams | Official | — | Putting an agent into production for a product or an internal workflow. | https://platform.claude.com/docs/en/managed-agents/overview |
 | a14 | Orca | teams | Open source | 23 | Running multiple coding agents simultaneously in isolated git worktrees with visual diff reviews and mobile controls. | https://github.com/stablyai/orca |
+| a16 | GitHub Agentic Workflows (gh-aw) | teams | Official | 6 | Repo triage, CI fixes, and code reviews running AI agents safely alongside existing GitHub CI/CD. | https://github.github.com/gh-aw |
 
 ## Automations
 
@@ -390,6 +392,7 @@ None.
 | w5 | n8n-workflows (Zie619) | collections | Open source | 2065 | Seeing how other people automated a specific app before building your own. | https://github.com/Zie619/n8n-workflows |
 | w6 | Daily briefing: Claude Code + NotebookLM | ai | Community | — | A personal morning briefing on your topics without opening ten sites. | https://facebook.com/685119124/posts/pfbid02j3L4Dd3uU3YMC5GZbfnMTqSbGVpUqdZH5D6pCuBiexZPHbdjDbE7Vrz3bE9RvCqPl/ |
 | w7 | Gemini Spark (agent that runs tasks) | ai | Official | — | Handing off an errand (research, booking, collecting info) instead of building a workflow. | https://gemini.google/overview/agent/spark/ |
+| w8 | GitHub Agentic Workflows (gh-aw) | ai | Official | copy failed | Running sandboxed AI coding agents (Copilot, Claude, Gemini) in CI/CD with read-only defaults and safe outputs. | https://github.com/github/gh-aw |
 
 ## Playbooks
 
