@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-22 01:28 UTC.
-Tools: 267 active, 1 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-22 04:19 UTC.
+Tools: 268 active, 1 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
 Rules: 13. Agents: 13. Automations: 7. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 268 | colbymchenry/codegraph: Pre-indexed code knowledge graph, auto syncs on code changes | Developer tool | Coding agents | yes | 91 | 21 Nov 2026 | https://github.com/colbymchenry/codegraph | Sourcegraph, Greptile, Augment Code |
 | 267 | erkamyaman/unslopovich: agent skill that finds and fixes AI-looking UI and UX in apps | Skill | Agent skills | yes | 46 | 21 Nov 2026 | https://github.com/erkamyaman/unslopovich | Cursor Rules |
 | 266 | leandrodaf/3d-new-era-ai: open-source home design and floor plan editor in Rust with built-in MCP server | Desktop / phone app | Productivity | yes | 38 | 21 Nov 2026 | https://github.com/leandrodaf/3d-new-era-ai | Sweet Home 3D, SketchUp, AutoCAD |
 | 265 | anomalyco/hex: Local voice dictation for mac, windows and linux | Desktop / phone app | Productivity | yes | 72 | 21 Nov 2026 | https://github.com/anomalyco/hex | Wispr Flow, Superwhisper, Dragon NaturallySpeaking |
