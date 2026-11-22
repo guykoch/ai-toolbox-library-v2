@@ -1,7 +1,7 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-22 04:19 UTC.
-Tools: 268 active, 1 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-22 04:23 UTC.
+Tools: 269 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
 Rules: 13. Agents: 13. Automations: 7. Playbooks: 17.
 
 ## Tools (active)
@@ -164,6 +164,7 @@ Rules: 13. Agents: 13. Automations: 7. Playbooks: 17.
 | 110 | Work Trend Index | News | News & analysis | no | 39 | 10 Jun 2026 | https://aka.ms/WTI |  |
 | 109 | yan-yanko/rainman: local token-free memory layer for AI coding tools | Developer tool | Agent infrastructure | yes | 44 | 7 Jun 2026 | https://github.com/yan-yanko/rainman | mem0, Zep, Letta |
 | 108 | Databases for AI-built apps | Learn | App building | yes | 39 | 1 Jun 2026 | https://facebook.com/groups/1684554685829832/permalink/2042819693336661/ |  |
+| 107 | API-mega-list · cporter202 | Developer tool | APIs & scraping | yes | 75 | 30 May 2026 | https://repodir.com/repo/cporter202-api-mega-list | RapidAPI, Postman API Network, public-apis |
 | 106 | Cursor · Students | Web app | Coding agents | no | 41 | 28 May 2026 | https://cursor.com/students | GitHub Copilot Student, Windsurf, Replit |
 | 105 | Six leading AI web scrapers | Learn | APIs & scraping | yes | 48 | 27 May 2026 | https://facebook.com/61572558090421/posts/pfbid02NnLa4MVnyeKis5HXzajmE8xdkAXHqP5rb8VsACbzbjZSK9etRyMiHcgKkue19dpVl/ |  |
 | 104 | Granola Alternative — Local, Open Source AI Meeting Notes | Desktop / phone app | Productivity | yes | 64 | 27 May 2026 | https://openwhispr.com/compare/granola | Granola, Otter.ai, Fireflies.ai |
@@ -279,9 +280,7 @@ Rules: 13. Agents: 13. Automations: 7. Playbooks: 17.
 
 ## Tools (archived)
 
-| id | Name | Link |
-|---|---|---|
-| 107 | API-mega-list · cporter202 | https://repodir.com/repo/cporter202-api-mega-list |
+None.
 
 ## Prompt libraries
 
