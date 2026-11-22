@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-22 12:58 UTC.
-Tools: 270 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-22 13:05 UTC.
+Tools: 271 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
 Rules: 13. Agents: 13. Automations: 7. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 270 | cporter202/google-maps-scraping-apis: ready-to-use Google Maps scraping APIs | Developer tool | APIs & scraping | yes | 45 | 22 Nov 2026 | https://github.com/cporter202/google-maps-scraping-apis | Outscraper, Bright Data, Octoparse |
 | 269 | Egonex-AI/Understand-Anything: turn any code into an interactive knowledge graph | Plugin / extension | Coding agents | yes | 86 | 22 Nov 2026 | https://github.com/Egonex-AI/Understand-Anything | Sourcegraph, Augment Code, CodeSee |
 | 268 | colbymchenry/codegraph: Pre-indexed code knowledge graph, auto syncs on code changes | Developer tool | Coding agents | yes | 91 | 21 Nov 2026 | https://github.com/colbymchenry/codegraph | Sourcegraph, Greptile, Augment Code |
 | 267 | erkamyaman/unslopovich: agent skill that finds and fixes AI-looking UI and UX in apps | Skill | Agent skills | yes | 46 | 21 Nov 2026 | https://github.com/erkamyaman/unslopovich | Cursor Rules |
