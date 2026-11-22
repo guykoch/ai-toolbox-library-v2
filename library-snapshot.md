@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-22 14:10 UTC.
-Tools: 274 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
-Rules: 13. Agents: 14. Automations: 7. Playbooks: 17.
+Updated automatically by the app: 2026-11-22 14:59 UTC.
+Tools: 275 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Rules: 14. Agents: 15. Automations: 7. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 274 | affaan-m/ECC: The agent harness performance optimization system | Plugin / extension | Coding agents | yes | 86 | 22 Nov 2026 | https://github.com/affaan-m/ECC | Superpowers, Cursor Rules, Cline Rules |
 | 273 | jellyfin/jellyfin: The Free Software Media System | Developer tool | Video | yes | 78 | 22 Nov 2026 | https://github.com/jellyfin/jellyfin | Plex, Emby |
 | 272 | stablyai/orca: run a fleet of coding agents in isolated Git worktrees | Desktop / phone app | Agent infrastructure | yes | 88 | 22 Nov 2026 | https://github.com/stablyai/orca | Cursor, Devin, Windsurf |
 | 271 | emircesur/Linnea: Linnea Video Suite, editable js videos and clipping | Desktop / phone app | Video | yes | 45 | 22 Nov 2026 | https://github.com/emircesur/Linnea | Descript, CapCut, Remotion |
@@ -353,6 +354,7 @@ None.
 | r12 | Claude Code permission settings | guardrails | Official | — | Letting Claude work faster on safe commands (git status, tests) while blocking dangerous ones and protected folders. | https://code.claude.com/docs/en/permissions |
 | r8 | Awesome Cursor Rules | collections | Open source | 257 | Starting a project's rules from a proven file for your exact stack instead of a blank page. | https://github.com/PatrickJS/awesome-cursorrules |
 | r9 | cursor.directory | collections | Community | — | Quickly finding a rule set for a stack (e.g. Next.js + Supabase) and copying it. | https://cursor.directory |
+| r14 | ECC (Everything Claude Code) | collections | Open source | 27 | Supercharging AI coding harnesses with prebuilt skills, workflow rules, agent roles, hooks, and AgentShield security controls. | https://ecc.tools |
 | r10 | DESIGN.md brand rules (awesome-design-md) | design | Open source | — | Making an AI-built site look like a known brand: drop one DESIGN.md in your project and point the agent at it. | https://github.com/VoltAgent/awesome-design-md |
 | r13 | Unslopovich | design | Open source | copy failed | Auditing mobile and web UI for AI tropes, broken navigation, dead error states, and unvirtualized lists. | https://github.com/erkamyaman/unslopovich |
 
@@ -368,6 +370,7 @@ None.
 | a6 | Claude Code Templates (davila7) | subagents | Open source | — | Browsing components on a website and installing them with npx instead of copying files by hand. | https://github.com/davila7/claude-code-templates |
 | a12 | autoresearch | subagents | Open source | copy failed | Automating overnight LLM training experiments; includes program.md instructions, training harness, and git rollback. | https://github.com/karpathy/autoresearch |
 | a13 | OpenMontage | subagents | Open source | 2 | Automating end-to-end video creation with 12 production pipelines, offline/API media tools, and Remotion composition. | https://openmontage.video |
+| a15 | ECC (Everything Claude Code) | subagents | Open source | 311 | Workflows needing specialized subagents (architect, code reviewer, planner), domain skills, persistent memory, and security. | https://ecc.tools |
 | a7 | Gemini Gems (premade and your own) | assistants | Official | — | A repeat task you keep explaining to Gemini: save it once as a Gem; copy a premade Gem to start fast. | https://support.google.com/gemini/answer/15236321 |
 | a8 | GPT Store (custom GPTs) | assistants | Official | — | Finding a ready assistant for a niche job (paper search, diagrams, tutoring) before building your own. | https://chatgpt.com/gpts |
 | a9 | Claude Projects | assistants | Official | — | A standing assistant for one job (a course, a client, a product) with its documents always at hand. | https://support.claude.com/en/articles/9519177 |
