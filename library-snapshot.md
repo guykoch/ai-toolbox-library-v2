@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-22 14:59 UTC.
-Tools: 275 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-22 17:54 UTC.
+Tools: 276 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
 Rules: 14. Agents: 15. Automations: 7. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 275 | flameshot-org/flameshot: Powerful yet simple to use screenshot software | Desktop / phone app | Productivity | yes | 76 | 22 Nov 2026 | https://github.com/flameshot-org/flameshot | Lightshot, Snagit, ShareX |
 | 274 | affaan-m/ECC: The agent harness performance optimization system | Plugin / extension | Coding agents | yes | 86 | 22 Nov 2026 | https://github.com/affaan-m/ECC | Superpowers, Cursor Rules, Cline Rules |
 | 273 | jellyfin/jellyfin: The Free Software Media System | Developer tool | Video | yes | 78 | 22 Nov 2026 | https://github.com/jellyfin/jellyfin | Plex, Emby |
 | 272 | stablyai/orca: run a fleet of coding agents in isolated Git worktrees | Desktop / phone app | Agent infrastructure | yes | 88 | 22 Nov 2026 | https://github.com/stablyai/orca | Cursor, Devin, Windsurf |
