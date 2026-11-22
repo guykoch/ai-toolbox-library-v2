@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-22 13:12 UTC.
-Tools: 273 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-22 14:10 UTC.
+Tools: 274 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
 Rules: 13. Agents: 14. Automations: 7. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 273 | jellyfin/jellyfin: The Free Software Media System | Developer tool | Video | yes | 78 | 22 Nov 2026 | https://github.com/jellyfin/jellyfin | Plex, Emby |
 | 272 | stablyai/orca: run a fleet of coding agents in isolated Git worktrees | Desktop / phone app | Agent infrastructure | yes | 88 | 22 Nov 2026 | https://github.com/stablyai/orca | Cursor, Devin, Windsurf |
 | 271 | emircesur/Linnea: Linnea Video Suite, editable js videos and clipping | Desktop / phone app | Video | yes | 45 | 22 Nov 2026 | https://github.com/emircesur/Linnea | Descript, CapCut, Remotion |
 | 270 | cporter202/google-maps-scraping-apis: ready-to-use Google Maps scraping APIs | Developer tool | APIs & scraping | yes | 45 | 22 Nov 2026 | https://github.com/cporter202/google-maps-scraping-apis | Outscraper, Bright Data, Octoparse |
