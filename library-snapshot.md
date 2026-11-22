@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-21 21:56 UTC.
-Tools: 265 active, 1 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-22 00:23 UTC.
+Tools: 266 active, 1 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
 Rules: 12. Agents: 13. Automations: 7. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 266 | leandrodaf/3d-new-era-ai: open-source home design and floor plan editor in Rust with built-in MCP server | Desktop / phone app | Productivity | yes | 38 | 21 Nov 2026 | https://github.com/leandrodaf/3d-new-era-ai | Sweet Home 3D, SketchUp, AutoCAD |
 | 265 | anomalyco/hex: Local voice dictation for mac, windows and linux | Desktop / phone app | Productivity | yes | 72 | 21 Nov 2026 | https://github.com/anomalyco/hex | Wispr Flow, Superwhisper, Dragon NaturallySpeaking |
 | 264 | calesthio/OpenMontage: open-source agentic video production system | Developer tool | Video | yes | 78 | 21 Nov 2026 | https://github.com/calesthio/OpenMontage | Runway, InVideo, CapCut |
 | 263 | ossu/computer-science: Path to a free self-taught education in Computer Science! | Learn | Courses & guides | yes | 92 | 21 Nov 2026 | https://github.com/ossu/computer-science |  |
