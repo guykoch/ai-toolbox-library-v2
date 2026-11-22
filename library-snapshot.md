@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-22 00:23 UTC.
-Tools: 266 active, 1 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
-Rules: 12. Agents: 13. Automations: 7. Playbooks: 17.
+Updated automatically by the app: 2026-11-22 01:28 UTC.
+Tools: 267 active, 1 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Rules: 13. Agents: 13. Automations: 7. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 267 | erkamyaman/unslopovich: agent skill that finds and fixes AI-looking UI and UX in apps | Skill | Agent skills | yes | 46 | 21 Nov 2026 | https://github.com/erkamyaman/unslopovich | Cursor Rules |
 | 266 | leandrodaf/3d-new-era-ai: open-source home design and floor plan editor in Rust with built-in MCP server | Desktop / phone app | Productivity | yes | 38 | 21 Nov 2026 | https://github.com/leandrodaf/3d-new-era-ai | Sweet Home 3D, SketchUp, AutoCAD |
 | 265 | anomalyco/hex: Local voice dictation for mac, windows and linux | Desktop / phone app | Productivity | yes | 72 | 21 Nov 2026 | https://github.com/anomalyco/hex | Wispr Flow, Superwhisper, Dragon NaturallySpeaking |
 | 264 | calesthio/OpenMontage: open-source agentic video production system | Developer tool | Video | yes | 78 | 21 Nov 2026 | https://github.com/calesthio/OpenMontage | Runway, InVideo, CapCut |
@@ -348,6 +349,7 @@ Rules: 12. Agents: 13. Automations: 7. Playbooks: 17.
 | r8 | Awesome Cursor Rules | collections | Open source | 257 | Starting a project's rules from a proven file for your exact stack instead of a blank page. | https://github.com/PatrickJS/awesome-cursorrules |
 | r9 | cursor.directory | collections | Community | — | Quickly finding a rule set for a stack (e.g. Next.js + Supabase) and copying it. | https://cursor.directory |
 | r10 | DESIGN.md brand rules (awesome-design-md) | design | Open source | — | Making an AI-built site look like a known brand: drop one DESIGN.md in your project and point the agent at it. | https://github.com/VoltAgent/awesome-design-md |
+| r13 | Unslopovich | design | Open source | copy failed | Auditing mobile and web UI for AI tropes, broken navigation, dead error states, and unvirtualized lists. | https://github.com/erkamyaman/unslopovich |
 
 ## Agents
 
