@@ -787,6 +787,8 @@
       .to-top { position: fixed; top: 12px; left: 50%; transform: translate(-50%, -8px); z-index: 900; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); box-shadow: 0 4px 14px rgba(0,0,0,.18); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
       .to-top.show { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
       .to-top:hover { border-color: var(--accent); color: var(--accent-ink); }
+      .to-top.to-bottom { top: auto; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 8px); }
+      .to-top.to-bottom.show { transform: translate(-50%, 0); }
       /* iPhone zooms in on any text box with text under 16px — keep every box at 16px on touch screens. */
       @media (pointer: coarse) {
         input[type=text], input[type=search], input[type=password], input:not([type]), textarea, select,
@@ -830,6 +832,7 @@
       </form>
     </div>
     <button class="to-top" id="to-top" type="button" aria-label="Back to top" title="Back to top"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+    <button class="to-top to-bottom" id="to-bottom" type="button" aria-label="Go to bottom" title="Go to bottom"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"/></svg></button>
     <div class="pl-modal" id="dc-modal" hidden role="dialog" aria-modal="true" aria-labelledby="dc-h">
       <div class="pl-panel dc-panel">
         <div class="pl-head"><h2 id="dc-h">&#128214; Dictionary</h2><span class="grow"></span><button class="pl-x" id="dc-x" type="button" aria-label="Close">&times;</button></div>
@@ -3696,7 +3699,7 @@
       window.addEventListener('resize', () => { if (!document.getElementById('pl-modal').hidden && pl.plan) plRender(); });
       // Small "back to top" arrow that appears once you scroll down.
       (() => {
-        const b = document.getElementById('to-top');
+        const b = document.getElementById('to-top'), bb = document.getElementById('to-bottom');
         // Sits just under the search bar that sticks to the top of the tab, so it never covers it.
         const sync = () => {
           let top = 12;
@@ -3707,9 +3710,14 @@
           }
           b.style.top = top + 'px';
           b.classList.toggle('show', window.scrollY > 500);
+          // "Go to bottom": shows once you start scrolling, while there's still a lot of page below.
+          const left = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
+          bb.classList.toggle('show', window.scrollY > 200 && left > 600);
         };
         window.addEventListener('scroll', sync, { passive: true }); sync();
         b.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        bb.addEventListener('click', () => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }));
+        window.addEventListener('resize', sync);
       })();
       // =====================================================================
       // Dictionary pop-up: the basic AI, code and cloud terms, by topic
