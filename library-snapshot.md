@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-22 18:00 UTC.
-Tools: 277 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-22 18:54 UTC.
+Tools: 278 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
 Rules: 14. Agents: 16. Automations: 8. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 277 | Augani/openreel-video: professional browser-based video editor and open-source CapCut alternative | Web app | Video | yes | 64 | 22 Nov 2026 | https://github.com/Augani/openreel-video | CapCut, Descript, Clipchamp |
 | 276 | github/gh-aw: GitHub Agentic Workflows | Developer tool | Agent infrastructure | yes | 85 | 22 Nov 2026 | https://github.com/github/gh-aw | Devin, Sweep, GitHub Actions |
 | 275 | flameshot-org/flameshot: Powerful yet simple to use screenshot software | Desktop / phone app | Productivity | yes | 76 | 22 Nov 2026 | https://github.com/flameshot-org/flameshot | Lightshot, Snagit, ShareX |
 | 274 | affaan-m/ECC: The agent harness performance optimization system | Plugin / extension | Coding agents | yes | 86 | 22 Nov 2026 | https://github.com/affaan-m/ECC | Superpowers, Cursor Rules, Cline Rules |
