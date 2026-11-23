@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-23 20:44 UTC.
-Tools: 285 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
-Rules: 16. Agents: 18. Automations: 8. Playbooks: 17.
+Updated automatically by the app: 2026-11-23 20:52 UTC.
+Tools: 286 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Rules: 16. Agents: 19. Automations: 8. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 285 | bytedance/deer-flow: open-source SuperAgent harness for long-horizon research and coding tasks | Developer tool | Agent infrastructure | yes | 88 | 23 Nov 2026 | https://github.com/bytedance/deer-flow | Devin, AutoGPT, CrewAI |
 | 284 | mjmirza/app-store-compliance: Avoid common App Store and Google Play rejections | Developer tool | Coding agents | yes | 66 | 23 Nov 2026 | https://github.com/mjmirza/app-store-compliance | Fastlane |
 | 283 | doobyflink/skill-security-audit: audit any Claude skill or plugin before you install it | Skill | Agent skills | yes | 34 | 23 Nov 2026 | https://github.com/doobyflink/skill-security-audit | Semgrep, Snyk |
 | 282 | multica-ai/multica: Agents that show up on the board | Developer tool | Coding agents | yes | 78 | 23 Nov 2026 | https://github.com/multica-ai/multica | Linear, Jira, GitHub Issues |
@@ -392,6 +393,7 @@ None.
 | a16 | GitHub Agentic Workflows (gh-aw) | teams | Official | 6 | Repo triage, CI fixes, and code reviews running AI agents safely alongside existing GitHub CI/CD. | https://github.github.com/gh-aw |
 | a17 | Multica | teams | Community | — | Managing multiple agent CLIs (Claude Code, Codex, Cursor) on a shared Kanban board with task tracking and review handoffs. | https://multica.ai |
 | a18 | PaperOrchestra | teams | Open source | copy failed | Drafting AI research papers; includes agents for outlines, literature reviews, section drafting, and synthesized plots. | https://github.com/google-research/paper-orchestra |
+| a19 | DeerFlow | teams | Open source | copy failed | Complex, long-horizon tasks requiring multi-agent orchestration, Docker sandboxes, persistent memory, and tool integration. | https://deerflow.tech |
 
 ## Automations
 
