@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-23 19:27 UTC.
-Tools: 284 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
-Rules: 15. Agents: 17. Automations: 8. Playbooks: 17.
+Updated automatically by the app: 2026-11-23 19:30 UTC.
+Tools: 285 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Rules: 16. Agents: 17. Automations: 8. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 284 | mjmirza/app-store-compliance: Avoid common App Store and Google Play rejections | Developer tool | Coding agents | yes | 66 | 23 Nov 2026 | https://github.com/mjmirza/app-store-compliance | Fastlane |
 | 283 | doobyflink/skill-security-audit: audit any Claude skill or plugin before you install it | Skill | Agent skills | yes | 34 | 23 Nov 2026 | https://github.com/doobyflink/skill-security-audit | Semgrep, Snyk |
 | 282 | multica-ai/multica: Agents that show up on the board | Developer tool | Coding agents | yes | 78 | 23 Nov 2026 | https://github.com/multica-ai/multica | Linear, Jira, GitHub Issues |
 | 281 | Harness Engineering — Agent = Model + Harness: The 6-Layer Production Playbook | Learn | Courses & guides | no | 62 | 22 Nov 2026 | https://drive.google.com/file/d/1wZeuP0t4WOA2COMxcrU-Uv34IutM13UR/view |  |
@@ -362,6 +363,7 @@ None.
 | r11 | Claude Code hooks | guardrails | Official | — | Guardrails that can't be skipped: block risky commands (like rm -rf), auto-format every edited file, get notified when Claude needs you. | https://code.claude.com/docs/en/hooks-guide |
 | r12 | Claude Code permission settings | guardrails | Official | — | Letting Claude work faster on safe commands (git status, tests) while blocking dangerous ones and protected folders. | https://code.claude.com/docs/en/permissions |
 | r15 | Harness Engineering (6-Layer Architecture) | guardrails | Community | — | When hardening agents for production; pairs rule files with automated test sensors, tool budgets, and gate checks. | https://mitchellh.com/writing/my-ai-adoption-journey |
+| r16 | App Store Compliance Playbook | guardrails | Community | — | Preventing mobile app rejections with automated policy checks and pre-upload hooks for AI coding agents. | https://mjmirza.github.io/app-store-compliance/ |
 | r8 | Awesome Cursor Rules | collections | Open source | 257 | Starting a project's rules from a proven file for your exact stack instead of a blank page. | https://github.com/PatrickJS/awesome-cursorrules |
 | r9 | cursor.directory | collections | Community | — | Quickly finding a rule set for a stack (e.g. Next.js + Supabase) and copying it. | https://cursor.directory |
 | r14 | ECC (Everything Claude Code) | collections | Open source | 27 | Supercharging AI coding harnesses with prebuilt skills, workflow rules, agent roles, hooks, and AgentShield security controls. | https://ecc.tools |
