@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-23 19:24 UTC.
-Tools: 283 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-23 19:27 UTC.
+Tools: 284 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
 Rules: 15. Agents: 17. Automations: 8. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 283 | doobyflink/skill-security-audit: audit any Claude skill or plugin before you install it | Skill | Agent skills | yes | 34 | 23 Nov 2026 | https://github.com/doobyflink/skill-security-audit | Semgrep, Snyk |
 | 282 | multica-ai/multica: Agents that show up on the board | Developer tool | Coding agents | yes | 78 | 23 Nov 2026 | https://github.com/multica-ai/multica | Linear, Jira, GitHub Issues |
 | 281 | Harness Engineering — Agent = Model + Harness: The 6-Layer Production Playbook | Learn | Courses & guides | no | 62 | 22 Nov 2026 | https://drive.google.com/file/d/1wZeuP0t4WOA2COMxcrU-Uv34IutM13UR/view |  |
 | 280 | Claude Forward Deployed Engineer | Learn | Courses & guides | no | 80 | 22 Nov 2026 | https://anthropic-partners.skilljar.com/path/claude-fde |  |
