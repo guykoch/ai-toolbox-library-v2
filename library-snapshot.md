@@ -1,8 +1,8 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-23 21:44 UTC.
+Updated automatically by the app: 2026-11-23 21:45 UTC.
 Tools: 287 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
-Rules: 16. Agents: 19. Automations: 8. Playbooks: 17.
+Rules: 16. Agents: 20. Automations: 8. Playbooks: 17.
 
 ## Tools (active)
 
@@ -395,6 +395,7 @@ None.
 | a17 | Multica | teams | Community | — | Managing multiple agent CLIs (Claude Code, Codex, Cursor) on a shared Kanban board with task tracking and review handoffs. | https://multica.ai |
 | a18 | PaperOrchestra | teams | Open source | copy failed | Drafting AI research papers; includes agents for outlines, literature reviews, section drafting, and synthesized plots. | https://github.com/google-research/paper-orchestra |
 | a19 | DeerFlow | teams | Open source | copy failed | Complex, long-horizon tasks requiring multi-agent orchestration, Docker sandboxes, persistent memory, and tool integration. | https://deerflow.tech |
+| a20 | LearnHarness | teams | Open source | 2 | Mastering hard topics step-by-step; includes adaptive DAG lesson plans, active-recall quizzes, and BYOK multi-model inference. | https://github.com/amosblomqvist/learnharness |
 
 ## Automations
 
