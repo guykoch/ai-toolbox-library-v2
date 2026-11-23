@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-23 21:47 UTC.
-Tools: 288 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-23 22:44 UTC.
+Tools: 289 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
 Rules: 16. Agents: 20. Automations: 8. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 288 | conorbronsdon/avoid-ai-writing: audit and rewrite content to remove AI writing patterns | Skill | Agent skills | yes | 65 | 23 Nov 2026 | https://github.com/conorbronsdon/avoid-ai-writing | Undetectable AI, QuillBot, Originality.ai |
 | 287 | D3voz/openjutsu: One-click character swap for videos: an open-source, local Higgsfield Genjutsu alternative built on ComfyUI and MiniMax H3, with FLUX.3 Klein relighting | Developer tool | Video | yes | 68 | 23 Nov 2026 | https://github.com/D3voz/openjutsu | Higgsfield, Runway, Krea |
 | 286 | amosblomqvist/learnharness: Agent harness for learning difficult things | Desktop / phone app | Productivity | yes | 73 | 23 Nov 2026 | https://github.com/amosblomqvist/learnharness | Khanmigo, Brilliant, NotebookLM |
 | 285 | bytedance/deer-flow: open-source SuperAgent harness for long-horizon research and coding tasks | Developer tool | Agent infrastructure | yes | 88 | 23 Nov 2026 | https://github.com/bytedance/deer-flow | Devin, AutoGPT, CrewAI |
