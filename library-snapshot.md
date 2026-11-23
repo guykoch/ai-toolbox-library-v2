@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-23 04:31 UTC.
-Tools: 281 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
-Rules: 14. Agents: 16. Automations: 8. Playbooks: 17.
+Updated automatically by the app: 2026-11-23 04:44 UTC.
+Tools: 282 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Rules: 15. Agents: 16. Automations: 8. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 281 | Harness Engineering — Agent = Model + Harness: The 6-Layer Production Playbook | Learn | Courses & guides | no | 62 | 22 Nov 2026 | https://drive.google.com/file/d/1wZeuP0t4WOA2COMxcrU-Uv34IutM13UR/view |  |
 | 280 | Claude Forward Deployed Engineer | Learn | Courses & guides | no | 80 | 22 Nov 2026 | https://anthropic-partners.skilljar.com/path/claude-fde |  |
 | 279 | erkamyaman/safe-anything: Rust-based local security scanner for code, secrets, and AI agent configs | Developer tool | Agent infrastructure | yes | 42 | 22 Nov 2026 | https://github.com/erkamyaman/safe-anything | Semgrep, Snyk, Trivy |
 | 278 | PaddlePaddle/PaddleOCR: turn any PDF or image document into structured data for your AI | Developer tool | Knowledge & RAG | yes | 84 | 22 Nov 2026 | https://github.com/PaddlePaddle/PaddleOCR | Tesseract OCR, Amazon Textract, Google Cloud Vision OCR |
@@ -358,6 +359,7 @@ None.
 | r7 | GEMINI.md (Gemini CLI context) | coding | Open source | — | Giving Gemini CLI your project's instructions; it can also be set to read AGENTS.md instead. | https://geminicli.com/docs/cli/gemini-md/ |
 | r11 | Claude Code hooks | guardrails | Official | — | Guardrails that can't be skipped: block risky commands (like rm -rf), auto-format every edited file, get notified when Claude needs you. | https://code.claude.com/docs/en/hooks-guide |
 | r12 | Claude Code permission settings | guardrails | Official | — | Letting Claude work faster on safe commands (git status, tests) while blocking dangerous ones and protected folders. | https://code.claude.com/docs/en/permissions |
+| r15 | Harness Engineering (6-Layer Architecture) | guardrails | Community | — | When hardening agents for production; pairs rule files with automated test sensors, tool budgets, and gate checks. | https://mitchellh.com/writing/my-ai-adoption-journey |
 | r8 | Awesome Cursor Rules | collections | Open source | 257 | Starting a project's rules from a proven file for your exact stack instead of a blank page. | https://github.com/PatrickJS/awesome-cursorrules |
 | r9 | cursor.directory | collections | Community | — | Quickly finding a rule set for a stack (e.g. Next.js + Supabase) and copying it. | https://cursor.directory |
 | r14 | ECC (Everything Claude Code) | collections | Open source | 27 | Supercharging AI coding harnesses with prebuilt skills, workflow rules, agent roles, hooks, and AgentShield security controls. | https://ecc.tools |
