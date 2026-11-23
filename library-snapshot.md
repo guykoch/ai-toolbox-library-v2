@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-23 00:06 UTC.
-Tools: 280 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-23 04:31 UTC.
+Tools: 281 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
 Rules: 14. Agents: 16. Automations: 8. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 280 | Claude Forward Deployed Engineer | Learn | Courses & guides | no | 80 | 22 Nov 2026 | https://anthropic-partners.skilljar.com/path/claude-fde |  |
 | 279 | erkamyaman/safe-anything: Rust-based local security scanner for code, secrets, and AI agent configs | Developer tool | Agent infrastructure | yes | 42 | 22 Nov 2026 | https://github.com/erkamyaman/safe-anything | Semgrep, Snyk, Trivy |
 | 278 | PaddlePaddle/PaddleOCR: turn any PDF or image document into structured data for your AI | Developer tool | Knowledge & RAG | yes | 84 | 22 Nov 2026 | https://github.com/PaddlePaddle/PaddleOCR | Tesseract OCR, Amazon Textract, Google Cloud Vision OCR |
 | 277 | Augani/openreel-video: professional browser-based video editor and open-source CapCut alternative | Web app | Video | yes | 64 | 22 Nov 2026 | https://github.com/Augani/openreel-video | CapCut, Descript, Clipchamp |
