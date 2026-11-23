@@ -1,8 +1,8 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-23 19:30 UTC.
+Updated automatically by the app: 2026-11-23 20:44 UTC.
 Tools: 285 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
-Rules: 16. Agents: 17. Automations: 8. Playbooks: 17.
+Rules: 16. Agents: 18. Automations: 8. Playbooks: 17.
 
 ## Tools (active)
 
@@ -391,6 +391,7 @@ None.
 | a14 | Orca | teams | Open source | 23 | Running multiple coding agents simultaneously in isolated git worktrees with visual diff reviews and mobile controls. | https://github.com/stablyai/orca |
 | a16 | GitHub Agentic Workflows (gh-aw) | teams | Official | 6 | Repo triage, CI fixes, and code reviews running AI agents safely alongside existing GitHub CI/CD. | https://github.github.com/gh-aw |
 | a17 | Multica | teams | Community | — | Managing multiple agent CLIs (Claude Code, Codex, Cursor) on a shared Kanban board with task tracking and review handoffs. | https://multica.ai |
+| a18 | PaperOrchestra | teams | Open source | copy failed | Drafting AI research papers; includes agents for outlines, literature reviews, section drafting, and synthesized plots. | https://github.com/google-research/paper-orchestra |
 
 ## Automations
 
