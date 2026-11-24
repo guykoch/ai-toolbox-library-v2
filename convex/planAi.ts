@@ -8,7 +8,7 @@ import { checkKey } from "./auth";
 import { callGemini, parseJson, MODELS, FILE_MIME, docsBlock, GeminiTurn, geminiUpload, ImageIn } from "./llm";
 import { KIND_LABEL } from "./kinds";
 
-type Lib = { topics: string[]; types: { key: string; label: string; icon: string }[]; tools: { id: string; name: string; kind: string; cat: string; info: string; url: string }[]; libs: { id: string; name: string; info: string; copied: boolean }[]; cards: { id: string; tab: string; name: string; info: string }[] };
+type Lib = { topics: string[]; types: { key: string; label: string; icon: string }[]; tools: { id: string; name: string; kind: string; cat: string; info: string; url: string; os: boolean; effort: string }[]; libs: { id: string; name: string; info: string; copied: boolean; src: string; license: string }[]; cards: { id: string; tab: string; name: string; info: string; src: string; license: string; effort: string }[] };
 type PRow = { pid: number; libId: string; title: string; desc: string };
 type IRow = { cid: string; n: number; title: string; desc: string; tag: string; tab: string; card: string };
 export type Ref = { ref: string; name: string; type: string; where: string };
@@ -24,6 +24,13 @@ function shortlist<T extends { title: string; desc: string }>(rows: T[], kws: st
     .map((x) => ({ r: x.r, s: ks.reduce((s, k) => { const d = df.get(k) || 0; if (!d) return s; const idf = Math.log(1 + low.length / d); return s + (x.t.includes(k) ? 3 * idf : x.d.includes(k) ? idf : 0); }, 0) }))
     .filter((x) => x.s > 0).sort((a, b) => b.s - a.s).slice(0, n).map((x) => x.r);
 }
+const EFFORT_TAG: Record<string, string> = { ready: "ready now", quick: "quick install", tech: "tech setup" };
+const MODE_OPEN = `OPEN-SOURCE ONLY is ON. Every item in the plan AND every alternative must be open source (tagged [open source], kind "open", or an open license like MIT/Apache/CC0) or genuinely free to use (a free website, a free tier that covers this job, or free prompts/rules/agents). Leave out paid-only tools entirely. When you use a free-but-not-open tool, say "free plan" in its role and note any limit that matters. If a job has no open-source or free option in the library, do it without a tool or name a well-known open-source option under "gaps". Set "cost" to "Free".`;
+const MODE_LOW = `LOW-EFFORT MODE is ON. The user wants something they can start using today with almost no setup:
+- Strongly prefer [ready now] items (in the browser, nothing to install), then [quick install] (one click, one command, an app-store app, a skill or connector to switch on). Avoid [tech setup] items — developer tools, self-hosting, servers, Docker, API keys, writing code — unless there is truly no other way; if you must use one, say why in a caveat.
+- Use as few steps and as few different tools as possible (aim for 3–5 steps; reuse one tool across steps rather than adding another).
+- Make every "do" a short, very plain instruction a non-technical person can follow (where to click, what to paste), and give each step a time in minutes in its title or output.
+- Set "time" to the total hands-on time, kept small, and pick alternatives that are equally easy.`;
 const TAB_TYPE: Record<string, string> = { rules: "Rule / guardrail", agents: "Agent", autos: "Automation" };
 const ITEM_TYPE: Record<string, string> = { rules: "Rule file", agents: "Agent", autos: "Workflow" };
 
@@ -84,9 +91,11 @@ export const chat = action({
     files: v.optional(v.array(v.object({ mime: v.string(), data: v.string() }))),
     docs: v.optional(v.array(v.object({ name: v.string(), text: v.string() }))),
     // Every file in this chat (uploaded once to storage): read in full with every message, so follow-ups keep all the detail.
+    // Checkboxes above the chat box.
+    modes: v.optional(v.object({ openSource: v.optional(v.boolean()), lowEffort: v.optional(v.boolean()) })),
     chatFiles: v.optional(v.array(v.object({ id: v.string(), name: v.string(), kind: v.string(), mime: v.string(), uri: v.optional(v.string()), exp: v.optional(v.number()), isNew: v.optional(v.boolean()) }))),
   },
-  handler: async (ctx, { key, history, message, plan, defaults, files, docs, chatFiles }): Promise<{ reply: string; questions: { q: string; options: string[] }[]; plan: any | null; changes: string[]; fileNotes: string; fileRefs: { id: string; uri: string; exp: number }[]; fileNote: string }> => {
+  handler: async (ctx, { key, history, message, plan, defaults, files, docs, chatFiles, modes }): Promise<{ reply: string; questions: { q: string; options: string[] }[]; plan: any | null; changes: string[]; fileNotes: string; fileRefs: { id: string; uri: string; exp: number }[]; fileNote: string }> => {
     checkKey(key);
     const pics: ImageIn[] = (files || []).filter((f) => FILE_MIME.test(f.mime)).slice(0, 20);
     let docText = docsBlock(docs);
@@ -140,9 +149,9 @@ export const chat = action({
     for (const s of plan?.steps || []) for (const it of s.items || []) for (const r of [it, ...(it.alts || [])]) if (r?.ref && !refs.has(r.ref) && r.name) refs.set(r.ref, { ref: r.ref, name: r.name, type: r.type || "Item", where: r.where || "" });
 
     const libText =
-      "TOOLS (ref | name | type | what it is):\n" + lib.tools.map((t) => `t:${t.id} | ${t.name} | ${(KIND_LABEL as any)[t.kind] || t.kind} | ${t.info}`).join("\n") +
-      "\n\nPROMPT LIBRARIES:\n" + lib.libs.map((l) => `l:${l.id} | ${l.name} | ${l.info}`).join("\n") +
-      "\n\nRULE / AGENT / AUTOMATION CARDS:\n" + lib.cards.map((c) => `c:${c.id} | ${c.name} | ${TAB_TYPE[c.tab]} | ${c.info}`).join("\n") +
+      "TOOLS (ref | name | type | tags | what it is). Tags: [open source]; effort to start: [ready now] = use in the browser, nothing to install; [quick install] = a few clicks or one command; [tech setup] = developer setup, self-hosting, API keys or code.\n" + lib.tools.map((t) => `t:${t.id} | ${t.name} | ${(KIND_LABEL as any)[t.kind] || t.kind} | ${[t.os ? "[open source]" : "", t.effort ? "[" + EFFORT_TAG[t.effort] + "]" : ""].filter(Boolean).join(" ")} | ${t.info}`).join("\n") +
+      "\n\nPROMPT LIBRARIES (ref | name | source, license | what it has):\n" + lib.libs.map((l) => `l:${l.id} | ${l.name} | ${[l.src, l.license].filter(Boolean).join(", ")} | ${l.info}`).join("\n") +
+      "\n\nRULE / AGENT / AUTOMATION CARDS (ref | name | type | source, license, setup | what it is):\n" + lib.cards.map((c) => `c:${c.id} | ${c.name} | ${TAB_TYPE[c.tab]} | ${[c.src, c.license, c.effort ? c.effort + " setup" : ""].filter(Boolean).join(", ")} | ${c.info}`).join("\n") +
       "\n\nSPECIFIC PROMPTS that may fit (ref | title | library | what it does):\n" + (pShort.map((p) => `p:${p.pid} | ${p.title} | ${libName.get(p.libId)} | ${p.desc.slice(0, 160)}`).join("\n") || "(none found)") +
       "\n\nSPECIFIC AGENT / RULE / WORKFLOW FILES that may fit (ref | title | type | collection | what it does):\n" + (iShort.map((f) => `i:${f.cid}:${f.n} | ${f.title} | ${ITEM_TYPE[f.tab]} | ${f.card} | ${f.desc.slice(0, 160)}`).join("\n") || "(none found)") +
       "\n\nPLAYBOOK TYPES AND TOPICS already used:\nOwn types: " + (lib.types.map((t) => `${t.key} (${t.icon} ${t.label})`).join(", ") || "none") + "\nExisting topics: " + (lib.topics.join(", ") || "none") +
@@ -157,6 +166,8 @@ export const chat = action({
       text: (plan ? `CURRENT PLAN:\n${JSON.stringify(stripPlan(plan)).slice(0, 40000)}\n\n` : "") + docText +
         (pics.length ? `${pics.length} IMAGE(S) / PDF(S) ATTACHED — read every one fully (diagrams, text, numbers).\n\n` : "") +
         (chatFiles && chatFiles.length ? `FILES IN THIS CHAT: ${chatFiles.map((f) => f.name + (f.isNew ? " (NEW in this message)" : "")).join(", ")}. They are all included above in full — use any detail from them when it helps.\n\n` : "") +
+        (modes?.openSource ? MODE_OPEN + "\n\n" : "") + (modes?.lowEffort ? MODE_LOW + "\n\n" : "") +
+        (modes?.openSource || modes?.lowEffort ? "(If the current plan breaks the rules above and I'm asking for a plan or a change, fix the whole plan to follow them and list what you swapped under changes.)\n\n" : "") +
         `MY MESSAGE: ${m.slice(0, 4000)}`,
       images: pics,
     });

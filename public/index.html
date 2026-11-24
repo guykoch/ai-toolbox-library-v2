@@ -709,6 +709,12 @@
       .pl-ex button { border: 1px dashed var(--line); background: var(--surface); color: var(--ink-2); border-radius: 12px; padding: 8px 10px; font: inherit; font-size: 13.5px; cursor: pointer; text-align: left; }
       .pl-ex button:hover { border-color: var(--accent); color: var(--ink); }
       .pl-comp { border-top: 1px solid var(--line); padding: 10px 12px; display: flex; gap: 8px; align-items: flex-end; }
+      .pl-modes { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 8px 14px 0; border-top: 1px solid var(--line); font-size: 13.5px; }
+      .pl-modes + .pl-comp { border-top: 0; padding-top: 6px; }
+      .pl-modes label { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; color: var(--ink-2); font-weight: 600; user-select: none; }
+      .pl-modes input { width: 17px; height: 17px; accent-color: var(--accent); margin: 0; }
+      .pl-modes .hint { font-weight: 400; color: var(--muted); font-size: 12px; }
+      .pl-mtags { display: block; font-size: 11.5px; opacity: .85; margin-bottom: 3px; }
       .pl-comp textarea { flex: 1; resize: none; min-height: 44px; max-height: 180px; font: inherit; font-size: 14.5px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); box-sizing: border-box; }
       .pl-comp textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
       .pl-comp .primary-btn { min-height: 44px; }
@@ -926,6 +932,7 @@
             <div class="pl-msgs" id="pl-msgs" aria-live="polite"></div>
             <div class="pl-status" id="pl-status"></div>
             <div class="pl-files" id="pl-files"></div>
+            <div class="pl-modes" id="pl-modes"><label title="Use only open-source and free tools and components from your library"><input type="checkbox" id="pl-m-open" /> &#128275; Open-source tools only</label><label title="Fast to start: little or no installing, very easy steps, short time"><input type="checkbox" id="pl-m-low" /> &#9889; Low effort mode</label></div>
             <div class="pl-comp"><label class="pl-attach" title="Add images, screenshots or documents (PDF, Word, PowerPoint, Excel, text)" aria-label="Add files">&#128206;<input type="file" id="pl-file-input" multiple hidden /></label><textarea id="pl-text" dir="auto" rows="1" placeholder="Ask or describe a goal"></textarea><button class="primary-btn" id="pl-send" type="button">Send</button></div>
           </div>
           <div class="pl-view" id="pl-view"></div>
@@ -3350,8 +3357,8 @@
         'אני רוצה להכין מצגת למשקיעים על הסטארטאפ שלי'
       ];
       const pl = { history: [], plan: null, undo: [], busy: false, open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat', pbId: null, dirty: false, editing: new Set(), adding: null, addQ: '', files: [], chatFiles: [] };
-      try { const sv = JSON.parse(localStorage.getItem(PLAN_STORE) || 'null'); if (sv) { pl.history = sv.history || []; pl.plan = sv.plan || null; pl.undo = sv.undo || []; pl.pbId = sv.pbId || null; pl.dirty = !!sv.dirty; pl.arch = sv.arch || null; pl.chatFiles = sv.chatFiles || []; } } catch (e) {}
-      function plSave() { try { localStorage.setItem(PLAN_STORE, JSON.stringify({ history: pl.history.slice(-60), plan: pl.plan, undo: pl.undo.slice(-15), pbId: pl.pbId, dirty: pl.dirty, arch: pl.arch || null, chatFiles: pl.chatFiles })); } catch (e) {} }
+      try { const sv = JSON.parse(localStorage.getItem(PLAN_STORE) || 'null'); if (sv) { pl.history = sv.history || []; pl.plan = sv.plan || null; pl.undo = sv.undo || []; pl.pbId = sv.pbId || null; pl.dirty = !!sv.dirty; pl.arch = sv.arch || null; pl.chatFiles = sv.chatFiles || []; pl.modes = sv.modes || {}; } } catch (e) {}
+      function plSave() { try { localStorage.setItem(PLAN_STORE, JSON.stringify({ history: pl.history.slice(-60), plan: pl.plan, undo: pl.undo.slice(-15), pbId: pl.pbId, dirty: pl.dirty, arch: pl.arch || null, chatFiles: pl.chatFiles, modes: pl.modes || {} })); } catch (e) {} }
       const plIcon = t => PL_TYPE_ICON[t] || '\u{1F4E6}';
       const phaseColor = (plan, id) => PL_COLORS[Math.max(0, (plan.phases || []).findIndex(p => p.id === id)) % PL_COLORS.length];
 
@@ -3371,7 +3378,7 @@
         const last = pl.history.length - 1;
         return pl.history.map((m, i) => {
           if (m.note) return '<div class="pl-m n" dir="auto">' + esc(m.text) + '</div>';
-          let h = '<div class="pl-m ' + (m.role === 'user' ? 'u' : 'a') + '" data-mi="' + i + '" dir="auto">' + (m.files && m.files.length ? '<span class="pl-mfiles">\u{1F4CE} ' + m.files.map(esc).join(', ') + '</span>' : '') + esc(m.text === '(files)' ? '' : m.text) + (m.changes && m.changes.length ? '<ul>' + m.changes.map(c => '<li>' + esc(c) + '</li>').join('') + '</ul>' : '') + '</div>';
+          let h = '<div class="pl-m ' + (m.role === 'user' ? 'u' : 'a') + '" data-mi="' + i + '" dir="auto">' + (m.modes ? '<span class="pl-mtags">' + [m.modes.openSource ? '\u{1F513} Open-source only' : '', m.modes.lowEffort ? '\u26A1 Low effort' : ''].filter(Boolean).join(' \u00b7 ') + '</span>' : '') + (m.files && m.files.length ? '<span class="pl-mfiles">\u{1F4CE} ' + m.files.map(esc).join(', ') + '</span>' : '') + esc(m.text === '(files)' ? '' : m.text) + (m.changes && m.changes.length ? '<ul>' + m.changes.map(c => '<li>' + esc(c) + '</li>').join('') + '</ul>' : '') + '</div>';
           if (m.questions && m.questions.length && i === last) {
             h += '<div class="pl-qs">' + m.questions.map((q, qi) => '<div class="pl-q"><b dir="auto">' + esc(q.q) + '</b><div class="pl-opts">' +
               q.options.map(o => '<button type="button" class="pl-opt" data-plans="' + qi + '" data-v="' + esc(o) + '" aria-pressed="' + (pl.answers[qi] === o) + '" dir="auto">' + esc(o) + '</button>').join('') + '</div></div>').join('') +
@@ -3385,7 +3392,8 @@
         text = (text || '').trim(); if ((!text && !pl.files.length) || pl.busy) return;
         const prior = pl.history.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', text: m.note ? '[' + m.text + ']' : m.text + (m.files && m.files.length ? '\n[Attached: ' + m.files.join(', ') + ']' + (m.fileNotes ? '\n[Notes on attached files: ' + m.fileNotes + ']' : '') : '') + (m.questions && m.questions.length ? '\n' + m.questions.map(q => '- ' + q.q + ' (' + q.options.join(' / ') + ')').join('\n') : '') }));
         const sending = pl.files; pl.files = []; pl.lastSent = sending;
-        const userMsg = { role: 'user', text: text || '(files)', files: sending.map(f => f.name) };
+        const modes = { openSource: !!(pl.modes || {}).openSource, lowEffort: !!(pl.modes || {}).lowEffort };
+        const userMsg = { role: 'user', text: text || '(files)', files: sending.map(f => f.name), modes: modes.openSource || modes.lowEffort ? modes : undefined };
         pl.history.push(userMsg); pl.answers = {}; pl.busy = true; pl.show = 'chat'; plRender(); plRenderFiles();
         const t0 = Date.now(), st = document.getElementById('pl-status');
         const tick = () => { const s = Math.round((Date.now() - t0) / 1000); if (st) st.textContent = (s < 6 ? 'Reading your library…' : s < 20 ? 'Thinking it through…' : 'Writing the plan…') + ' ' + s + 's'; };
@@ -3396,7 +3404,7 @@
           if (my !== pl.req) return;
           const strip = f => ({ id: f.id, name: f.name, kind: f.kind, mime: f.mime, ...(f.uri ? { uri: f.uri, exp: f.exp } : {}), ...(f.words ? { words: f.words } : {}) });
           const all = pl.chatFiles.map(strip).concat(sending.map(f => ({ ...strip(f), isNew: true })));
-          const r = await call('action', 'planAi:chat', { history: prior, message: text, plan: pl.plan || undefined, defaults: typeof PB_DEFAULTS !== 'undefined' ? PB_DEFAULTS : [], chatFiles: all.map(({ words, ...x }) => x) });
+          const r = await call('action', 'planAi:chat', { history: prior, message: text, plan: pl.plan || undefined, defaults: typeof PB_DEFAULTS !== 'undefined' ? PB_DEFAULTS : [], chatFiles: all.map(({ words, ...x }) => x), modes });
           if (my === pl.req && r.fileNotes) userMsg.fileNotes = r.fileNotes;
           if (my !== pl.req) return; // stopped
           // The new files now belong to the chat; remember Gemini's copies so they aren't uploaded again.
@@ -3795,6 +3803,20 @@
         plRenderFiles();
       }
       function plDropStored(ids) { ids = ids.filter(Boolean); if (ids.length) call('mutation', 'planAi:dropFiles', { ids }).catch(() => {}); }
+      // "Open-source tools only" / "Low effort mode": remembered, and sent with every message.
+      pl.modes = pl.modes || {};
+      [['pl-m-open', 'openSource'], ['pl-m-low', 'lowEffort']].forEach(([id, k]) => {
+        const cb = document.getElementById(id); cb.checked = !!pl.modes[k];
+        cb.addEventListener('change', () => {
+          pl.modes[k] = cb.checked; plSave();
+          // With a plan already made, offer to redo it under the new setting.
+          const cur = plText.value.trim();
+          if (pl.plan && !pl.busy && (!cur || /^Redo the plan/.test(cur))) {
+            const want = [pl.modes.openSource ? 'with open-source and free tools only' : '', pl.modes.lowEffort ? 'in low effort mode (quickest to start, least setup, easiest steps)' : ''].filter(Boolean);
+            plText.value = want.length ? 'Redo the plan ' + want.join(', and ') : ''; plText.dispatchEvent(new Event('input'));
+          }
+        });
+      });
       const plFileInput = document.getElementById('pl-file-input');
       plFileInput.setAttribute('accept', FILE_ACCEPT);
       plFileInput.addEventListener('change', e => { plAddFiles(e.target.files); e.target.value = ''; });
