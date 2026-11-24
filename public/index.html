@@ -632,7 +632,7 @@
       .pl-modal[hidden] { display: none; }
 
       /* "How it works" pop-up: an architecture diagram of the plan */
-      .pa-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; border: 0; border-radius: 999px; padding: 8px 16px; background: var(--accent); color: #fff; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+      .pa-btn { display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 999px; padding: 8px 16px; background: var(--accent); color: #fff; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
       .pa-btn:hover { filter: brightness(1.08); }
       #pa-modal { z-index: 1100; }
       .pa-panel { width: min(1240px, 100%); }
@@ -665,6 +665,14 @@
       .pa-pop .pa-x { position: absolute; top: 6px; right: 8px; border: 0; background: none; color: var(--muted); font-size: 20px; cursor: pointer; line-height: 1; padding: 4px; }
       .pa-pop .steps { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12.5px; color: var(--muted); }
       .pa-pop .steps button { border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); border-radius: 999px; padding: 3px 10px; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+      .pa-btn.alt { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+      .pa-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      #bp-modal { z-index: 1100; }
+      .bp-panel { width: min(900px, 100%); }
+      .bp-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; padding: 12px 16px; }
+      .bp-note { margin: 0; font-size: 13px; color: var(--muted); }
+      .bp-text { flex: 1; min-height: 0; width: 100%; resize: none; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); padding: 12px; font: 13.5px/1.5 'IBM Plex Mono', ui-monospace, monospace; }
+      .bp-acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
       .pa-msg { margin: auto; text-align: center; color: var(--muted); padding: 30px; max-width: 420px; }
       .pl-panel { width: min(1240px, 100%); height: min(92vh, 980px); background: var(--bg); border-radius: 18px; box-shadow: 0 20px 60px rgba(0,0,0,.25); display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); }
       .pl-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--surface); flex-wrap: wrap; }
@@ -878,6 +886,12 @@
         <div class="dc-top"><div class="search-box"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.8-3.8"/></svg><input id="dc-q" type="search" placeholder="Search all terms&hellip; e.g. token, Docker, RAG" aria-label="Search the dictionary" /></div>
         <div class="dc-tabs" id="dc-tabs" role="tablist"></div></div>
         <div class="dc-body" id="dc-body"></div>
+      </div>
+    </div>
+    <div class="pl-modal" id="bp-modal" hidden role="dialog" aria-modal="true" aria-labelledby="bp-h">
+      <div class="pl-panel bp-panel">
+        <div class="pl-head"><h2 id="bp-h">&#9889; Plan prompt</h2><span class="sub" id="bp-title" dir="auto"></span><span class="grow"></span><button class="pl-x" id="bp-x" type="button" aria-label="Close">&times;</button></div>
+        <div class="bp-body" id="bp-body"></div>
       </div>
     </div>
     <div class="pl-modal" id="pa-modal" hidden role="dialog" aria-modal="true" aria-labelledby="pa-h">
@@ -3057,7 +3071,7 @@
           '<h3 dir="auto">' + esc(p.title) + '</h3><p class="summary full" dir="auto">' + esc(p.goal) + '</p>' +
           '<div class="badges">' + badges + '</div>' +
           '<div class="btn-row"><button type="button" class="expand-btn" data-pbexpand="' + p.id + '" aria-expanded="' + open + '" aria-controls="' + did + '">' + (open ? 'Hide steps' : 'Show steps') + CHEV_SVG + '</button>' +
-          '<button type="button" class="expand-btn" data-pbtweak="' + p.id + '">Open in Plan</button><button type="button" class="expand-btn" data-pbcopyall="' + p.id + '">Copy as text</button></div>' +
+          '<button type="button" class="expand-btn" data-pbtweak="' + p.id + '">Open in Plan</button><button type="button" class="expand-btn" data-pbcopyall="' + p.id + '">Copy as text</button><button type="button" class="expand-btn" data-pbbuild="' + p.id + '">\u26A1 Generate plan prompt</button></div>' +
           '<div class="detail" id="' + did + '"' + (open ? '' : ' hidden') + '>' +
           (p.plan && p.plan.outcome ? '<div><p class="d-label">You&rsquo;ll end up with</p><p class="st-d" dir="auto">' + esc(p.plan.outcome) + '</p></div>' : '') +
           (p.plan && p.plan.summary ? '<div><p class="d-label">The approach</p><p class="st-d" dir="auto">' + esc(p.plan.summary) + '</p></div>' : '') +
@@ -3248,6 +3262,7 @@
           const p = PLAYBOOKS.find(x => x.id === tw.dataset.pbtweak); if (!p) return;
           plFromPlaybook(p); return;
         }
+        const bb = e.target.closest('[data-pbbuild]'); if (bb) { const p = PLAYBOOKS.find(x => x.id === bb.dataset.pbbuild); if (p) bpOpen(plPlanOf(p)); return; }
         const ca = e.target.closest('[data-pbcopyall]'); if (ca) { const p = PLAYBOOKS.find(x => x.id === ca.dataset.pbcopyall); if (p) copyText(pbAsText(p)).then(() => flashCopied(ca)); return; }
         const cp = e.target.closest('[data-pbcopyprompt]');
         if (cp) { const [pid, i] = cp.dataset.pbcopyprompt.split(':'); const p = PLAYBOOKS.find(x => x.id === pid); const s = p && p.steps[Number(i)]; if (s && s.prompt) copyText(s.prompt).then(() => flashCopied(cp)); return; }
@@ -3486,9 +3501,8 @@
         return out;
       }
       function plEditStart(label) { pl.undo.push(JSON.parse(JSON.stringify(pl.plan))); if (pl.undo.length > 30) pl.undo.shift(); pl.dirty = true; if (label) pl.history.push({ role: 'user', text: label, note: true }); }
-      // A playbook from the Playbooks tab, opened in Plan (full plan if it was saved from here; otherwise converted).
-      function plFromPlaybook(p) {
-        if (pl.plan && pl.dirty && pl.pbId !== p.id && !confirm('Your current plan has unsaved changes. Replace it with “' + p.title + '”?')) return;
+      // A playbook as a full plan (the plan itself if it was saved from Plan; otherwise converted from its steps).
+      function plPlanOf(p) {
         let plan = p.plan ? JSON.parse(JSON.stringify(p.plan)) : null;
         if (!plan) {
           const idx = new Map(plLibIndex().map(x => [x.ref, x]));
@@ -3497,6 +3511,12 @@
             steps: (p.steps || []).map((st, i) => ({ id: 's' + (i + 1), phase: 'A', title: st.title, why: '', do: st.do || '', output: '', after: [], prompt: st.prompt || '', tip: st.tip || '',
               items: (st.use || []).map(u => { const x = idx.get(u.k + ':' + u.id); return x ? { ...x, role: '', alts: [] } : null; }).filter(Boolean) })) };
         }
+        return plan;
+      }
+      // A playbook from the Playbooks tab, opened in Plan (full plan if it was saved from here; otherwise converted).
+      function plFromPlaybook(p) {
+        if (pl.plan && pl.dirty && pl.pbId !== p.id && !confirm('Your current plan has unsaved changes. Replace it with “' + p.title + '”?')) return;
+        const plan = plPlanOf(p);
         Object.assign(pl, { plan, pbId: p.id, dirty: false, undo: [], open: null, texts: {}, answers: {}, changed: new Set(), editing: new Set(), adding: null, addQ: '', show: 'plan',
           history: [{ role: 'user', text: 'Open my playbook “' + p.title + '”', note: true }, { role: 'assistant', text: p.plan ? 'Here it is. Tell me what to change, switch any item by tapping its name, or edit steps by hand.' : 'Here it is. Ask me to “explain it and add alternatives” to get the approach, an explanation for each item, 2 alternatives each, phases and the risks — or tell me what to change.' }] });
         plSave(); plOpen();
@@ -3551,7 +3571,8 @@
         let h = '<div class="pl-hero"><h3 dir="auto">' + esc(p.title) + '</h3>' + (p.goal ? '<p class="goal" dir="auto">' + esc(p.goal) + '</p>' : '') +
           '<div class="pl-pills">' + (() => { const t = /^x-/.test(p.type || '') && p.typeLabel ? { icon: p.typeIcon, label: p.typeLabel } : pbType(p.type); return '<span class="pl-pill" title="Playbook type">' + t.icon + ' ' + esc(t.label) + (/^x-/.test(p.type || '') && !PLAYBOOKS.some(x => x.type === p.type) ? ' <b>(new type)</b>' : '') + '</span>'; })() +
           (p.topics || []).map(x => '<span class="pl-pill" title="Topic">#' + esc(x) + (PLAYBOOKS.some(y => (y.topics || []).includes(x)) ? '' : ' <b>(new)</b>') + '</span>').join('') + '<span class="pl-pill">\u{1F9ED} ' + p.steps.length + ' steps</span>' + (p.time ? '<span class="pl-pill" title="How long it takes you to do the plan">⏱ ' + esc(p.time) + ' to do</span>' : '') + (p.cost ? '<span class="pl-pill">\u{1F4B2} ' + esc(p.cost) + '</span>' : '') + '</div>' +
-          '<button type="button" class="pa-btn" id="pa-open" title="See the plan as a diagram of its parts and how they connect">\u{1F9E9} How it works &mdash; diagram</button></div>';
+          '<div class="pa-btns"><button type="button" class="pa-btn" id="pa-open" title="See the plan as a diagram of its parts and how they connect">\u{1F9E9} How it works &mdash; diagram</button>' +
+          '<button type="button" class="pa-btn alt" id="bp-open" title="One prompt that carries out the whole plan as it is right now">\u26A1 Generate plan prompt</button></div></div>';
         if (p.outcome) h += '<div class="pl-sec"><h4>You&rsquo;ll end up with</h4><div class="pl-box pl-outcome"><p dir="auto">' + esc(p.outcome) + '</p></div></div>';
         if (p.summary || p.approach.length) h += '<div class="pl-sec"><h4>The approach</h4><div class="pl-box">' + (p.summary ? '<p dir="auto">' + esc(p.summary) + '</p>' : '') + (p.approach.length ? '<ul>' + p.approach.map(x => '<li dir="auto">' + esc(x) + '</li>').join('') + '</ul>' : '') +
           (p.assumptions.length ? '<p style="margin-top:8px;font-size:13px;color:var(--muted)" dir="auto"><b>Assumed:</b> ' + p.assumptions.map(esc).join(' · ') + '</p>' : '') + '</div></div>';
@@ -3684,6 +3705,7 @@
           return;
         }
         if (t.closest('#pa-open')) { paOpen(); return; }
+        if (t.closest('#bp-open')) { bpOpen(pl.plan); return; }
         const go = t.closest('[data-plgo]'); if (go) { const el = document.getElementById('pl-step-' + go.dataset.plgo); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); } return; }
         const sw = t.closest('[data-plswap]'); if (sw) { pl.open = pl.open === sw.dataset.plswap ? null : sw.dataset.plswap; plRender(); return; }
         const pk = t.closest('[data-plpick]');
@@ -3747,6 +3769,63 @@
         return last.questions.map((q, i) => pl.answers[i] ? q.q + ' → ' + pl.answers[i] : '').filter(Boolean).join('\n');
       }
       window.addEventListener('resize', () => { if (!document.getElementById('pl-modal').hidden && pl.plan) plRender(); });
+
+      // ---------- "Generate plan prompt": one prompt that carries out the whole plan, as it is at the moment of clicking ----------
+      const bp = { run: 0, plan: null, at: '' };
+      function bpLink(ref) {
+        const [k, a] = String(ref || '').split(':');
+        if (k === 't') { const it = items.find(x => String(x.id) === a); return it ? it.url || '' : ''; }
+        if (k === 'l') { const L = PROMPT_LIBS.find(x => x.id === a); return L && L.links && L.links[0] ? L.links[0][1] : ''; }
+        if (k === 'c' || k === 'i') { for (const t of T_TABS) { const c = TCARDS[t].find(x => x.id === a); if (c) return c.links && c.links[0] ? c.links[0][1] : ''; } }
+        return '';
+      }
+      async function bpOpen(plan) {
+        if (!plan || !(plan.steps || []).length) { alert('This plan has no steps yet.'); return; }
+        // Snapshot now: later edits to the plan don't change this prompt.
+        bp.plan = JSON.parse(JSON.stringify(plan)); bp.at = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        document.getElementById('bp-modal').hidden = false;
+        document.getElementById('bp-title').textContent = bp.plan.title || '';
+        bpMake();
+      }
+      function bpClose() { document.getElementById('bp-modal').hidden = true; bp.run++; }
+      async function bpMake() {
+        const run = ++bp.run, plan = bp.plan, body = document.getElementById('bp-body'), t0 = Date.now();
+        const nItems = plan.steps.reduce((n, st) => n + (st.items || []).length, 0);
+        body.innerHTML = '<div class="pa-msg"><div style="font-size:34px">⚡</div><b style="color:var(--ink)">Writing one prompt for the whole plan…</b><p>' + plan.steps.length + ' steps and ' + nItems + ' items, as the plan was at ' + esc(bp.at) + '. Usually 20–60 seconds (<span id="bp-wait">0s</span>).</p></div>';
+        const tick = setInterval(() => { const m = document.getElementById('bp-wait'); if (m) m.textContent = Math.round((Date.now() - t0) / 1000) + 's'; }, 1000);
+        try {
+          // Each item with its link, and the full text of prompts and copied files so they can go into the prompt.
+          const steps = await Promise.all(plan.steps.map(async st => ({
+            title: st.title, why: st.why, do: st.do, output: st.output, prompt: st.prompt, tip: st.tip,
+            phaseName: (plan.phases || []).length > 1 ? ((plan.phases || []).find(ph => ph.id === st.phase) || {}).name || '' : '',
+            items: await Promise.all((st.items || []).map(async it => {
+              const [k, a, b] = String(it.ref || '').split(':'); let text = '', url = bpLink(it.ref);
+              if (k === 'p' || k === 'i') {
+                try { const r = (pl.texts[it.ref] && pl.texts[it.ref].text) ? pl.texts[it.ref] : k === 'p' ? await call('query', 'promptLibs:promptText', { pid: Number(a) }) : await call('query', 'tabs:itemText', { cid: a, n: Number(b) }); text = r.text || ''; url = r.url || url; } catch (e) {}
+              }
+              return { name: it.name, type: it.type, where: it.where, role: it.role, url, text };
+            }))
+          })));
+          const { arch, ...rest } = plan;
+          const r = await call('action', 'planAi:buildPrompt', { plan: { ...rest, steps }, defaults: typeof PB_DEFAULTS !== 'undefined' ? PB_DEFAULTS : [] });
+          if (run !== bp.run) return;
+          body.innerHTML = '<p class="bp-note">A prompt for the plan exactly as it was at ' + esc(bp.at) + '. Fill in the [BRACKETS], then paste it into Claude, ChatGPT or Gemini. You can edit it here before copying.</p>' +
+            '<textarea class="bp-text" id="bp-text" dir="auto" spellcheck="false"></textarea>' +
+            '<div class="bp-acts"><button class="primary-btn" type="button" id="bp-copy">Copy prompt</button><button class="pl-tbtn" type="button" id="bp-again" title="Write it again from the same snapshot">⟳ Write again</button><span class="bp-note" id="bp-len"></span></div>';
+          const ta = document.getElementById('bp-text'); ta.value = r.prompt;
+          document.getElementById('bp-len').textContent = '~' + Math.round(r.prompt.split(/\s+/).length / 10) * 10 + ' words';
+        } catch (e) {
+          if (run !== bp.run) return;
+          body.innerHTML = '<div class="pa-msg"><p class="err">Couldn’t write the prompt: ' + esc(String(e.message || e).replace(/^.*ConvexError:\s*/, '')) + '</p><button class="primary-btn" type="button" id="bp-again">Try again</button></div>';
+        } finally { clearInterval(tick); }
+      }
+      document.getElementById('bp-x').addEventListener('click', bpClose);
+      document.getElementById('bp-modal').addEventListener('click', e => {
+        if (e.target.id === 'bp-modal') { bpClose(); return; }
+        if (e.target.closest('#bp-again')) { bpMake(); return; }
+        const c = e.target.closest('#bp-copy'); if (c) copyText(document.getElementById('bp-text').value).then(() => flashCopied(c));
+      });
+      document.addEventListener('keydown', e => { if (e.key !== 'Escape' || document.getElementById('bp-modal').hidden) return; e.stopImmediatePropagation(); bpClose(); }, true);
       // ---------- "How it works": the plan as an architecture diagram (parts + arrows for what flows) ----------
       const PA_KIND = {
         you:        { label: 'You',          icon: '\u{1F464}', color: '#0f766e' },

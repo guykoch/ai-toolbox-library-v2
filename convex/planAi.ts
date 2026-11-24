@@ -259,3 +259,50 @@ export const arch = action({
     return { summary: s(out.summary, 300), nodes, edges };
   },
 });
+
+// ---------- "Generate plan prompt": one prompt that carries out the whole plan as it stands right now ----------
+const BUILD_SYSTEM = `You write ONE complete, ready-to-paste prompt that makes an AI assistant (e.g. Claude, ChatGPT or Gemini, ideally with web, file and tool access) carry out the user's ENTIRE plan, exactly as the plan stands now.
+Use only the steps and items given — do not add, drop or swap tools. Keep the step order and phases.
+The prompt must contain, with clear headings:
+1. Role and goal: who the AI acts as, the goal and the end result.
+2. Context: the user's preferences/defaults and any assumptions; placeholders in [SQUARE BRACKETS] for details the user must fill in, listed together at the top under "Fill in before sending".
+3. Tools and resources: every item with what it is for in this plan and its link (only links that were given).
+4. Step-by-step instructions: for each step — what to do, which items to use and how, the expected output, and a checkpoint ("show me X and wait for my OK") at sensible points. Embed the given prompt texts and rule/agent/workflow file texts where they are used (verbatim, inside clearly marked blocks); if a text is too long or missing, say where to get it.
+5. Things the AI can't do itself (e.g. install an app, sign up, click in another tool): tell it to give the user short instructions for those parts instead of pretending.
+6. Final deliverables checklist and quality checks; the caveats to watch for.
+Start the prompt by asking the AI to confirm the plan and ask up to 3 questions only if something essential is missing, then proceed step by step.
+Write in the plan's language, plain and direct. Reply with JSON only: {"prompt": "the full prompt, markdown allowed"}`;
+
+export const buildPrompt = action({
+  args: { key: v.string(), plan: v.any(), defaults: v.optional(v.array(v.string())) },
+  handler: async (_ctx, { key, plan, defaults }) => {
+    checkKey(key);
+    const p = plan || {};
+    const steps = Array.isArray(p.steps) ? p.steps.slice(0, 40) : [];
+    if (!steps.length) throw new ConvexError("This plan has no steps yet.");
+    const s = (x: any, n = 600) => String(x || "").trim().slice(0, n);
+    let budget = 60000; // characters of embedded prompt/file texts
+    const text = [
+      `PLAN: ${s(p.title, 200)}`, p.goal ? `Goal: ${s(p.goal)}` : "", p.outcome ? `End result: ${s(p.outcome)}` : "",
+      p.summary ? `Approach: ${s(p.summary, 1200)}` : "", Array.isArray(p.approach) && p.approach.length ? `Approach points: ${p.approach.map((x: any) => s(x, 200)).join(" | ")}` : "",
+      Array.isArray(p.assumptions) && p.assumptions.length ? `Assumed: ${p.assumptions.map((x: any) => s(x, 200)).join(" | ")}` : "",
+      p.time ? `Time: ${s(p.time, 80)}` : "", p.cost ? `Cost: ${s(p.cost, 80)}` : "",
+      defaults && defaults.length ? `USER'S STANDING PREFERENCES: ${defaults.map((x) => s(x, 200)).join(" | ")}` : "",
+      ...steps.map((st: any, i: number) => {
+        const items = (Array.isArray(st.items) ? st.items : []).slice(0, 12).map((it: any) => {
+          let t = s(it.text, 12000);
+          if (t.length > budget) t = budget > 500 ? t.slice(0, budget) + "\n[…cut: open the link for the rest]" : "";
+          budget -= t.length;
+          return `  - ${s(it.name, 120)} (${s(it.type, 40)}${it.where ? ", from " + s(it.where, 60) : ""})${it.role ? ": " + s(it.role, 300) : ""}${it.url ? "\n    Link: " + s(it.url, 300) : ""}${t ? "\n    FULL TEXT:\n\"\"\"\n" + t + "\n\"\"\"" : ""}`;
+        }).join("\n");
+        return `STEP ${i + 1}${st.phaseName ? " [" + s(st.phaseName, 60) + "]" : ""}: ${s(st.title, 200)}\n  Why: ${s(st.why, 400)}\n  Do: ${s(st.do, 1500)}\n  Output: ${s(st.output, 400)}${st.prompt ? "\n  Step prompt:\n\"\"\"\n" + s(st.prompt, 4000) + "\n\"\"\"" : ""}${st.tip ? "\n  Tip: " + s(st.tip, 300) : ""}\n  Items:\n${items || "  (none)"}`;
+      }),
+      Array.isArray(p.caveats) && p.caveats.length ? `CAVEATS: ${p.caveats.map((x: any) => s(x, 300)).join(" | ")}` : "",
+    ].filter(Boolean).join("\n\n");
+    const res = await callGemini({ model: MODELS.advisor(), system: BUILD_SYSTEM, turns: [{ role: "user", text }], json: true, thinking: "medium", maxTokens: 24000 });
+    const out = parseJson(res.text);
+    const prompt = String((out && out.prompt) || "").trim();
+    if (prompt.length < 80) throw new ConvexError("Couldn’t write the prompt — try again.");
+    return { prompt };
+  },
+});
