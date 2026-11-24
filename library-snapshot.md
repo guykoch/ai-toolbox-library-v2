@@ -1,6 +1,6 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-24 19:13 UTC.
+Updated automatically by the app: 2026-11-24 19:15 UTC.
 Tools: 209 active, 1 archived. Prompt libraries: 38 (9 open source, 5,535 prompts copied into Find a prompt).
 Rules: 12. Agents: 11. Automations: 7. Playbooks: 17.
 
@@ -246,13 +246,13 @@ Rules: 12. Agents: 11. Automations: 7. Playbooks: 17.
 | p37 | OpenClaw security hardening prompt | Coding | Community | no | — | Protecting an OpenClaw agent: a system prompt that refuses to leak secrets and resists manipulation. | https://facebook.com/100002717045940/posts/pfbid02jwe8ahZx9zBd9HCPAi35agyCPWzwDPH3crgwhuex234QGQceW5WdtZQWH3p6ukvil/ |
 | p13 | SlideSpeak Slide Design Prompts | Slides, web & app design | Open source | yes | 128 | Making decks look designed: 120+ slide styles (pitch, consulting, finance) with colors, fonts and a ready prompt. | https://slidespeak.co/slide-design-prompts |
 | p14 | OpenDesign | Slides, web & app design | Open source | yes | 1524 | Starting a deck, website or app screen from a ready design system, previewed live and exportable. | https://open-design.ai/ |
-| p15 | Superdesign Prompt Library | Slides, web & app design | Free | no | copying… | Picking a website or UI look fast: thousands of styles (bento, minimal, editorial) with live previews. | https://superdesign.dev/library |
+| p15 | Superdesign Prompt Library | Slides, web & app design | Free | no | copy failed | Picking a website or UI look fast: thousands of styles (bento, minimal, editorial) with live previews. | https://superdesign.dev/library |
 | p16 | awesome-design-md (VoltAgent) | Slides, web & app design | Open source | yes | 84 | Making your site look like a famous brand (Stripe, Linear, Apple…): drop-in DESIGN.md files for AI coding tools. | https://github.com/voltagent/awesome-design-md |
 | p17 | awesome-design-skills (TypeUI) | Slides, web & app design | Open source | yes | 67 | Giving AI-built apps a distinct look: 67 visual styles (glassmorphism, editorial, corporate) as design files. | https://github.com/bergside/awesome-design-skills |
 | p31 | 3D Style Atlas (Futurepedia) | Slides, web & app design | Free | no | — | 3D animated explainers: 37 looks, each with a copy-prompt button to recreate it in Claude on your topic. | https://www.futurepedia.io/resources/3d-style-atlas/view |
 | p38 | Beautiful apps in 3 prompts (Cursor) | Slides, web & app design | Community | no | — | Making AI-built apps look designed: a 3-prompt method to set up a reusable design system in Cursor. | https://www.youtube.com/watch?v=Be5IAxyxa6g |
-| p18 | YouMind Visual Prompt Library | Images, logos & products | Community | no | — | Image inspiration with the exact prompt behind each picture: posters, logos, product shots, slides. | https://youmind.com/prompts/image |
-| p19 | GeneratePrompt Image Library | Images, logos & products | Free | no | — | Brand visuals: logos, packaging, product renders, ads and UI mockups, each with a copyable prompt. | https://generateprompt.net/image-prompts |
+| p18 | YouMind Visual Prompt Library | Images, logos & products | Community | no | copy failed | Image inspiration with the exact prompt behind each picture: posters, logos, product shots, slides. | https://youmind.com/prompts/image |
+| p19 | GeneratePrompt Image Library | Images, logos & products | Free | no | copying… | Brand visuals: logos, packaging, product renders, ads and UI mockups, each with a copyable prompt. | https://generateprompt.net/image-prompts |
 | p20 | MoodNode Prompt Library | Images, logos & products | Free | no | — | Product and industrial-design renders: studio shots, exploded views, materials and lighting settings. | https://moodnode.ai/tools/prompt-library |
 | p21 | The Prompt Index (Image DB) | Images, logos & products | Community | no | — | Searching 500+ image prompts by keyword, e.g. minimalist logo, 3D mockup, eBook cover. | https://www.thepromptindex.com/image-database.php |
 | p22 | Founderz Product Design Generator | Images, logos & products | Free | no | — | Physical product and packaging renders: 24 templates for materials, finish, scale and lighting. | https://founderz.com/blog/ai-prompts-product-design/ |
