@@ -218,3 +218,44 @@ export function cleanPlan(p: any, refs: Map<string, Ref>) {
     phases, steps, caveats: list(p.caveats, 6), gaps: list(p.gaps, 5),
   };
 }
+
+// ---------- "How it works": an architecture diagram of a plan (components + arrows for what flows between them) ----------
+const ARCH_KINDS = ["you", "input", "tool", "agent", "prompt", "rule", "automation", "data", "output", "goal"];
+const ARCH_SYSTEM = `You turn a step-by-step AI plan into a simple ARCHITECTURE DIAGRAM that shows how the plan works, for a non-technical reader.
+Think "system diagram", not "to-do list": the boxes are the COMPONENTS (the person, starting material, tools, agents, prompts, rule files, automations, data that gets produced, the final result) and the arrows show WHAT FLOWS between them (data, drafts, instructions, results).
+Reply JSON only:
+{"summary": "one plain sentence describing the flow from start to finish",
+ "nodes": [{"id": "n1", "label": "2-4 words", "kind": one of ${JSON.stringify(ARCH_KINDS)},
+   "what": "one short plain sentence: what this component is",
+   "why": "one short plain sentence: its job in THIS plan",
+   "steps": [step numbers (1-based) where it is used]}],
+ "edges": [{"from": "n1", "to": "n2", "label": "1-3 words: what flows, e.g. \\"raw notes\\", \\"draft deck\\", \\"feedback\\"", "loop": true only for a feedback/repeat arrow that goes backwards}]}
+Rules:
+- 5 to 14 nodes. Start with "you" and/or "input" nodes, end with "output" and one "goal" node.
+- Use the plan's real tool/agent/prompt names as labels where they exist (shortened). Merge near-duplicates; leave out minor items.
+- Every node must have at least one arrow. Arrows go forward (start → finish) except loops.
+- Write in the same language as the plan. Plain words, no jargon.`;
+
+export const arch = action({
+  args: { key: v.string(), plan: v.any() },
+  handler: async (_ctx, { key, plan }) => {
+    checkKey(key);
+    const p = plan || {};
+    const steps = Array.isArray(p.steps) ? p.steps.slice(0, 30) : [];
+    if (!steps.length) throw new ConvexError("Make a plan first.");
+    const s = (x: any, n = 400) => String(x || "").replace(/\s+/g, " ").trim().slice(0, n);
+    const text = [`PLAN: ${s(p.title, 200)}`, p.goal ? `Goal: ${s(p.goal)}` : "", p.outcome ? `End result: ${s(p.outcome)}` : "", p.summary ? `Approach: ${s(p.summary, 800)}` : "",
+      ...steps.map((st: any, i: number) => `Step ${i + 1}: ${s(st.title, 150)}\n  Do: ${s(st.do, 500)}\n  You get: ${s(st.output, 200)}\n  Uses: ${(Array.isArray(st.items) ? st.items : []).map((it: any) => `${s(it.name, 80)} (${s(it.type, 40)}${it.role ? ": " + s(it.role, 150) : ""})`).join("; ") || "nothing specific"}`)].filter(Boolean).join("\n");
+    const res = await callGemini({ model: MODELS.advisor(), system: ARCH_SYSTEM, turns: [{ role: "user", text }], json: true, thinking: "medium", maxTokens: 6000 });
+    const out = parseJson(res.text) || {};
+    const nodes = (Array.isArray(out.nodes) ? out.nodes : []).slice(0, 16).map((n: any, i: number) => ({
+      id: s(n?.id, 20) || "n" + (i + 1), label: s(n?.label, 40) || "Part " + (i + 1), kind: ARCH_KINDS.includes(n?.kind) ? n.kind : "tool",
+      what: s(n?.what, 220), why: s(n?.why, 220), steps: (Array.isArray(n?.steps) ? n.steps : []).map(Number).filter((x: number) => x >= 1 && x <= steps.length).slice(0, 8),
+    }));
+    const ids = new Set(nodes.map((n: any) => n.id));
+    const edges = (Array.isArray(out.edges) ? out.edges : []).map((e: any) => ({ from: s(e?.from, 20), to: s(e?.to, 20), label: s(e?.label, 30), loop: e?.loop === true }))
+      .filter((e: any) => ids.has(e.from) && ids.has(e.to) && e.from !== e.to).slice(0, 30);
+    if (nodes.length < 2 || !edges.length) throw new ConvexError("Couldn’t draw this plan — try again.");
+    return { summary: s(out.summary, 300), nodes, edges };
+  },
+});

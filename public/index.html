@@ -630,6 +630,42 @@
       @media (max-width: 640px) { .plan-tab { padding: 7px 14px; font-size: 14px; } }
       .pl-modal { position: fixed; inset: 0; z-index: 1000; background: rgba(15, 18, 16, .45); display: flex; align-items: center; justify-content: center; padding: 18px; }
       .pl-modal[hidden] { display: none; }
+
+      /* "How it works" pop-up: an architecture diagram of the plan */
+      .pa-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; border: 0; border-radius: 999px; padding: 8px 16px; background: var(--accent); color: #fff; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+      .pa-btn:hover { filter: brightness(1.08); }
+      #pa-modal { z-index: 1100; }
+      .pa-panel { width: min(1240px, 100%); }
+      .pa-top { padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; gap: 8px; }
+      .pa-sum { margin: 0; font-size: 14px; color: var(--ink-2); }
+      .pa-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; color: var(--muted); }
+      .pa-legend span { display: inline-flex; align-items: center; gap: 5px; }
+      .pa-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+      .pa-stale { font-size: 13px; background: color-mix(in srgb, #b45309 14%, transparent); color: var(--ink); border-radius: 10px; padding: 6px 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+      .pa-canvas { position: relative; flex: 1; min-height: 0; overflow: auto; background: radial-gradient(circle, color-mix(in srgb, var(--ink) 9%, transparent) 1px, transparent 1.2px) 0 0 / 22px 22px; -webkit-overflow-scrolling: touch; }
+      .pa-canvas { display: flex; }
+      .pa-canvas svg { display: block; margin: auto; flex: none; }
+      .pa-zoom { position: absolute; right: 14px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 6px; z-index: 3; }
+      .pa-zoom button { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 17px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+      .pa-wrap { position: relative; flex: 1; min-height: 0; display: flex; }
+      .pa-node { cursor: pointer; outline: none; }
+      .pa-node .box { transition: stroke-width .15s, filter .15s; }
+      .pa-node:hover .box, .pa-node:focus-visible .box { stroke-width: 2.6; filter: drop-shadow(0 3px 8px rgba(0,0,0,.18)); }
+      .pa-node.sel .box { stroke-width: 3; filter: drop-shadow(0 4px 12px rgba(0,0,0,.25)); }
+      .pa-svg.focus .pa-node:not(.near) { opacity: .28; }
+      .pa-svg.focus .pa-edge:not(.near) { opacity: .12; }
+      .pa-edge path.flow { stroke-dasharray: 6 7; animation: pa-flow 1.2s linear infinite; }
+      @keyframes pa-flow { to { stroke-dashoffset: -13; } }
+      @media (prefers-reduced-motion: reduce) { .pa-edge path.flow { animation: none; } }
+      .pa-pop { position: absolute; z-index: 4; width: min(300px, calc(100% - 24px)); background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 12px 34px rgba(0,0,0,.28); padding: 12px 14px; font-size: 14px; }
+      .pa-pop[hidden] { display: none; }
+      .pa-pop h4 { margin: 0 26px 2px 0; font-size: 16px; }
+      .pa-pop .k { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+      .pa-pop p { margin: 8px 0 0; line-height: 1.45; }
+      .pa-pop .pa-x { position: absolute; top: 6px; right: 8px; border: 0; background: none; color: var(--muted); font-size: 20px; cursor: pointer; line-height: 1; padding: 4px; }
+      .pa-pop .steps { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12.5px; color: var(--muted); }
+      .pa-pop .steps button { border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); border-radius: 999px; padding: 3px 10px; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+      .pa-msg { margin: auto; text-align: center; color: var(--muted); padding: 30px; max-width: 420px; }
       .pl-panel { width: min(1240px, 100%); height: min(92vh, 980px); background: var(--bg); border-radius: 18px; box-shadow: 0 20px 60px rgba(0,0,0,.25); display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); }
       .pl-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--surface); flex-wrap: wrap; }
       .pl-head h2 { margin: 0; font-size: 18px; display: flex; align-items: center; gap: 8px; }
@@ -776,6 +812,9 @@
         .pl-tbtn .lg { display: none; } .pl-tbtn .sm { display: inline; }
         .pl-head { gap: 6px; } .pl-head .grow { display: none; } .pl-head h2 { margin-right: auto; }
         .pl-head h2 { font-size: 16px; }
+        .pa-panel .pl-head h2 { flex: 1 1 auto; }
+        .pa-panel .pl-tbtn { flex: none; padding: 6px 12px; order: 0; }
+        .pa-top { padding: 8px 12px; } .pa-sum { font-size: 13px; }
         .pl-seg { display: flex; }
         .pl-body { grid-template-columns: 1fr; }
         .pl-body[data-show="chat"] .pl-view, .pl-body[data-show="plan"] .pl-chat { display: none; }
@@ -839,6 +878,15 @@
         <div class="dc-top"><div class="search-box"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.8-3.8"/></svg><input id="dc-q" type="search" placeholder="Search all terms&hellip; e.g. token, Docker, RAG" aria-label="Search the dictionary" /></div>
         <div class="dc-tabs" id="dc-tabs" role="tablist"></div></div>
         <div class="dc-body" id="dc-body"></div>
+      </div>
+    </div>
+    <div class="pl-modal" id="pa-modal" hidden role="dialog" aria-modal="true" aria-labelledby="pa-h">
+      <div class="pl-panel pa-panel">
+        <div class="pl-head"><h2 id="pa-h">&#129513; How it works</h2><span class="sub" id="pa-title" dir="auto"></span><span class="grow"></span><button class="pl-tbtn" id="pa-redo" type="button" title="Draw it again">&#10227; Redraw</button><button class="pl-x" id="pa-x" type="button" aria-label="Close">&times;</button></div>
+        <div class="pa-top" id="pa-top"></div>
+        <div class="pa-wrap"><div class="pa-canvas" id="pa-canvas"></div>
+          <div class="pa-pop" id="pa-pop" hidden role="dialog" aria-live="polite"></div>
+          <div class="pa-zoom"><button type="button" id="pa-zin" aria-label="Zoom in">+</button><button type="button" id="pa-zfit" aria-label="Fit to screen" title="Fit">&#8862;</button><button type="button" id="pa-zout" aria-label="Zoom out">&minus;</button></div></div>
       </div>
     </div>
     <div class="pl-modal" id="pl-modal" hidden role="dialog" aria-modal="true" aria-labelledby="pl-h">
@@ -3279,8 +3327,8 @@
         'אני רוצה להכין מצגת למשקיעים על הסטארטאפ שלי'
       ];
       const pl = { history: [], plan: null, undo: [], busy: false, open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat', pbId: null, dirty: false, editing: new Set(), adding: null, addQ: '', files: [] };
-      try { const sv = JSON.parse(localStorage.getItem(PLAN_STORE) || 'null'); if (sv) { pl.history = sv.history || []; pl.plan = sv.plan || null; pl.undo = sv.undo || []; pl.pbId = sv.pbId || null; pl.dirty = !!sv.dirty; } } catch (e) {}
-      function plSave() { try { localStorage.setItem(PLAN_STORE, JSON.stringify({ history: pl.history.slice(-60), plan: pl.plan, undo: pl.undo.slice(-15), pbId: pl.pbId, dirty: pl.dirty })); } catch (e) {} }
+      try { const sv = JSON.parse(localStorage.getItem(PLAN_STORE) || 'null'); if (sv) { pl.history = sv.history || []; pl.plan = sv.plan || null; pl.undo = sv.undo || []; pl.pbId = sv.pbId || null; pl.dirty = !!sv.dirty; pl.arch = sv.arch || null; } } catch (e) {}
+      function plSave() { try { localStorage.setItem(PLAN_STORE, JSON.stringify({ history: pl.history.slice(-60), plan: pl.plan, undo: pl.undo.slice(-15), pbId: pl.pbId, dirty: pl.dirty, arch: pl.arch || null })); } catch (e) {} }
       const plIcon = t => PL_TYPE_ICON[t] || '\u{1F4E6}';
       const phaseColor = (plan, id) => PL_COLORS[Math.max(0, (plan.phases || []).findIndex(p => p.id === id)) % PL_COLORS.length];
 
@@ -3502,7 +3550,8 @@
         const narrow = (document.getElementById('pl-view') || {}).clientWidth < 600;
         let h = '<div class="pl-hero"><h3 dir="auto">' + esc(p.title) + '</h3>' + (p.goal ? '<p class="goal" dir="auto">' + esc(p.goal) + '</p>' : '') +
           '<div class="pl-pills">' + (() => { const t = /^x-/.test(p.type || '') && p.typeLabel ? { icon: p.typeIcon, label: p.typeLabel } : pbType(p.type); return '<span class="pl-pill" title="Playbook type">' + t.icon + ' ' + esc(t.label) + (/^x-/.test(p.type || '') && !PLAYBOOKS.some(x => x.type === p.type) ? ' <b>(new type)</b>' : '') + '</span>'; })() +
-          (p.topics || []).map(x => '<span class="pl-pill" title="Topic">#' + esc(x) + (PLAYBOOKS.some(y => (y.topics || []).includes(x)) ? '' : ' <b>(new)</b>') + '</span>').join('') + '<span class="pl-pill">\u{1F9ED} ' + p.steps.length + ' steps</span>' + (p.time ? '<span class="pl-pill" title="How long it takes you to do the plan">⏱ ' + esc(p.time) + ' to do</span>' : '') + (p.cost ? '<span class="pl-pill">\u{1F4B2} ' + esc(p.cost) + '</span>' : '') + '</div></div>';
+          (p.topics || []).map(x => '<span class="pl-pill" title="Topic">#' + esc(x) + (PLAYBOOKS.some(y => (y.topics || []).includes(x)) ? '' : ' <b>(new)</b>') + '</span>').join('') + '<span class="pl-pill">\u{1F9ED} ' + p.steps.length + ' steps</span>' + (p.time ? '<span class="pl-pill" title="How long it takes you to do the plan">⏱ ' + esc(p.time) + ' to do</span>' : '') + (p.cost ? '<span class="pl-pill">\u{1F4B2} ' + esc(p.cost) + '</span>' : '') + '</div>' +
+          '<button type="button" class="pa-btn" id="pa-open" title="See the plan as a diagram of its parts and how they connect">\u{1F9E9} How it works &mdash; diagram</button></div>';
         if (p.outcome) h += '<div class="pl-sec"><h4>You&rsquo;ll end up with</h4><div class="pl-box pl-outcome"><p dir="auto">' + esc(p.outcome) + '</p></div></div>';
         if (p.summary || p.approach.length) h += '<div class="pl-sec"><h4>The approach</h4><div class="pl-box">' + (p.summary ? '<p dir="auto">' + esc(p.summary) + '</p>' : '') + (p.approach.length ? '<ul>' + p.approach.map(x => '<li dir="auto">' + esc(x) + '</li>').join('') + '</ul>' : '') +
           (p.assumptions.length ? '<p style="margin-top:8px;font-size:13px;color:var(--muted)" dir="auto"><b>Assumed:</b> ' + p.assumptions.map(esc).join(' · ') + '</p>' : '') + '</div></div>';
@@ -3634,6 +3683,7 @@
           catch (err) { alert('Couldn’t save: ' + err.message); t.disabled = false; }
           return;
         }
+        if (t.closest('#pa-open')) { paOpen(); return; }
         const go = t.closest('[data-plgo]'); if (go) { const el = document.getElementById('pl-step-' + go.dataset.plgo); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); } return; }
         const sw = t.closest('[data-plswap]'); if (sw) { pl.open = pl.open === sw.dataset.plswap ? null : sw.dataset.plswap; plRender(); return; }
         const pk = t.closest('[data-plpick]');
@@ -3697,6 +3747,185 @@
         return last.questions.map((q, i) => pl.answers[i] ? q.q + ' → ' + pl.answers[i] : '').filter(Boolean).join('\n');
       }
       window.addEventListener('resize', () => { if (!document.getElementById('pl-modal').hidden && pl.plan) plRender(); });
+      // ---------- "How it works": the plan as an architecture diagram (parts + arrows for what flows) ----------
+      const PA_KIND = {
+        you:        { label: 'You',          icon: '\u{1F464}', color: '#0f766e' },
+        input:      { label: 'Starting point', icon: '\u{1F4E5}', color: '#475569' },
+        tool:       { label: 'Tool',         icon: '\u{1F6E0}️', color: '#2f6db3' },
+        agent:      { label: 'Agent',        icon: '\u{1F916}', color: '#7c5cbf' },
+        prompt:     { label: 'Prompt',       icon: '\u{1F4AC}', color: '#be4b7a' },
+        rule:       { label: 'Rules',        icon: '\u{1F4CF}', color: '#a16207' },
+        automation: { label: 'Automation',   icon: '⚙️', color: '#b45309' },
+        data:       { label: 'Data / draft', icon: '\u{1F4C4}', color: '#0e7490' },
+        output:     { label: 'Result',       icon: '\u{1F4E6}', color: '#3d8b4f' },
+        goal:       { label: 'Goal',         icon: '\u{1F3AF}', color: '#15803d' }
+      };
+      const pa = { busy: false, err: '', z: 1, sel: null, layout: null };
+      const paSig = p => JSON.stringify((p.steps || []).map(s => [s.title, s.do, (s.items || []).map(i => i.name)]));
+      function paOpen() {
+        if (!pl.plan) return;
+        document.getElementById('pa-modal').hidden = false;
+        document.getElementById('pa-title').textContent = pl.plan.title || '';
+        pa.sel = null; pa.z = 0;
+        // A diagram of a different plan (e.g. after Clear) is redrawn; one of this plan before edits is kept with a note.
+        if (!pl.arch || pl.arch.title !== pl.plan.title) paMake(); else paRender();
+      }
+      function paClose() { document.getElementById('pa-modal').hidden = true; pa.sel = null; }
+      async function paMake() {
+        if (pa.busy || !pl.plan) return;
+        pa.busy = true; pa.err = ''; pa.sel = null; paRender();
+        const plan = pl.plan, t0 = Date.now();
+        const tick = setInterval(() => { const m = document.getElementById('pa-wait'); if (m) m.textContent = Math.round((Date.now() - t0) / 1000) + 's'; }, 1000);
+        try {
+          const { arch, ...lite } = plan;
+          const data = await call('action', 'planAi:arch', { plan: lite });
+          if (pl.plan === plan || (pl.plan && pl.plan.title === plan.title)) { pl.arch = { title: plan.title, sig: paSig(plan), data }; plSave(); }
+        } catch (e) { pa.err = String(e.message || e).replace(/^.*ConvexError:\s*/, ''); }
+        clearInterval(tick); pa.busy = false; pa.z = 0; paRender();
+      }
+      // Layers: longest path from the start (loop arrows ignored), then ordered to keep arrows straight.
+      function paLayout(d, vertical) {
+        const ids = d.nodes.map(n => n.id), fwd = d.edges.filter(e => !e.loop);
+        const indeg = new Map(ids.map(i => [i, 0])); fwd.forEach(e => indeg.set(e.to, indeg.get(e.to) + 1));
+        const layer = new Map(ids.map(i => [i, 0])); const q = ids.filter(i => !indeg.get(i)); const seen = new Set();
+        while (q.length) { const i = q.shift(); seen.add(i); for (const e of fwd.filter(e => e.from === i)) { layer.set(e.to, Math.max(layer.get(e.to), layer.get(i) + 1)); indeg.set(e.to, indeg.get(e.to) - 1); if (!indeg.get(e.to)) q.push(e.to); } }
+        const maxL = Math.max(0, ...[...seen].map(i => layer.get(i)));
+        ids.filter(i => !seen.has(i)).forEach(i => layer.set(i, maxL + 1)); // left over from a cycle
+        // Goal nodes sit in the last layer.
+        const last = Math.max(...ids.map(i => layer.get(i)));
+        d.nodes.forEach(n => { if (n.kind === 'goal') layer.set(n.id, Math.max(last, layer.get(n.id))); });
+        const L = Math.max(...ids.map(i => layer.get(i))) + 1;
+        const cols = Array.from({ length: L }, (_, l) => d.nodes.filter(n => layer.get(n.id) === l).map(n => n.id));
+        const idx = new Map(); const setIdx = () => cols.forEach(c => c.forEach((id, k) => idx.set(id, k - (c.length - 1) / 2)));
+        setIdx();
+        for (let pass = 0; pass < 4; pass++) {
+          cols.forEach((c, l) => { if (!l) return; const bc = id => { const ps = d.edges.filter(e => e.to === id && layer.get(e.from) < l).map(e => idx.get(e.from)); return ps.length ? ps.reduce((a, b) => a + b, 0) / ps.length : idx.get(id); }; c.sort((a, b) => bc(a) - bc(b)); setIdx(); });
+        }
+        const NW = vertical ? 156 : 178, NH = vertical ? 66 : 70, GL = vertical ? 64 : 92, GN = vertical ? 18 : 26, PAD = 26;
+        const maxN = Math.max(...cols.map(c => c.length));
+        const span = maxN * (vertical ? NW : NH) + (maxN - 1) * GN;
+        const pos = {};
+        cols.forEach((c, l) => { const len = c.length * (vertical ? NW : NH) + (c.length - 1) * GN, off = (span - len) / 2; c.forEach((id, k) => {
+          const a = PAD + off + k * ((vertical ? NW : NH) + GN), b = PAD + l * ((vertical ? NH : NW) + GL);
+          pos[id] = vertical ? { x: a, y: b, l } : { x: b, y: a, l };
+        }); });
+        const W = vertical ? span + PAD * 2 : PAD * 2 + L * NW + (L - 1) * GL + 30;
+        const H = vertical ? PAD * 2 + L * NH + (L - 1) * GL + 30 : span + PAD * 2;
+        return { pos, NW, NH, W, H, vertical };
+      }
+      function paSVG(d, lay) {
+        const { pos, NW, NH, W, H, vertical } = lay;
+        const wrap = (t, n) => { const w = String(t).split(/\s+/); const out = ['']; for (const x of w) { if ((out[out.length - 1] + ' ' + x).trim().length > n && out[out.length - 1]) { if (out.length === 2) { out[1] += '…'; break; } out.push(x); } else out[out.length - 1] = (out[out.length - 1] + ' ' + x).trim(); } return out; };
+        let svg = '<svg class="pa-svg" viewBox="0 0 ' + W + ' ' + H + '" width="' + Math.round(W * pa.z) + '" height="' + Math.round(H * pa.z) + '" role="img" aria-label="Diagram of how the plan works"><defs>' +
+          Object.entries(PA_KIND).map(([k, v]) => '<marker id="pa-ar-' + k + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="' + v.color + '"/></marker>').join('') + '</defs>';
+        const labels = [];
+        d.edges.forEach((e, ei) => {
+          const A = pos[e.from], B = pos[e.to]; if (!A || !B) return;
+          const c = (PA_KIND[d.nodes.find(n => n.id === e.from).kind] || PA_KIND.tool).color;
+          let x1, y1, x2, y2, c1x, c1y, c2x, c2y;
+          if (e.loop || B.l <= A.l) { // feedback: curve around the outside
+            if (vertical) { x1 = A.x + NW; y1 = A.y + NH / 2; x2 = B.x + NW; y2 = B.y + NH / 2; const bx = Math.max(x1, x2) + 46; c1x = bx; c1y = y1; c2x = bx; c2y = y2; }
+            else { x1 = A.x + NW / 2; y1 = A.y + NH; x2 = B.x + NW / 2; y2 = B.y + NH; const by = Math.max(y1, y2) + 40; c1x = x1; c1y = by; c2x = x2; c2y = by; }
+          } else if (vertical) { x1 = A.x + NW / 2; y1 = A.y + NH; x2 = B.x + NW / 2; y2 = B.y - 3; const my = (y1 + y2) / 2; c1x = x1; c1y = my; c2x = x2; c2y = my; }
+          else { x1 = A.x + NW; y1 = A.y + NH / 2; x2 = B.x - 3; y2 = B.y + NH / 2; const mx = (x1 + x2) / 2; c1x = mx; c1y = y1; c2x = mx; c2y = y2; }
+          const dd = 'M' + x1 + ',' + y1 + ' C' + c1x + ',' + c1y + ' ' + c2x + ',' + c2y + ' ' + x2 + ',' + y2;
+          svg += '<g class="pa-edge" data-from="' + esc(e.from) + '" data-to="' + esc(e.to) + '"><path d="' + dd + '" fill="none" stroke="' + c + '" stroke-width="2.2" opacity=".35"/><path class="flow" d="' + dd + '" fill="none" stroke="' + c + '" stroke-width="2.2"' + (e.loop ? ' stroke-opacity=".7"' : '') + ' marker-end="url(#pa-ar-' + (d.nodes.find(n => n.id === e.from).kind in PA_KIND ? d.nodes.find(n => n.id === e.from).kind : 'tool') + ')"/>';
+          if (e.label) { // midpoint of the curve
+            const t = .5, mt = 1 - t, mx = mt * mt * mt * x1 + 3 * mt * mt * t * c1x + 3 * mt * t * t * c2x + t * t * t * x2, my = mt * mt * mt * y1 + 3 * mt * mt * t * c1y + 3 * mt * t * t * c2y + t * t * t * y2;
+            const lw = Math.min(150, e.label.length * 6.4 + 14);
+            labels.push('<g class="pa-edge" data-from="' + esc(e.from) + '" data-to="' + esc(e.to) + '"><rect x="' + (mx - lw / 2) + '" y="' + (my - 10) + '" width="' + lw + '" height="20" rx="10" fill="var(--surface)" stroke="' + c + '" stroke-opacity=".5"/><text x="' + mx + '" y="' + (my + 4) + '" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink-2)">' + esc(e.label.length > 22 ? e.label.slice(0, 21) + '…' : e.label) + '</text></g>');
+          }
+          svg += '</g>';
+        });
+        svg += labels.join('');
+        d.nodes.forEach(n => {
+          const P = pos[n.id], k = PA_KIND[n.kind] || PA_KIND.tool, lines = wrap(n.label, vertical ? 17 : 20);
+          const round = n.kind === 'goal' || n.kind === 'you' ? NH / 2 : 14;
+          svg += '<g class="pa-node" data-pa="' + esc(n.id) + '" tabindex="0" role="button" aria-label="' + esc(k.label + ': ' + n.label) + '">' +
+            '<rect class="box" x="' + P.x + '" y="' + P.y + '" width="' + NW + '" height="' + NH + '" rx="' + round + '" fill="var(--surface)" stroke="' + k.color + '" stroke-width="1.8"/>' +
+            '<rect x="' + P.x + '" y="' + P.y + '" width="' + NW + '" height="' + NH + '" rx="' + round + '" fill="' + k.color + '" opacity=".1" pointer-events="none"/>' +
+            '<text x="' + (P.x + 12) + '" y="' + (P.y + 19) + '" font-size="10.5" font-weight="800" letter-spacing=".04em" fill="' + k.color + '">' + k.icon + ' ' + esc(k.label.toUpperCase()) + '</text>' +
+            lines.map((l, i) => '<text x="' + (P.x + 12) + '" y="' + (P.y + (lines.length > 1 ? 39 : 45) + i * 16) + '" font-size="13.5" font-weight="700" fill="var(--ink)" dir="auto">' + esc(l) + '</text>').join('') + '</g>';
+        });
+        return svg + '</svg>';
+      }
+      function paRender() {
+        const top = document.getElementById('pa-top'), cv = document.getElementById('pa-canvas'), pop = document.getElementById('pa-pop');
+        pop.hidden = true;
+        document.getElementById('pa-redo').disabled = pa.busy;
+        document.querySelector('.pa-zoom').hidden = true;
+        if (pa.busy) { top.innerHTML = ''; cv.innerHTML = '<div class="pa-msg"><div style="font-size:34px">\u{1F9E9}</div><b style="color:var(--ink)">Drawing how your plan works…</b><p>Working out its parts and what flows between them. Usually 10–30 seconds (<span id="pa-wait">0s</span>).</p></div>'; return; }
+        const a = pl.arch && pl.plan && pl.arch.title === pl.plan.title ? pl.arch : null;
+        if (!a) { top.innerHTML = ''; cv.innerHTML = '<div class="pa-msg">' + (pa.err ? '<p class="err">Couldn’t draw it: ' + esc(pa.err) + '</p>' : '') + '<button class="primary-btn" type="button" id="pa-try">Draw the diagram</button></div>'; return; }
+        const d = a.data, kinds = [...new Set(d.nodes.map(n => n.kind))];
+        top.innerHTML = (a.sig !== paSig(pl.plan) ? '<div class="pa-stale">✏️ The plan changed since this was drawn. <button class="mini-btn" type="button" id="pa-try">Redraw</button></div>' : '') +
+          (pa.err ? '<p class="err" style="margin:0">Couldn’t redraw: ' + esc(pa.err) + '</p>' : '') +
+          (d.summary ? '<p class="pa-sum" dir="auto">' + esc(d.summary) + '</p>' : '') +
+          '<div class="pa-legend">' + kinds.map(k => '<span><i style="background:' + (PA_KIND[k] || PA_KIND.tool).color + '"></i>' + (PA_KIND[k] || PA_KIND.tool).label + '</span>').join('') + '<span style="margin-left:auto">Tap a box to see what it does</span></div>';
+        // Pick left-to-right or top-to-bottom, whichever fits the screen bigger.
+        const fit = L => Math.min((cv.clientWidth - 8) / L.W, (cv.clientHeight - 8) / L.H);
+        const hz = paLayout(d, false), vt = paLayout(d, true);
+        pa.layout = cv.clientWidth < 600 ? (fit(hz) > fit(vt) * 1.5 ? hz : vt) : fit(vt) > fit(hz) * 1.15 ? vt : hz;
+        if (!pa.z) pa.z = Math.max(.5, Math.min(1.25, (cv.clientWidth - 8) / pa.layout.W, cv.clientWidth < 600 ? 9 : (cv.clientHeight - 8) / pa.layout.H));
+        cv.innerHTML = paSVG(d, pa.layout);
+        document.querySelector('.pa-zoom').hidden = false;
+        if (pa.sel) paSelect(pa.sel);
+      }
+      function paSelect(id) {
+        const cv = document.getElementById('pa-canvas'), pop = document.getElementById('pa-pop'), svg = cv.querySelector('svg');
+        const d = pl.arch && pl.arch.data; if (!d || !svg) return;
+        const n = d.nodes.find(x => x.id === id);
+        svg.querySelectorAll('.sel,.near').forEach(x => x.classList.remove('sel', 'near'));
+        if (!n) { pa.sel = null; svg.classList.remove('focus'); pop.hidden = true; return; }
+        pa.sel = id; svg.classList.add('focus');
+        const near = new Set([id]);
+        svg.querySelectorAll('.pa-edge').forEach(g => { if (g.dataset.from === id || g.dataset.to === id) { g.classList.add('near'); near.add(g.dataset.from); near.add(g.dataset.to); } });
+        svg.querySelectorAll('.pa-node').forEach(g => { if (near.has(g.dataset.pa)) g.classList.add('near'); if (g.dataset.pa === id) g.classList.add('sel'); });
+        const k = PA_KIND[n.kind] || PA_KIND.tool;
+        const ins = d.edges.filter(e => e.to === id).map(e => d.nodes.find(x => x.id === e.from)).filter(Boolean);
+        const outs = d.edges.filter(e => e.from === id).map(e => d.nodes.find(x => x.id === e.to)).filter(Boolean);
+        pop.innerHTML = '<button class="pa-x" type="button" aria-label="Close">&times;</button><div class="k" style="color:' + k.color + '">' + k.icon + ' ' + esc(k.label) + '</div><h4 dir="auto">' + esc(n.label) + '</h4>' +
+          (n.what ? '<p dir="auto"><b>What:</b> ' + esc(n.what) + '</p>' : '') + (n.why ? '<p dir="auto"><b>Its job here:</b> ' + esc(n.why) + '</p>' : '') +
+          (ins.length || outs.length ? '<p style="font-size:13px;color:var(--muted)" dir="auto">' + (ins.length ? '← gets from ' + ins.map(x => esc(x.label)).join(', ') : '') + (ins.length && outs.length ? '<br>' : '') + (outs.length ? '→ feeds ' + outs.map(x => esc(x.label)).join(', ') : '') + '</p>' : '') +
+          (n.steps && n.steps.length ? '<div class="steps">Used in ' + n.steps.map(sn => '<button type="button" data-pastep="' + sn + '">Step ' + sn + '</button>').join('') + '</div>' : '');
+        pop.hidden = false;
+        // Float it next to the box, kept inside the view.
+        const wrap = pop.parentElement.getBoundingClientRect(), r = svg.querySelector('[data-pa="' + CSS.escape(id) + '"]').getBoundingClientRect();
+        const pw = pop.offsetWidth, ph = pop.offsetHeight;
+        let x = r.left - wrap.left + r.width / 2 - pw / 2, y = r.bottom - wrap.top + 10;
+        if (y + ph > wrap.height - 8) y = r.top - wrap.top - ph - 10;
+        if (y < 8) { y = Math.max(8, Math.min(wrap.height - ph - 8, r.top - wrap.top)); x = r.right - wrap.left + 10; if (x + pw > wrap.width - 8) x = r.left - wrap.left - pw - 10; }
+        pop.style.left = Math.max(8, Math.min(wrap.width - pw - 8, x)) + 'px'; pop.style.top = Math.max(8, y) + 'px';
+      }
+      function paZoom(f) {
+        const cv = document.getElementById('pa-canvas'), svg = cv.querySelector('svg'); if (!svg || !pa.layout) return;
+        const cx = (cv.scrollLeft + cv.clientWidth / 2) / pa.z, cy = (cv.scrollTop + cv.clientHeight / 2) / pa.z;
+        pa.z = f ? Math.max(.35, Math.min(2.2, pa.z * f)) : Math.max(.35, Math.min(1.25, (cv.clientWidth - 8) / pa.layout.W, (cv.clientHeight - 8) / pa.layout.H));
+        svg.setAttribute('width', Math.round(pa.layout.W * pa.z)); svg.setAttribute('height', Math.round(pa.layout.H * pa.z));
+        cv.scrollLeft = cx * pa.z - cv.clientWidth / 2; cv.scrollTop = cy * pa.z - cv.clientHeight / 2;
+        if (pa.sel) paSelect(pa.sel);
+      }
+      document.getElementById('pa-x').addEventListener('click', paClose);
+      document.getElementById('pa-redo').addEventListener('click', paMake);
+      document.getElementById('pa-zin').addEventListener('click', () => paZoom(1.25));
+      document.getElementById('pa-zout').addEventListener('click', () => paZoom(0.8));
+      document.getElementById('pa-zfit').addEventListener('click', () => paZoom(0));
+      document.getElementById('pa-canvas').addEventListener('scroll', () => { if (pa.sel) paSelect(pa.sel); }, { passive: true });
+      document.getElementById('pa-modal').addEventListener('click', e => {
+        if (e.target.id === 'pa-modal') { paClose(); return; }
+        if (e.target.closest('#pa-try')) { paMake(); return; }
+        const st = e.target.closest('[data-pastep]');
+        if (st) { const s = pl.plan && pl.plan.steps[Number(st.dataset.pastep) - 1]; paClose(); if (s) { pl.show = 'plan'; plRender(); const el = document.getElementById('pl-step-' + s.id); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); } } return; }
+        if (e.target.closest('.pa-x')) { paSelect(null); return; }
+        const node = e.target.closest('[data-pa]');
+        if (node) { paSelect(pa.sel === node.dataset.pa ? null : node.dataset.pa); return; }
+        if (e.target.closest('#pa-canvas') && !e.target.closest('.pa-pop')) paSelect(null);
+      });
+      document.getElementById('pa-canvas').addEventListener('keydown', e => { const n = e.target.closest && e.target.closest('[data-pa]'); if (n && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); paSelect(n.dataset.pa); } });
+      // Escape closes the pop-up box first, then the diagram (and not the Plan window behind it).
+      document.addEventListener('keydown', e => { if (e.key !== 'Escape' || document.getElementById('pa-modal').hidden) return; e.stopImmediatePropagation(); if (pa.sel) paSelect(null); else paClose(); }, true);
+      window.addEventListener('resize', () => { if (!document.getElementById('pa-modal').hidden && !pa.busy) { pa.z = 0; paRender(); } });
+
       // Small "back to top" arrow that appears once you scroll down.
       (() => {
         const b = document.getElementById('to-top'), bb = document.getElementById('to-bottom');
