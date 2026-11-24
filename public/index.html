@@ -726,6 +726,10 @@
       .pl-files .shot { width: 52px; height: 52px; }
       .pl-files .shot.doc { width: auto; height: 40px; }
       .pl-ferr { font-size: 12.5px; color: #b42318; align-self: center; }
+      .pl-kept { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12.5px; color: var(--muted); }
+      .pl-kept .shot.doc { height: 30px; font-size: 12px; max-width: 180px; }
+      .pl-kept .shot.doc .di { font-size: 14px; }
+      .shot.doc.up { opacity: .6; }
       .pl-attach { flex: none; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); display: inline-flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; }
       .pl-attach:hover { border-color: var(--accent); }
       .pl-chat.dragover { outline: 2px dashed var(--accent); outline-offset: -6px; }
@@ -2291,7 +2295,7 @@
           const shared = [...(z['xl/sharedStrings.xml'] || '').matchAll(/<si>([\s\S]*?)<\/si>/g)].map(m => xmlText(m[1]));
           const names = [...(z['xl/workbook.xml'] || '').matchAll(/<sheet [^>]*name="([^"]*)"/g)].map(m => xmlText(m[1]));
           return Object.keys(z).filter(k => /worksheets\/sheet/.test(k)).sort(byNum).map((k, si) => {
-            const rows = [...z[k].matchAll(/<row[^>]*>([\s\S]*?)<\/row>/g)].slice(0, 3000).map(r => [...r[1].matchAll(/<c ([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)].map(c => {
+            const rows = [...z[k].matchAll(/<row[^>]*>([\s\S]*?)<\/row>/g)].slice(0, 20000).map(r => [...r[1].matchAll(/<c ([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)].map(c => {
               const attrs = c[1], body = c[2] || '', v = (body.match(/<v>([\s\S]*?)<\/v>/) || [])[1];
               if (/t="s"/.test(attrs)) return shared[Number(v)] || '';
               if (/t="inlineStr"/.test(attrs)) return xmlText(body);
@@ -2303,9 +2307,13 @@
         return '';
       }
       // One file → { kind: 'image' | 'pdf' | 'text', name, mime?, data?, url?, text? }
-      async function readAttachment(file, shrinkImage) {
+      async function readAttachment(file, shrinkImage, rawPdf) {
         const name = file.name || 'file', ext = (name.split('.').pop() || '').toLowerCase();
         if (/^image\//.test(file.type)) return { kind: 'image', name, ...(await shrinkImage(file)) };
+        if ((file.type === 'application/pdf' || ext === 'pdf') && rawPdf) {
+          if (file.size > 50 * 1024 * 1024) throw new Error(name + ' is too big (max 50 MB for a PDF).');
+          return { kind: 'pdf', name, mime: 'application/pdf', blob: file };
+        }
         if (file.type === 'application/pdf' || ext === 'pdf') {
           if (file.size > MAX_PDF_BYTES) throw new Error(name + ' is too big (max 9 MB for a PDF).');
           const data = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(file); });
@@ -2317,7 +2325,7 @@
           return { kind: 'text', name, text };
         }
         if (['doc', 'ppt', 'xls', 'pages', 'key', 'numbers'].includes(ext)) throw new Error(name + ': save it as PDF, .docx, .pptx or .xlsx first.');
-        if (/^text\//.test(file.type) || /^(txt|md|markdown|csv|tsv|json|html?|xml|rtf|ya?ml|log)$/.test(ext)) return { kind: 'text', name, text: (await file.text()).slice(0, 300000) };
+        if (/^text\//.test(file.type) || /^(txt|md|markdown|csv|tsv|json|html?|xml|rtf|ya?ml|log)$/.test(ext)) return { kind: 'text', name, text: (await file.text()).slice(0, 2000000) };
         throw new Error(name + ': this file type isn’t supported.');
       }
       const attIcon = a => a.kind === 'image' ? '' : a.kind === 'pdf' ? '\u{1F4D5}' : /\.(xlsx|csv|tsv)$/i.test(a.name) ? '\u{1F4CA}' : /\.pptx$/i.test(a.name) ? '\u{1F4FD}️' : '\u{1F4C4}';
@@ -3341,9 +3349,9 @@
         'Every week, turn the articles I save into a short summary I can listen to',
         'אני רוצה להכין מצגת למשקיעים על הסטארטאפ שלי'
       ];
-      const pl = { history: [], plan: null, undo: [], busy: false, open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat', pbId: null, dirty: false, editing: new Set(), adding: null, addQ: '', files: [] };
-      try { const sv = JSON.parse(localStorage.getItem(PLAN_STORE) || 'null'); if (sv) { pl.history = sv.history || []; pl.plan = sv.plan || null; pl.undo = sv.undo || []; pl.pbId = sv.pbId || null; pl.dirty = !!sv.dirty; pl.arch = sv.arch || null; } } catch (e) {}
-      function plSave() { try { localStorage.setItem(PLAN_STORE, JSON.stringify({ history: pl.history.slice(-60), plan: pl.plan, undo: pl.undo.slice(-15), pbId: pl.pbId, dirty: pl.dirty, arch: pl.arch || null })); } catch (e) {} }
+      const pl = { history: [], plan: null, undo: [], busy: false, open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat', pbId: null, dirty: false, editing: new Set(), adding: null, addQ: '', files: [], chatFiles: [] };
+      try { const sv = JSON.parse(localStorage.getItem(PLAN_STORE) || 'null'); if (sv) { pl.history = sv.history || []; pl.plan = sv.plan || null; pl.undo = sv.undo || []; pl.pbId = sv.pbId || null; pl.dirty = !!sv.dirty; pl.arch = sv.arch || null; pl.chatFiles = sv.chatFiles || []; } } catch (e) {}
+      function plSave() { try { localStorage.setItem(PLAN_STORE, JSON.stringify({ history: pl.history.slice(-60), plan: pl.plan, undo: pl.undo.slice(-15), pbId: pl.pbId, dirty: pl.dirty, arch: pl.arch || null, chatFiles: pl.chatFiles })); } catch (e) {} }
       const plIcon = t => PL_TYPE_ICON[t] || '\u{1F4E6}';
       const phaseColor = (plan, id) => PL_COLORS[Math.max(0, (plan.phases || []).findIndex(p => p.id === id)) % PL_COLORS.length];
 
@@ -3375,7 +3383,6 @@
       }
       async function plSend(text) {
         text = (text || '').trim(); if ((!text && !pl.files.length) || pl.busy) return;
-        if (attTooBig(pl.files)) { alert('Together the files are over the upload limit \u2014 remove one or use a smaller PDF.'); return; }
         const prior = pl.history.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', text: m.note ? '[' + m.text + ']' : m.text + (m.files && m.files.length ? '\n[Attached: ' + m.files.join(', ') + ']' + (m.fileNotes ? '\n[Notes on attached files: ' + m.fileNotes + ']' : '') : '') + (m.questions && m.questions.length ? '\n' + m.questions.map(q => '- ' + q.q + ' (' + q.options.join(' / ') + ')').join('\n') : '') }));
         const sending = pl.files; pl.files = []; pl.lastSent = sending;
         const userMsg = { role: 'user', text: text || '(files)', files: sending.map(f => f.name) };
@@ -3385,17 +3392,28 @@
         tick(); clearInterval(pl.timer); pl.timer = setInterval(tick, 1000);
         const my = pl.req = (pl.req || 0) + 1;
         try {
-          const att = attPayload(sending);
-          const r = await call('action', 'planAi:chat', { history: prior, message: text, plan: pl.plan || undefined, defaults: typeof PB_DEFAULTS !== 'undefined' ? PB_DEFAULTS : [], files: att.images, docs: att.docs });
+          if (sending.length) { if (st) st.textContent = 'Uploading files\u2026'; await Promise.all(sending.map(f => f.up)); }
+          if (my !== pl.req) return;
+          const strip = f => ({ id: f.id, name: f.name, kind: f.kind, mime: f.mime, ...(f.uri ? { uri: f.uri, exp: f.exp } : {}), ...(f.words ? { words: f.words } : {}) });
+          const all = pl.chatFiles.map(strip).concat(sending.map(f => ({ ...strip(f), isNew: true })));
+          const r = await call('action', 'planAi:chat', { history: prior, message: text, plan: pl.plan || undefined, defaults: typeof PB_DEFAULTS !== 'undefined' ? PB_DEFAULTS : [], chatFiles: all.map(({ words, ...x }) => x) });
           if (my === pl.req && r.fileNotes) userMsg.fileNotes = r.fileNotes;
           if (my !== pl.req) return; // stopped
-          const msg = { role: 'assistant', text: r.reply, questions: r.questions || [], changes: r.changes || [] };
+          // The new files now belong to the chat; remember Gemini's copies so they aren't uploaded again.
+          pl.chatFiles = all.map(({ isNew, ...x }) => x); pl.lastSent = [];
+          for (const ref of r.fileRefs || []) { const f = pl.chatFiles.find(x => x.id === ref.id); if (f) { f.uri = ref.uri; f.exp = ref.exp; } }
+          plRenderFiles();
+          const msg = { role: 'assistant', text: r.reply + (r.fileNote ? '\n\n(\u26A0\uFE0F ' + r.fileNote + ')' : ''), questions: r.questions || [], changes: r.changes || [] };
           if (r.plan) {
             if (pl.plan) { pl.undo.push(pl.plan); plDiff(pl.plan, r.plan); } else pl.changed = new Set();
             pl.plan = r.plan; pl.open = null; pl.show = 'plan'; pl.dirty = true; pl.editing = new Set(); pl.adding = null;
           }
           pl.history.push(msg);
-        } catch (e) { if (my !== pl.req) return; pl.history.push({ role: 'assistant', text: 'Sorry — that didn’t work: ' + String(e.message || e).replace(/^.*ConvexError:\s*/, '') + '. Try again.' }); }
+        } catch (e) {
+          if (my !== pl.req) return;
+          if (sending.length) { pl.files = sending.filter(f => !f.err).concat(pl.files); plRenderFiles(); } // files back in the box for the retry
+          pl.history.push({ role: 'assistant', text: 'Sorry — that didn’t work: ' + String(e.message || e).replace(/^.*ConvexError:\s*/, '') + '. Try again.' });
+        }
         clearInterval(pl.timer); pl.busy = false; plSave(); plRender();
         const ta = document.getElementById('pl-text'); if (ta && window.innerWidth > 820) ta.focus();
       }
@@ -3690,7 +3708,8 @@
         const op = t.closest('[data-plans]'); if (op) { const qi = op.dataset.plans; pl.answers[qi] = pl.answers[qi] === op.dataset.v ? undefined : op.dataset.v; if (pl.answers[qi] === undefined) delete pl.answers[qi]; plRender(); return; }
         if (t.closest('[data-plsendans]')) { const v = [plAnswerText(), plText.value.trim()].filter(Boolean).join('\n'); if (!v) return; plText.value = ''; plSend(v); return; }
         if (t.closest('[data-pljust]')) { plSend([plAnswerText(), plText.value.trim(), 'Just make the plan now with sensible assumptions.'].filter(Boolean).join('\n')); plText.value = ''; return; }
-        if (t.closest('#pl-new')) { if (pl.plan && pl.dirty && !confirm('Clear everything and start fresh? Your plan has unsaved changes — press Save first if you want to keep it.')) return; if (pl.busy) { pl.req = (pl.req || 0) + 1; clearInterval(pl.timer); pl.busy = false; } Object.assign(pl, { history: [], plan: null, undo: [], open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat', pbId: null, dirty: false, editing: new Set(), adding: null, addQ: '', files: [] }); plSave(); plRender(); plRenderFiles(); plText.focus(); return; }
+        if (t.closest('#pl-new')) { if (pl.plan && pl.dirty && !confirm('Clear everything and start fresh? Your plan has unsaved changes — press Save first if you want to keep it.')) return; if (pl.busy) { pl.req = (pl.req || 0) + 1; clearInterval(pl.timer); pl.busy = false; } plDropStored(pl.chatFiles.map(f => f.id)); pl.files.forEach(f => f.up.then(id => plDropStored([id])).catch(() => {}));
+          Object.assign(pl, { history: [], plan: null, undo: [], open: null, texts: {}, answers: {}, changed: new Set(), show: 'chat', pbId: null, dirty: false, editing: new Set(), adding: null, addQ: '', files: [], chatFiles: [] }); plSave(); plRender(); plRenderFiles(); plText.focus(); return; }
         if (t.id === 'pl-undo') { if (!pl.undo.length) return; pl.plan = pl.undo.pop(); pl.dirty = true; pl.editing = new Set(); pl.adding = null; pl.changed = new Set(); pl.open = null; pl.history.push({ role: 'user', text: 'Undo: went back one change', note: true }); plSave(); plRender(); return; }
         if (t.id === 'pl-copy') { copyText(plAsText(pl.plan)).then(() => flashCopied(t)); return; }
         if (t.closest('#pl-saveas')) {
@@ -3741,23 +3760,48 @@
       });
       document.getElementById('pl-modal').addEventListener('change', e => { const t = e.target; if (t.dataset && t.dataset.plf === 'phase') { const s = pl.plan.steps.find(x => x.id === t.dataset.sid); if (s) { s.phase = t.value; pl.dirty = true; plSave(); plRender(); } } });
       document.addEventListener('click', e => { if (e.target.closest('[data-plopenbtn]')) plOpen(); });
+      // Files stay with the chat: each is uploaded once (as soon as you add it) and read in full with every later message.
+      const plWords = n => n >= 1000 ? Math.round(n / 1000) + 'k' : String(n);
       function plRenderFiles() {
         const box = document.getElementById('pl-files'); if (!box) return;
-        box.innerHTML = pl.files.map((f, i) => attChipHTML(f, i, 'data-plrmfile')).join('') + (pl.fileErr ? '<span class="pl-ferr">' + esc(pl.fileErr) + '</span>' : '');
-        box.hidden = !pl.files.length && !pl.fileErr;
+        const kept = pl.chatFiles, words = kept.reduce((n, f) => n + (f.words || 0), 0);
+        box.innerHTML = (kept.length ? '<div class="pl-kept"><span title="Read in full with every message">\u{1F4DA} In this chat (' + kept.length + (words ? ', ~' + plWords(words) + ' words' : '') + '):</span>' +
+            kept.map((f, i) => '<span class="shot doc" title="' + esc(f.name) + (f.words ? ' \u00b7 ~' + plWords(f.words) + ' words' : '') + '"><span class="di">' + (f.kind === 'image' ? '\u{1F5BC}\uFE0F' : attIcon(f)) + '</span><span class="dn">' + esc(f.name) + '</span><button type="button" data-plrmkept="' + i + '" aria-label="Remove from the chat">&times;</button></span>').join('') + '</div>' : '') +
+          pl.files.map((f, i) => attChipHTML(f, i, 'data-plrmfile').replace('class="shot', 'class="shot' + (f.id ? '' : ' up'))).join('') + (pl.fileErr ? '<span class="pl-ferr">' + esc(pl.fileErr) + '</span>' : '');
+        box.hidden = !pl.files.length && !pl.fileErr && !kept.length;
+      }
+      function b64Blob(b64, mime) { const bin = atob(b64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Blob([u], { type: mime }); }
+      async function plUpload(f) {
+        const blob = f.blob || (f.kind === 'text' ? new Blob([f.text], { type: 'text/plain; charset=utf-8' }) : b64Blob(f.data, f.mime));
+        const url = await call('mutation', 'planAi:uploadUrl', {});
+        const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': blob.type || f.mime || 'application/octet-stream' }, body: blob });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok || !j.storageId) throw new Error('Couldn\u2019t upload ' + f.name + '.');
+        return j.storageId;
       }
       async function plAddFiles(list) {
         pl.fileErr = '';
-        for (const f of Array.from(list || [])) {
-          if (pl.files.length >= 20) { pl.fileErr = 'Up to 20 files per message.'; break; }
-          try { pl.files.push(await readAttachment(f, shrink)); } catch (e) { pl.fileErr = e.message; }
+        for (const file of Array.from(list || [])) {
+          if (pl.files.length >= 30) { pl.fileErr = 'Up to 30 files per message.'; break; }
+          if (pl.files.length + pl.chatFiles.length >= 60) { pl.fileErr = 'Up to 60 files in one chat \u2014 remove some first.'; break; }
+          try {
+            const a = await readAttachment(file, shrink, true);
+            const f = { kind: a.kind, name: a.name, mime: a.kind === 'text' ? 'text/plain' : a.mime, url: a.url, words: a.text ? a.text.split(/\s+/).filter(Boolean).length : 0 };
+            f.up = plUpload(a).then(id => { f.id = id; plRenderFiles(); return id; }).catch(e => { f.err = e.message; throw e; });
+            f.up.catch(() => {});
+            pl.files.push(f);
+          } catch (e) { pl.fileErr = e.message; }
         }
         plRenderFiles();
       }
+      function plDropStored(ids) { ids = ids.filter(Boolean); if (ids.length) call('mutation', 'planAi:dropFiles', { ids }).catch(() => {}); }
       const plFileInput = document.getElementById('pl-file-input');
       plFileInput.setAttribute('accept', FILE_ACCEPT);
       plFileInput.addEventListener('change', e => { plAddFiles(e.target.files); e.target.value = ''; });
-      document.getElementById('pl-files').addEventListener('click', e => { const b = e.target.closest('[data-plrmfile]'); if (b) { pl.files.splice(Number(b.dataset.plrmfile), 1); pl.fileErr = ''; plRenderFiles(); } });
+      document.getElementById('pl-files').addEventListener('click', e => {
+        const b = e.target.closest('[data-plrmfile]'); if (b) { const [f] = pl.files.splice(Number(b.dataset.plrmfile), 1); if (f) f.up.then(id => plDropStored([id])).catch(() => {}); pl.fileErr = ''; plRenderFiles(); return; }
+        const k = e.target.closest('[data-plrmkept]'); if (k && !pl.busy) { const [f] = pl.chatFiles.splice(Number(k.dataset.plrmkept), 1); if (f) plDropStored([f.id]); plSave(); plRenderFiles(); }
+      });
       plText.addEventListener('paste', e => { const fs = Array.from(e.clipboardData ? e.clipboardData.files : []); if (fs.length) { e.preventDefault(); plAddFiles(fs); } });
       const plChatEl = document.querySelector('.pl-chat');
       plChatEl.addEventListener('dragover', e => { e.preventDefault(); plChatEl.classList.add('dragover'); });

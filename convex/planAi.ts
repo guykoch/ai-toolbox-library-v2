@@ -1,11 +1,11 @@
 // The "Plan" pop-up: a chat that turns a free-text request into an explained, step-by-step plan
 // using the best items in the user's library (tools, skills, connectors, prompt libraries, single prompts,
 // rules, agents, automations), with 2 alternatives per item. It asks questions first when details are missing.
-import { action } from "./_generated/server";
+import { action, mutation } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { internal } from "./_generated/api";
 import { checkKey } from "./auth";
-import { callGemini, parseJson, MODELS, FILE_MIME, docsBlock, GeminiTurn } from "./llm";
+import { callGemini, parseJson, MODELS, FILE_MIME, docsBlock, GeminiTurn, geminiUpload, ImageIn } from "./llm";
 import { KIND_LABEL } from "./kinds";
 
 type Lib = { topics: string[]; types: { key: string; label: string; icon: string }[]; tools: { id: string; name: string; kind: string; cat: string; info: string; url: string }[]; libs: { id: string; name: string; info: string; copied: boolean }[]; cards: { id: string; tab: string; name: string; info: string }[] };
@@ -70,9 +70,9 @@ REPLY (JSON only)
  "questions": [{"q": "...", "options": ["...", "..."]}] (empty when you give a plan),
  "plan": the FULL plan when you made or changed one, or null when you answer, consult or ask questions,
  "changes": ["each change in a few words, when you changed an existing plan"],
- "fileNotes": "ONLY when files are attached to the latest message: detailed notes of everything in them that could matter for this or later requests (structure, steps, numbers, names, constraints, what diagrams show) — up to ~400 words. Later messages only see these notes, not the files."}
+ "fileNotes": "ONLY when files are attached to the latest message: detailed notes of everything in them that could matter for this or later requests (structure, steps, numbers, names, constraints, what diagrams show) — up to ~400 words (a short memory of them; the files themselves stay attached for the rest of the chat)."}
 
-FILES: the user may attach images, screenshots, diagrams, PDFs or documents (Word, PowerPoint, Excel, text) for context. Read them completely and use them: they can define the goal, constraints, the current setup, a process to follow or examples. Mention what you took from them. Earlier files appear in the chat as [Notes on attached files: …].`;
+FILES: the user may attach images, screenshots, diagrams, PDFs or documents (Word, PowerPoint, Excel, text) for context. Read them completely and use them: they can define the goal, constraints, the current setup, a process to follow or examples. Mention what you took from them. Files added earlier in the chat are attached again in full with every message, so you can use any detail from them.`;
 
 export const chat = action({
   args: {
@@ -83,12 +83,21 @@ export const chat = action({
     defaults: v.optional(v.array(v.string())),
     files: v.optional(v.array(v.object({ mime: v.string(), data: v.string() }))),
     docs: v.optional(v.array(v.object({ name: v.string(), text: v.string() }))),
+    // Every file in this chat (uploaded once to storage): read in full with every message, so follow-ups keep all the detail.
+    chatFiles: v.optional(v.array(v.object({ id: v.string(), name: v.string(), kind: v.string(), mime: v.string(), uri: v.optional(v.string()), exp: v.optional(v.number()), isNew: v.optional(v.boolean()) }))),
   },
-  handler: async (ctx, { key, history, message, plan, defaults, files, docs }): Promise<{ reply: string; questions: { q: string; options: string[] }[]; plan: any | null; changes: string[]; fileNotes: string }> => {
+  handler: async (ctx, { key, history, message, plan, defaults, files, docs, chatFiles }): Promise<{ reply: string; questions: { q: string; options: string[] }[]; plan: any | null; changes: string[]; fileNotes: string; fileRefs: { id: string; uri: string; exp: number }[]; fileNote: string }> => {
     checkKey(key);
-    const pics = (files || []).filter((f) => FILE_MIME.test(f.mime)).slice(0, 20);
-    const docText = docsBlock(docs);
-    const hasFiles = pics.length > 0 || !!docText;
+    const pics: ImageIn[] = (files || []).filter((f) => FILE_MIME.test(f.mime)).slice(0, 20);
+    let docText = docsBlock(docs);
+    const fileRefs: { id: string; uri: string; exp: number }[] = [];
+    let fileNote = "";
+    if (chatFiles && chatFiles.length) {
+      const got = await loadChatFiles(ctx, chatFiles);
+      pics.push(...got.parts); docText += got.text; fileRefs.push(...got.refs); fileNote = got.note;
+    }
+    const newFiles = (chatFiles || []).filter((f) => f.isNew).length;
+    const hasFiles = (files || []).length > 0 || !!(docs || []).length || newFiles > 0;
     const m = message.trim() || (hasFiles ? "Here are some files for context." : "");
     if (!m) throw new ConvexError("Write what you want to do.");
     const lib: Lib = await ctx.runQuery(internal.playbooks.libraryForPlan, {});
@@ -146,7 +155,8 @@ export const chat = action({
     turns.push({
       role: "user",
       text: (plan ? `CURRENT PLAN:\n${JSON.stringify(stripPlan(plan)).slice(0, 40000)}\n\n` : "") + docText +
-        (pics.length ? `${pics.length} IMAGE(S) / PDF(S) ATTACHED to this message — read every one fully (diagrams, text, numbers).\n\n` : "") +
+        (pics.length ? `${pics.length} IMAGE(S) / PDF(S) ATTACHED — read every one fully (diagrams, text, numbers).\n\n` : "") +
+        (chatFiles && chatFiles.length ? `FILES IN THIS CHAT: ${chatFiles.map((f) => f.name + (f.isNew ? " (NEW in this message)" : "")).join(", ")}. They are all included above in full — use any detail from them when it helps.\n\n` : "") +
         `MY MESSAGE: ${m.slice(0, 4000)}`,
       images: pics,
     });
@@ -163,6 +173,8 @@ export const chat = action({
       plan: p && p.steps.length ? p : null,
       changes: Array.isArray(out.changes) ? out.changes.map((c: any) => String(c).slice(0, 200)).slice(0, 12) : [],
       fileNotes,
+      fileRefs,
+      fileNote,
     };
   },
 });
@@ -308,3 +320,49 @@ export const buildPrompt = action({
     return { prompt };
   },
 });
+
+// ---------- files kept for the whole Plan chat ----------
+export const uploadUrl = mutation({
+  args: { key: v.string() },
+  handler: async (ctx, { key }) => { checkKey(key); return await ctx.storage.generateUploadUrl(); },
+});
+export const dropFiles = mutation({
+  args: { key: v.string(), ids: v.array(v.string()) },
+  handler: async (ctx, { key, ids }) => {
+    checkKey(key);
+    for (const id of ids.slice(0, 200)) { try { await ctx.storage.delete(id as any); } catch { /* already gone */ } }
+    return { ok: true };
+  },
+});
+
+// How much text the chat reads from its files with each message (Gemini reads up to ~1M tokens).
+const TEXT_EACH = 500000; // characters per file (~80,000 words)
+const TEXT_ALL = 2000000; // characters across all files (~330,000 words)
+async function loadChatFiles(ctx: any, list: { id: string; name: string; kind: string; mime: string; uri?: string; exp?: number; isNew?: boolean }[]) {
+  const parts: ImageIn[] = [], refs: { id: string; uri: string; exp: number }[] = [], cut: string[] = [], missing: string[] = [];
+  let left = TEXT_ALL, text = "";
+  for (const f of list.slice(0, 60)) {
+    try {
+      if (f.kind === "text") {
+        const b = await ctx.storage.get(f.id);
+        if (!b) { missing.push(f.name); continue; }
+        let t = await b.text();
+        const keep = Math.min(TEXT_EACH, Math.max(0, left));
+        if (t.length > keep) { cut.push(f.name); t = t.slice(0, keep); }
+        left -= t.length;
+        if (t) text += `--- FILE: ${f.name.slice(0, 120)} ---\n${t}\n\n`;
+      } else {
+        let uri = f.uri, exp = f.exp || 0;
+        if (!uri || exp < Date.now() + 10 * 60 * 1000) {
+          const b = await ctx.storage.get(f.id);
+          if (!b) { missing.push(f.name); continue; }
+          const up = await geminiUpload(await b.arrayBuffer(), f.mime, f.name);
+          uri = up.uri; exp = up.exp; refs.push({ id: f.id, uri, exp });
+        }
+        parts.push({ mime: f.mime, data: "", uri });
+      }
+    } catch (e: any) { missing.push(f.name + " (" + String(e?.message || e).slice(0, 80) + ")"); }
+  }
+  const note = [cut.length ? "Only the first part of " + cut.join(", ") + " was read (too long)." : "", missing.length ? "Couldn’t read: " + missing.join(", ") + "." : ""].filter(Boolean).join(" ");
+  return { parts, refs, note, text: text ? `ATTACHED FILES (full text — read all of it):\n${text}` : "" };
+}

@@ -14,7 +14,7 @@ export const MODELS = {
   addGemini: () => process.env.GEMINI_MODEL_ADD || "gemini-3.8-flash",
 };
 
-export type ImageIn = { mime: string; data: string }; // base64, no data: prefix (images or PDFs)
+export type ImageIn = { mime: string; data: string; uri?: string }; // base64, no data: prefix (images or PDFs) — or a Gemini Files API uri
 export type DocIn = { name: string; text: string }; // text pulled out of Word / PowerPoint / Excel / text files in the browser
 export const FILE_MIME = /^(image\/(png|jpeg|webp|gif)|application\/pdf)$/;
 // Text files as a block the AI reads together with the message.
@@ -46,7 +46,7 @@ export async function callGemini(opts: {
   if (opts.thinking) generationConfig.thinkingConfig = { thinkingLevel: opts.thinking };
   const body: any = {
     systemInstruction: { parts: [{ text: opts.system }] },
-    contents: opts.turns.map((t) => ({ role: t.role, parts: [...(t.images || []).map((im) => ({ inline_data: { mime_type: im.mime, data: im.data } })), { text: t.text }] })),
+    contents: opts.turns.map((t) => ({ role: t.role, parts: [...(t.images || []).map((im) => (im.uri ? { file_data: { mime_type: im.mime, file_uri: im.uri } } : { inline_data: { mime_type: im.mime, data: im.data } })), { text: t.text }] })),
     generationConfig,
   };
   if (opts.search) body.tools = [{ google_search: {} }];
@@ -126,4 +126,31 @@ export function parseJson(text: string): any {
   } catch {
     throw new ConvexError("Couldn't read the AI's answer. Please try again.");
   }
+}
+
+// Uploads a file to the Gemini Files API once, so it can be used in later messages (kept by Google for 48 hours)
+// without sending it again. Big PDFs (up to 50 MB / 1,000 pages) work this way.
+export async function geminiUpload(bytes: ArrayBuffer, mime: string, name: string): Promise<{ uri: string; exp: number }> {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new ConvexError("GEMINI_API_KEY is not set in the Convex dashboard (Settings → Environment Variables).");
+  const base = "https://generativelanguage.googleapis.com";
+  const start = await fetchWithTimeout(`${base}/upload/v1beta/files`, {
+    method: "POST",
+    headers: { "x-goog-api-key": key, "X-Goog-Upload-Protocol": "resumable", "X-Goog-Upload-Command": "start", "X-Goog-Upload-Header-Content-Length": String(bytes.byteLength), "X-Goog-Upload-Header-Content-Type": mime, "content-type": "application/json" },
+    body: JSON.stringify({ file: { display_name: name.slice(0, 120) } }),
+  }, 60000);
+  const upUrl = start.headers.get("x-goog-upload-url");
+  if (!start.ok || !upUrl) throw new ConvexError("Couldn't upload " + name + " to Gemini (" + start.status + ").");
+  const done = await fetchWithTimeout(upUrl, { method: "POST", headers: { "X-Goog-Upload-Offset": "0", "X-Goog-Upload-Command": "upload, finalize", "content-length": String(bytes.byteLength) }, body: bytes as any }, 180000);
+  const j: any = await done.json().catch(() => ({}));
+  let f = j?.file;
+  if (!done.ok || !f?.uri) throw new ConvexError("Couldn't upload " + name + " to Gemini: " + (j?.error?.message || done.status));
+  // Big PDFs are processed for a few seconds before they can be used.
+  for (let i = 0; i < 40 && f.state === "PROCESSING"; i++) {
+    await new Promise((r) => setTimeout(r, 1500));
+    const g = await fetchWithTimeout(`${base}/v1beta/${f.name}`, { headers: { "x-goog-api-key": key } }, 30000);
+    f = (await g.json().catch(() => ({}))) || f;
+  }
+  if (f.state === "FAILED") throw new ConvexError("Gemini couldn't read " + name + ".");
+  return { uri: f.uri, exp: Date.now() + 46 * 3600 * 1000 };
 }
