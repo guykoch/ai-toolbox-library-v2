@@ -762,6 +762,9 @@
       .pl-noplan { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--muted); gap: 8px; font-size: 14.5px; }
       .pl-noplan .big { font-size: 44px; }
       .pl-hero h3 { margin: 0; font-size: 24px; line-height: 1.25; }
+      .pl-rename { border: 0; background: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 2px 6px; border-radius: 8px; vertical-align: 3px; }
+      .pl-rename:hover { color: var(--accent-ink); background: var(--surface-2); }
+      .pl-title-in { width: 100%; font: inherit; font-size: 20px; font-weight: 700; padding: 6px 10px; border: 1px solid var(--accent); border-radius: 10px; background: var(--surface); color: var(--ink); }
       .pl-hero .goal { margin: 6px 0 0; color: var(--ink-2); font-size: 15px; }
       .pl-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
       .pl-pill { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-size: 13px; color: var(--ink-2); }
@@ -3667,7 +3670,8 @@
         const p = pl.plan;
         if (!p) return '<div class="pl-noplan"><div class="big">\u{1F5FA}️</div><b style="color:var(--ink)">Your plan will appear here</b><span>Tell me what you want to get done in the chat.</span></div>';
         const narrow = (document.getElementById('pl-view') || {}).clientWidth < 600;
-        let h = '<div class="pl-hero"><h3 dir="auto">' + esc(p.title) + '</h3>' + (p.goal ? '<p class="goal" dir="auto">' + esc(p.goal) + '</p>' : '') +
+        let h = '<div class="pl-hero">' + (pl.renaming ? '<input type="text" class="pl-title-in" id="pl-title-in" maxlength="100" dir="auto" value="' + esc(pl.renameVal != null ? pl.renameVal : p.title) + '" aria-label="Plan name" />'
+          : '<h3 dir="auto">' + esc(p.title) + ' <button type="button" class="pl-rename" id="pl-rename" title="Rename the plan" aria-label="Rename the plan">\u270E</button></h3>') + (p.goal ? '<p class="goal" dir="auto">' + esc(p.goal) + '</p>' : '') +
           '<div class="pl-pills">' + (() => { const t = /^x-/.test(p.type || '') && p.typeLabel ? { icon: p.typeIcon, label: p.typeLabel } : pbType(p.type); return '<span class="pl-pill" title="Playbook type">' + t.icon + ' ' + esc(t.label) + (/^x-/.test(p.type || '') && !PLAYBOOKS.some(x => x.type === p.type) ? ' <b>(new type)</b>' : '') + '</span>'; })() +
           (p.topics || []).map(x => '<span class="pl-pill" title="Topic">#' + esc(x) + (PLAYBOOKS.some(y => (y.topics || []).includes(x)) ? '' : ' <b>(new)</b>') + '</span>').join('') + '<span class="pl-pill">\u{1F9ED} ' + p.steps.length + ' steps</span>' + (p.time ? '<span class="pl-pill" title="How long it takes you to do the plan">⏱ ' + esc(p.time) + ' to do</span>' : '') + (p.cost ? '<span class="pl-pill">\u{1F4B2} ' + esc(p.cost) + '</span>' : '') + '</div>' +
           '<div class="pa-btns"><button type="button" class="pa-btn" id="pa-open" title="See the plan as a diagram of its parts and how they connect">\u{1F9E9} How it works &mdash; diagram</button>' +
@@ -3804,6 +3808,7 @@
           catch (err) { alert('Couldn’t save: ' + err.message); t.disabled = false; }
           return;
         }
+        if (t.closest('#pl-rename')) { pl.renaming = true; pl.renameVal = null; plRender(); const i = document.getElementById('pl-title-in'); if (i) { i.focus(); i.select(); } return; }
         if (t.closest('#pa-open')) { paOpen(); return; }
         const pga = t.closest('[data-pgadd]'); if (pga) { const [gi, oi] = pga.dataset.pgadd.split(':').map(Number); plAddGap(gi, oi); return; }
         const pgr = t.closest('[data-pgretry]'); if (pgr) { const g = pl.plan.gaps[Number(pgr.dataset.pgretry)]; if (g && pl.gapCache[g]) pl.gapCache[g].retry = true; plFindGaps(); return; }
@@ -3878,6 +3883,26 @@
         plRenderFiles();
       }
       function plDropStored(ids) { ids = ids.filter(Boolean); if (ids.length) call('mutation', 'planAi:dropFiles', { ids }).catch(() => {}); }
+
+      // Rename the plan: Enter or tapping away saves, Escape cancels.
+      function plRenameDone(save) {
+        const i = document.getElementById('pl-title-in'); if (!pl.renaming) return;
+        const v = i ? i.value.trim().slice(0, 100) : '';
+        pl.renaming = false; pl.renameVal = null;
+        if (save && v && pl.plan && v !== pl.plan.title) {
+          plEditStart('Renamed the plan to \u201c' + v + '\u201d');
+          if (pl.arch && pl.arch.title === pl.plan.title) pl.arch.title = v; // keep its diagram
+          pl.plan.title = v; plSave();
+        }
+        plRender();
+      }
+      document.getElementById('pl-view').addEventListener('keydown', e => {
+        if (e.target.id !== 'pl-title-in') return;
+        if (e.key === 'Enter') { e.preventDefault(); plRenameDone(true); }
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); plRenameDone(false); }
+      });
+      document.getElementById('pl-view').addEventListener('input', e => { if (e.target.id === 'pl-title-in') pl.renameVal = e.target.value; });
+      document.getElementById('pl-view').addEventListener('focusout', e => { if (e.target.id === 'pl-title-in') setTimeout(() => plRenameDone(true), 0); });
       // "Open-source tools only" / "Low effort mode": remembered, and sent with every message.
       pl.modes = pl.modes || {};
       [['pl-m-open', 'openSource'], ['pl-m-low', 'lowEffort']].forEach(([id, k]) => {
@@ -3988,8 +4013,10 @@
         document.getElementById('pa-title').textContent = pl.plan.title || '';
         pa.sel = null; pa.z = 0;
         // A diagram of a different plan (e.g. after Clear) is redrawn; one of this plan before edits is kept with a note.
-        if (!pl.arch || pl.arch.title !== pl.plan.title) paMake(); else paRender();
+        if (!paMine()) paMake(); else paRender();
       }
+      // The saved diagram belongs to this plan if the name or the steps match (so renaming or undo keeps it).
+      function paMine() { return !!(pl.arch && pl.plan && (pl.arch.title === pl.plan.title || pl.arch.sig === paSig(pl.plan))); }
       function paClose() { document.getElementById('pa-modal').hidden = true; pa.sel = null; }
       async function paMake() {
         if (pa.busy || !pl.plan) return;
@@ -4003,71 +4030,135 @@
         } catch (e) { pa.err = String(e.message || e).replace(/^.*ConvexError:\s*/, ''); }
         clearInterval(tick); pa.busy = false; pa.z = 0; paRender();
       }
-      // Layers: longest path from the start (loop arrows ignored), then ordered to keep arrows straight.
+      // Layout (layered, like a flowchart): each part sits in a layer by its longest path from the start; arrows that skip
+      // layers get invisible waypoints so they go around boxes, not through them; layers are ordered to untangle arrows.
       function paLayout(d, vertical) {
-        const ids = d.nodes.map(n => n.id), fwd = d.edges.filter(e => !e.loop);
+        const ids = d.nodes.map(n => n.id), idSet = new Set(ids);
+        const E = d.edges.map((e, ei) => ({ ...e, ei })).filter(e => idSet.has(e.from) && idSet.has(e.to));
+        const fwd = E.filter(e => !e.loop);
         const indeg = new Map(ids.map(i => [i, 0])); fwd.forEach(e => indeg.set(e.to, indeg.get(e.to) + 1));
-        const layer = new Map(ids.map(i => [i, 0])); const q = ids.filter(i => !indeg.get(i)); const seen = new Set();
+        const layer = new Map(ids.map(i => [i, 0])), q = ids.filter(i => !indeg.get(i)), seen = new Set();
         while (q.length) { const i = q.shift(); seen.add(i); for (const e of fwd.filter(e => e.from === i)) { layer.set(e.to, Math.max(layer.get(e.to), layer.get(i) + 1)); indeg.set(e.to, indeg.get(e.to) - 1); if (!indeg.get(e.to)) q.push(e.to); } }
-        const maxL = Math.max(0, ...[...seen].map(i => layer.get(i)));
-        ids.filter(i => !seen.has(i)).forEach(i => layer.set(i, maxL + 1)); // left over from a cycle
-        // Goal nodes sit in the last layer.
-        const last = Math.max(...ids.map(i => layer.get(i)));
-        d.nodes.forEach(n => { if (n.kind === 'goal') layer.set(n.id, Math.max(last, layer.get(n.id))); });
-        const L = Math.max(...ids.map(i => layer.get(i))) + 1;
-        const cols = Array.from({ length: L }, (_, l) => d.nodes.filter(n => layer.get(n.id) === l).map(n => n.id));
-        const idx = new Map(); const setIdx = () => cols.forEach(c => c.forEach((id, k) => idx.set(id, k - (c.length - 1) / 2)));
-        setIdx();
-        for (let pass = 0; pass < 4; pass++) {
-          cols.forEach((c, l) => { if (!l) return; const bc = id => { const ps = d.edges.filter(e => e.to === id && layer.get(e.from) < l).map(e => idx.get(e.from)); return ps.length ? ps.reduce((a, b) => a + b, 0) / ps.length : idx.get(id); }; c.sort((a, b) => bc(a) - bc(b)); setIdx(); });
+        const maxSeen = Math.max(0, ...[...seen].map(i => layer.get(i)));
+        ids.filter(i => !seen.has(i)).forEach(i => layer.set(i, maxSeen + 1));
+        const lastL = Math.max(...ids.map(i => layer.get(i)));
+        d.nodes.forEach(n => { if (n.kind === 'goal') layer.set(n.id, lastL); });
+        // Forward arrows run down the layers; any arrow that goes back (or sideways) is drawn as a loop around the outside.
+        const down = E.filter(e => !e.loop && layer.get(e.to) > layer.get(e.from)), loops = E.filter(e => !down.includes(e));
+        const lay = new Map(layer), chains = new Map(), segs = [];
+        for (const e of down) {
+          const a = layer.get(e.from), b = layer.get(e.to), path = [e.from];
+          for (let l = a + 1; l < b; l++) { const id = '~' + e.ei + '_' + l; lay.set(id, l); path.push(id); }
+          path.push(e.to); chains.set(e.ei, path);
+          for (let k = 0; k < path.length - 1; k++) segs.push([path[k], path[k + 1]]);
         }
-        const NW = vertical ? 156 : 178, NH = vertical ? 66 : 70, GL = vertical ? 64 : 92, GN = vertical ? 18 : 26, PAD = 26;
-        const maxN = Math.max(...cols.map(c => c.length));
-        const span = maxN * (vertical ? NW : NH) + (maxN - 1) * GN;
-        const pos = {};
-        cols.forEach((c, l) => { const len = c.length * (vertical ? NW : NH) + (c.length - 1) * GN, off = (span - len) / 2; c.forEach((id, k) => {
-          const a = PAD + off + k * ((vertical ? NW : NH) + GN), b = PAD + l * ((vertical ? NH : NW) + GL);
-          pos[id] = vertical ? { x: a, y: b, l } : { x: b, y: a, l };
-        }); });
-        const W = vertical ? span + PAD * 2 : PAD * 2 + L * NW + (L - 1) * GL + 30;
-        const H = vertical ? PAD * 2 + L * NH + (L - 1) * GL + 30 : span + PAD * 2;
-        return { pos, NW, NH, W, H, vertical };
+        const L = Math.max(...[...lay.values()]) + 1;
+        const cols = Array.from({ length: L }, () => []);
+        for (const [id, l] of lay) cols[l].push(id);
+        const pos = new Map(); const setPos = () => cols.forEach(c => c.forEach((id, k) => pos.set(id, k)));
+        setPos();
+        const bary = (id, dir) => { const ns = segs.filter(s => dir > 0 ? s[1] === id : s[0] === id).map(s => pos.get(dir > 0 ? s[0] : s[1])); return ns.length ? ns.reduce((a, b) => a + b, 0) / ns.length : pos.get(id); };
+        for (let pass = 0; pass < 8; pass++) {
+          const dir = pass % 2 ? -1 : 1, order = dir > 0 ? cols.map((_, i) => i).slice(1) : cols.map((_, i) => i).reverse().slice(1);
+          for (const l of order) { const c = cols[l]; const b = new Map(c.map(id => [id, bary(id, dir)])); c.sort((x, y) => b.get(x) - b.get(y)); c.forEach((id, k) => pos.set(id, k)); }
+        }
+        // Sizes and gaps: enough room between layers for an arrow and its label.
+        const NW = vertical ? 168 : 182, NH = vertical ? 70 : 74, DW = 22, GL = vertical ? 104 : 160, GN = vertical ? 26 : 30, PAD = 30;
+        const sz = id => id[0] === '~' ? (vertical ? DW : DW) : (vertical ? NW : NH);
+        const spanOf = c => c.reduce((s, id) => s + sz(id), 0) + Math.max(0, c.length - 1) * GN;
+        const span = Math.max(...cols.map(spanOf));
+        const P = {};
+        cols.forEach((c, l) => {
+          let a = PAD + (span - spanOf(c)) / 2; const b = PAD + l * ((vertical ? NH : NW) + GL);
+          c.forEach(id => { const w = sz(id), dummy = id[0] === '~';
+            if (vertical) P[id] = dummy ? { x: a, y: b, w: DW, h: NH, dummy, l } : { x: a, y: b, w: NW, h: NH, l };
+            else P[id] = dummy ? { x: b, y: a, w: NW, h: DW, dummy, l } : { x: b, y: a, w: NW, h: NH, l };
+            a += w + GN; });
+        });
+        // Loops go around the outside, each a little further out so they don't overlap.
+        const loopGap = 22;
+        let W = vertical ? span + PAD * 2 : PAD * 2 + L * NW + (L - 1) * GL;
+        let H = vertical ? PAD * 2 + L * NH + (L - 1) * GL : span + PAD * 2;
+        if (loops.length) { if (vertical) W += 24 + loops.length * loopGap + 70; else H += 24 + loops.length * loopGap + 20; }
+        return { P, chains, down, loops, NW, NH, W, H, vertical, contentW: vertical ? span + PAD * 2 : W, contentH: vertical ? H : span + PAD * 2, loopGap };
       }
       function paSVG(d, lay) {
-        const { pos, NW, NH, W, H, vertical } = lay;
-        const wrap = (t, n) => { const w = String(t).split(/\s+/); const out = ['']; for (const x of w) { if ((out[out.length - 1] + ' ' + x).trim().length > n && out[out.length - 1]) { if (out.length === 2) { out[1] += '…'; break; } out.push(x); } else out[out.length - 1] = (out[out.length - 1] + ' ' + x).trim(); } return out; };
-        let svg = '<svg class="pa-svg" viewBox="0 0 ' + W + ' ' + H + '" width="' + Math.round(W * pa.z) + '" height="' + Math.round(H * pa.z) + '" role="img" aria-label="Diagram of how the plan works"><defs>' +
-          Object.entries(PA_KIND).map(([k, v]) => '<marker id="pa-ar-' + k + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="' + v.color + '"/></marker>').join('') + '</defs>';
-        const labels = [];
-        d.edges.forEach((e, ei) => {
-          const A = pos[e.from], B = pos[e.to]; if (!A || !B) return;
-          const c = (PA_KIND[d.nodes.find(n => n.id === e.from).kind] || PA_KIND.tool).color;
-          let x1, y1, x2, y2, c1x, c1y, c2x, c2y;
-          if (e.loop || B.l <= A.l) { // feedback: curve around the outside
-            if (vertical) { x1 = A.x + NW; y1 = A.y + NH / 2; x2 = B.x + NW; y2 = B.y + NH / 2; const bx = Math.max(x1, x2) + 46; c1x = bx; c1y = y1; c2x = bx; c2y = y2; }
-            else { x1 = A.x + NW / 2; y1 = A.y + NH; x2 = B.x + NW / 2; y2 = B.y + NH; const by = Math.max(y1, y2) + 40; c1x = x1; c1y = by; c2x = x2; c2y = by; }
-          } else if (vertical) { x1 = A.x + NW / 2; y1 = A.y + NH; x2 = B.x + NW / 2; y2 = B.y - 3; const my = (y1 + y2) / 2; c1x = x1; c1y = my; c2x = x2; c2y = my; }
-          else { x1 = A.x + NW; y1 = A.y + NH / 2; x2 = B.x - 3; y2 = B.y + NH / 2; const mx = (x1 + x2) / 2; c1x = mx; c1y = y1; c2x = mx; c2y = y2; }
-          const dd = 'M' + x1 + ',' + y1 + ' C' + c1x + ',' + c1y + ' ' + c2x + ',' + c2y + ' ' + x2 + ',' + y2;
-          svg += '<g class="pa-edge" data-from="' + esc(e.from) + '" data-to="' + esc(e.to) + '"><path d="' + dd + '" fill="none" stroke="' + c + '" stroke-width="2.2" opacity=".35"/><path class="flow" d="' + dd + '" fill="none" stroke="' + c + '" stroke-width="2.2"' + (e.loop ? ' stroke-opacity=".7"' : '') + ' marker-end="url(#pa-ar-' + (d.nodes.find(n => n.id === e.from).kind in PA_KIND ? d.nodes.find(n => n.id === e.from).kind : 'tool') + ')"/>';
-          if (e.label) { // midpoint of the curve
-            const t = .5, mt = 1 - t, mx = mt * mt * mt * x1 + 3 * mt * mt * t * c1x + 3 * mt * t * t * c2x + t * t * t * x2, my = mt * mt * mt * y1 + 3 * mt * mt * t * c1y + 3 * mt * t * t * c2y + t * t * t * y2;
-            const lw = Math.min(150, e.label.length * 6.4 + 14);
-            labels.push('<g class="pa-edge" data-from="' + esc(e.from) + '" data-to="' + esc(e.to) + '"><rect x="' + (mx - lw / 2) + '" y="' + (my - 10) + '" width="' + lw + '" height="20" rx="10" fill="var(--surface)" stroke="' + c + '" stroke-opacity=".5"/><text x="' + mx + '" y="' + (my + 4) + '" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink-2)">' + esc(e.label.length > 22 ? e.label.slice(0, 21) + '…' : e.label) + '</text></g>');
+        const { P, chains, down, loops, NW, NH, W, H, vertical, contentW, contentH, loopGap } = lay;
+        const node = id => d.nodes.find(n => n.id === id);
+        const colorOf = id => (PA_KIND[(node(id) || {}).kind] || PA_KIND.tool).color;
+        const kindOfId = id => ((node(id) || {}).kind in PA_KIND) ? node(id).kind : 'tool';
+        const wrap = (t, n) => { const w = String(t).split(/\s+/); const out = ['']; for (const x of w) { if ((out[out.length - 1] + ' ' + x).trim().length > n && out[out.length - 1]) { if (out.length === 2) { out[1] = out[1].slice(0, n - 1) + '…'; break; } out.push(x); } else out[out.length - 1] = (out[out.length - 1] + ' ' + x).trim(); } return out.map(l => l.length > n + 1 ? l.slice(0, n) + '…' : l); };
+        // Ports: arrows leave from / arrive at spread-out points along a box's edge, in the order of where they go.
+        const outs = {}, ins = {};
+        for (const e of down) { const p = chains.get(e.ei); (outs[p[0]] = outs[p[0]] || []).push(e.ei); (ins[p[p.length - 1]] = ins[p[p.length - 1]] || []).push(e.ei); }
+        const ctr = id => vertical ? P[id].x + P[id].w / 2 : P[id].y + P[id].h / 2;
+        Object.values(outs).forEach(a => a.sort((x, y) => ctr(chains.get(x)[1]) - ctr(chains.get(y)[1])));
+        Object.values(ins).forEach(a => a.sort((x, y) => { const px = chains.get(x), py = chains.get(y); return ctr(px[px.length - 2]) - ctr(py[py.length - 2]); }));
+        const port = (id, ei, isOut) => {
+          const R = P[id], list = (isOut ? outs : ins)[id] || [ei], k = list.indexOf(ei), n = list.length, f = (k + 1) / (n + 1);
+          if (R.dummy) return vertical ? { x: R.x + R.w / 2, y: isOut ? R.y + R.h : R.y } : { x: isOut ? R.x + R.w : R.x, y: R.y + R.h / 2 };
+          return vertical ? { x: R.x + R.w * (0.2 + 0.6 * f), y: isOut ? R.y + R.h : R.y - 3 } : { x: isOut ? R.x + R.w : R.x - 3, y: R.y + R.h * (0.2 + 0.6 * f) };
+        };
+        // A smooth path through the points; also sampled, to place the label.
+        const curve = pts => {
+          let dd = 'M' + pts[0].x + ',' + pts[0].y; const samp = [pts[0]];
+          for (let i = 0; i < pts.length - 1; i++) {
+            const a = pts[i], b = pts[i + 1];
+            const c1 = vertical ? { x: a.x, y: (a.y + b.y) / 2 } : { x: (a.x + b.x) / 2, y: a.y }, c2 = vertical ? { x: b.x, y: (a.y + b.y) / 2 } : { x: (a.x + b.x) / 2, y: b.y };
+            dd += ' C' + c1.x + ',' + c1.y + ' ' + c2.x + ',' + c2.y + ' ' + b.x + ',' + b.y;
+            for (let t = 0.1; t <= 1.001; t += 0.1) { const m = 1 - t; samp.push({ x: m * m * m * a.x + 3 * m * m * t * c1.x + 3 * m * t * t * c2.x + t * t * t * b.x, y: m * m * m * a.y + 3 * m * m * t * c1.y + 3 * m * t * t * c2.y + t * t * t * b.y }); }
           }
-          svg += '</g>';
+          return { dd, samp };
+        };
+        const boxes = d.nodes.map(n => P[n.id]).filter(Boolean).map(R => ({ x: R.x - 4, y: R.y - 4, w: R.w + 8, h: R.h + 8 }));
+        const placed = [];
+        const hit = (r, s) => Math.max(0, Math.min(r.x + r.w, s.x + s.w) - Math.max(r.x, s.x)) * Math.max(0, Math.min(r.y + r.h, s.y + s.h) - Math.max(r.y, s.y));
+        const placeLabel = (samp, text) => {
+          const t = text.length > 20 ? text.slice(0, 19) + '…' : text, w = Math.min(150, t.length * 6.6 + 16), h = 20;
+          let best = null;
+          for (const f of [0.5, 0.42, 0.58, 0.34, 0.66, 0.26, 0.74, 0.18, 0.82]) {
+            const p = samp[Math.round(f * (samp.length - 1))], r = { x: p.x - w / 2, y: p.y - h / 2, w, h };
+            const cost = boxes.reduce((s, b) => s + hit(r, b), 0) * 3 + placed.reduce((s, b) => s + hit(r, b), 0);
+            if (!best || cost < best.cost) best = { r, cost, t };
+            if (!cost) break;
+          }
+          placed.push(best.r); return best;
+        };
+        let svg = '<svg class="pa-svg" viewBox="0 0 ' + W + ' ' + H + '" width="' + Math.round(W * pa.z) + '" height="' + Math.round(H * pa.z) + '" role="img" aria-label="Diagram of how the plan works"><defs>' +
+          Object.entries(PA_KIND).map(([k, v]) => '<marker id="pa-ar-' + k + '" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="' + v.color + '"/></marker>').join('') + '</defs>';
+        const lines = [], labels = [];
+        const drawEdge = (e, dd, samp, dashed) => {
+          const c = colorOf(e.from), k = kindOfId(e.from);
+          lines.push('<g class="pa-edge" data-from="' + esc(e.from) + '" data-to="' + esc(e.to) + '"><path d="' + dd + '" fill="none" stroke="' + c + '" stroke-width="2.2" opacity=".3"/><path class="flow" d="' + dd + '" fill="none" stroke="' + c + '" stroke-width="2.2"' + (dashed ? ' stroke-opacity=".75"' : '') + ' marker-end="url(#pa-ar-' + k + ')"/></g>');
+          if (e.label) { const L = placeLabel(samp, e.label); labels.push('<g class="pa-edge" data-from="' + esc(e.from) + '" data-to="' + esc(e.to) + '"><rect x="' + L.r.x + '" y="' + L.r.y + '" width="' + L.r.w + '" height="' + L.r.h + '" rx="10" fill="var(--surface)" stroke="' + c + '" stroke-opacity=".55"/><text x="' + (L.r.x + L.r.w / 2) + '" y="' + (L.r.y + 14) + '" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink-2)">' + esc(L.t) + '</text></g>'); }
+        };
+        for (const e of down) {
+          const path = chains.get(e.ei), pts = [port(path[0], e.ei, true)];
+          for (const id of path.slice(1, -1)) { const R = P[id]; pts.push(vertical ? { x: R.x + R.w / 2, y: R.y + R.h / 2 } : { x: R.x + R.w / 2, y: R.y + R.h / 2 }); }
+          pts.push(port(path[path.length - 1], e.ei, false));
+          const { dd, samp } = curve(pts); drawEdge(e, dd, samp, false);
+        }
+        loops.forEach((e, i) => {
+          const A = P[e.from], B = P[e.to]; if (!A || !B) return;
+          let pts;
+          if (vertical) { const x = contentW + 6 + i * loopGap; pts = [{ x: A.x + A.w, y: A.y + A.h / 2 }, { x, y: A.y + A.h / 2 }, { x, y: B.y + B.h / 2 }, { x: B.x + B.w + 3, y: B.y + B.h / 2 }]; }
+          else { const y = contentH + 6 + i * loopGap; pts = [{ x: A.x + A.w / 2, y: A.y + A.h }, { x: A.x + A.w / 2, y }, { x: B.x + B.w / 2, y }, { x: B.x + B.w / 2, y: B.y + B.h + 3 }]; }
+          const dd = 'M' + pts[0].x + ',' + pts[0].y + pts.slice(1).map(p => ' L' + p.x + ',' + p.y).join('');
+          const samp = [pts[1], { x: (pts[1].x + pts[2].x) / 2, y: (pts[1].y + pts[2].y) / 2 }, pts[2]];
+          drawEdge(e, dd, samp, true);
         });
-        svg += labels.join('');
+        svg += lines.join('');
         d.nodes.forEach(n => {
-          const P = pos[n.id], k = PA_KIND[n.kind] || PA_KIND.tool, lines = wrap(n.label, vertical ? 17 : 20);
-          const round = n.kind === 'goal' || n.kind === 'you' ? NH / 2 : 14;
+          const R = P[n.id]; if (!R) return;
+          const k = PA_KIND[n.kind] || PA_KIND.tool, tl = wrap(n.label, vertical ? 19 : 21);
+          const round = n.kind === 'goal' || n.kind === 'you' ? R.h / 2 : 14;
           svg += '<g class="pa-node" data-pa="' + esc(n.id) + '" tabindex="0" role="button" aria-label="' + esc(k.label + ': ' + n.label) + '">' +
-            '<rect class="box" x="' + P.x + '" y="' + P.y + '" width="' + NW + '" height="' + NH + '" rx="' + round + '" fill="var(--surface)" stroke="' + k.color + '" stroke-width="1.8"/>' +
-            '<rect x="' + P.x + '" y="' + P.y + '" width="' + NW + '" height="' + NH + '" rx="' + round + '" fill="' + k.color + '" opacity=".1" pointer-events="none"/>' +
-            '<text x="' + (P.x + 12) + '" y="' + (P.y + 19) + '" font-size="10.5" font-weight="800" letter-spacing=".04em" fill="' + k.color + '">' + k.icon + ' ' + esc(k.label.toUpperCase()) + '</text>' +
-            lines.map((l, i) => '<text x="' + (P.x + 12) + '" y="' + (P.y + (lines.length > 1 ? 39 : 45) + i * 16) + '" font-size="13.5" font-weight="700" fill="var(--ink)" dir="auto">' + esc(l) + '</text>').join('') + '</g>';
+            '<rect class="box" x="' + R.x + '" y="' + R.y + '" width="' + R.w + '" height="' + R.h + '" rx="' + round + '" fill="var(--surface)" stroke="' + k.color + '" stroke-width="1.8"/>' +
+            '<rect x="' + R.x + '" y="' + R.y + '" width="' + R.w + '" height="' + R.h + '" rx="' + round + '" fill="' + k.color + '" opacity=".1" pointer-events="none"/>' +
+            '<text x="' + (R.x + (round > 14 ? 22 : 12)) + '" y="' + (R.y + 19) + '" font-size="10.5" font-weight="800" letter-spacing=".04em" fill="' + k.color + '">' + k.icon + ' ' + esc(k.label.toUpperCase()) + '</text>' +
+            tl.map((l, i) => '<text x="' + (R.x + (round > 14 ? 22 : 12)) + '" y="' + (R.y + (tl.length > 1 ? 40 : 46) + i * 16) + '" font-size="13.5" font-weight="700" fill="var(--ink)" dir="auto">' + esc(l) + '</text>').join('') + '</g>';
         });
-        return svg + '</svg>';
+        return svg + labels.join('') + '</svg>';
       }
       function paRender() {
         const top = document.getElementById('pa-top'), cv = document.getElementById('pa-canvas'), pop = document.getElementById('pa-pop');
@@ -4075,7 +4166,7 @@
         document.getElementById('pa-redo').disabled = pa.busy;
         document.querySelector('.pa-zoom').hidden = true;
         if (pa.busy) { top.innerHTML = ''; cv.innerHTML = '<div class="pa-msg"><div style="font-size:34px">\u{1F9E9}</div><b style="color:var(--ink)">Drawing how your plan works…</b><p>Working out its parts and what flows between them. Usually 10–30 seconds (<span id="pa-wait">0s</span>).</p></div>'; return; }
-        const a = pl.arch && pl.plan && pl.arch.title === pl.plan.title ? pl.arch : null;
+        const a = paMine() ? pl.arch : null;
         if (!a) { top.innerHTML = ''; cv.innerHTML = '<div class="pa-msg">' + (pa.err ? '<p class="err">Couldn’t draw it: ' + esc(pa.err) + '</p>' : '') + '<button class="primary-btn" type="button" id="pa-try">Draw the diagram</button></div>'; return; }
         const d = a.data, kinds = [...new Set(d.nodes.map(n => n.kind))];
         top.innerHTML = (a.sig !== paSig(pl.plan) ? '<div class="pa-stale">✏️ The plan changed since this was drawn. <button class="mini-btn" type="button" id="pa-try">Redraw</button></div>' : '') +
@@ -4083,10 +4174,10 @@
           (d.summary ? '<p class="pa-sum" dir="auto">' + esc(d.summary) + '</p>' : '') +
           '<div class="pa-legend">' + kinds.map(k => '<span><i style="background:' + (PA_KIND[k] || PA_KIND.tool).color + '"></i>' + (PA_KIND[k] || PA_KIND.tool).label + '</span>').join('') + '<span style="margin-left:auto">Tap a box to see what it does</span></div>';
         // Pick left-to-right or top-to-bottom, whichever fits the screen bigger.
-        const fit = L => Math.min((cv.clientWidth - 8) / L.W, (cv.clientHeight - 8) / L.H);
+        // Left-to-right or top-to-bottom: whichever shows the boxes bigger (left-to-right wins a near tie on a laptop).
         const hz = paLayout(d, false), vt = paLayout(d, true);
-        pa.layout = cv.clientWidth < 600 ? (fit(hz) > fit(vt) * 1.5 ? hz : vt) : fit(vt) > fit(hz) * 1.15 ? vt : hz;
-        if (!pa.z) pa.z = Math.max(.5, Math.min(1.25, (cv.clientWidth - 8) / pa.layout.W, cv.clientWidth < 600 ? 9 : (cv.clientHeight - 8) / pa.layout.H));
+        pa.layout = cv.clientWidth < 600 ? (paFit(cv, hz) > paFit(cv, vt) * 1.3 ? hz : vt) : paFit(cv, vt) > paFit(cv, hz) * 1.15 ? vt : hz;
+        if (!pa.z) pa.z = paFit(cv);
         cv.innerHTML = paSVG(d, pa.layout);
         document.querySelector('.pa-zoom').hidden = false;
         if (pa.sel) paSelect(pa.sel);
@@ -4117,10 +4208,13 @@
         if (y < 8) { y = Math.max(8, Math.min(wrap.height - ph - 8, r.top - wrap.top)); x = r.right - wrap.left + 10; if (x + pw > wrap.width - 8) x = r.left - wrap.left - pw - 10; }
         pop.style.left = Math.max(8, Math.min(wrap.width - pw - 8, x)) + 'px'; pop.style.top = Math.max(8, y) + 'px';
       }
+      // Fit: the whole width on a phone (scroll down for the rest); the whole diagram on a laptop.
+      // Fits the width; the height may scroll if that keeps the text readable.
+      function paFit(cv, L) { L = L || pa.layout; const w = (cv.clientWidth - 8) / L.W, h = (cv.clientHeight - 8) / L.H; return Math.max(.4, Math.min(1, w, cv.clientWidth < 600 ? 9 : Math.max(h, .8))); }
       function paZoom(f) {
         const cv = document.getElementById('pa-canvas'), svg = cv.querySelector('svg'); if (!svg || !pa.layout) return;
         const cx = (cv.scrollLeft + cv.clientWidth / 2) / pa.z, cy = (cv.scrollTop + cv.clientHeight / 2) / pa.z;
-        pa.z = f ? Math.max(.35, Math.min(2.2, pa.z * f)) : Math.max(.35, Math.min(1.25, (cv.clientWidth - 8) / pa.layout.W, (cv.clientHeight - 8) / pa.layout.H));
+        pa.z = f ? Math.max(.35, Math.min(2.2, pa.z * f)) : paFit(cv);
         svg.setAttribute('width', Math.round(pa.layout.W * pa.z)); svg.setAttribute('height', Math.round(pa.layout.H * pa.z));
         cv.scrollLeft = cx * pa.z - cv.clientWidth / 2; cv.scrollTop = cy * pa.z - cv.clientHeight / 2;
         if (pa.sel) paSelect(pa.sel);
