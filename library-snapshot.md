@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-24 04:12 UTC.
-Tools: 293 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-24 13:26 UTC.
+Tools: 294 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
 Rules: 16. Agents: 20. Automations: 8. Playbooks: 19.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 293 | How LLMs work (with Gemma 4) · Gemma Docs | Learn | Courses & guides | no | 82 | 24 Nov 2026 | https://gemma.ai/learn/how-llms-work/ |  |
 | 292 | cathrynlavery/diagram-design: editorial diagram design for Claude Code and AI agents | Skill | Agent skills | yes | 78 | 23 Nov 2026 | https://github.com/cathrynlavery/diagram-design | Mermaid, draw.io, Excalidraw |
 | 291 | GitManual | Web app | Productivity | yes | 42 | 23 Nov 2026 | https://gitmanual.com/ | GitHub Codespaces, Gitpod, ReadMe |
 | 290 | imputnet/cobalt: best way to save what you love | Developer tool | Video | yes | 78 | 23 Nov 2026 | https://github.com/imputnet/cobalt | yt-dlp, 4K Video Downloader, SaveFrom |
