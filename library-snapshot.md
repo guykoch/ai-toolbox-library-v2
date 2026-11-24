@@ -1,7 +1,7 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-24 18:55 UTC.
-Tools: 209 active, 1 archived. Prompt libraries: 38 (9 open source, 3,961 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-24 18:57 UTC.
+Tools: 209 active, 1 archived. Prompt libraries: 38 (9 open source, 4,011 prompts copied into Find a prompt).
 Rules: 12. Agents: 11. Automations: 7. Playbooks: 17.
 
 ## Tools (active)
@@ -237,11 +237,11 @@ Rules: 12. Agents: 11. Automations: 7. Playbooks: 17.
 | p6 | Microsoft Copilot Prompt Gallery | Business & productivity | Official | no | copy failed | Microsoft 365 work: meeting recaps, proposals, Excel analysis and scheduling in Word, Excel and Teams. | https://copilot.cloud.microsoft/en-US/prompts |
 | p7 | ClickUp AI Prompt Templates | Business & productivity | Free | no | copy failed | Fill-in-the-blank templates for project plans, roadmaps, blog outlines and brand voice. | https://clickup.com/blog/ai-prompt-workflow-templates/ |
 | p8 | Orbit Media B2B Marketing Prompts | Business & productivity | Free | no | 60 | B2B content marketing: articles, case studies, webinar scripts and email sequences, with real output examples. | https://www.orbitmedia.com/blog/ai-marketing-prompts/ |
-| p9 | Momentum Revenue Prompts | Business & productivity | Free | no | copying… | Sales reps: cold outreach, objection handling, discovery-call prep and competitive positioning. | https://www.momentum.io/resources/ai-prompts |
+| p9 | Momentum Revenue Prompts | Business & productivity | Free | no | 50 | Sales reps: cold outreach, objection handling, discovery-call prep and competitive positioning. | https://www.momentum.io/resources/ai-prompts |
 | p34 | Gemini stock analysis prompts | Business & productivity | Community | no | — | Analyzing a stock like an analyst with Gemini: 10 ready prompts. | https://facebook.com/61571991616735/posts/pfbid02g9Fk5iWkhucB8v5ptETFfBJRtUZkcx6rkvDTzmzV27FTYMTaGLetYksFx1QixWbtl/ |
-| p10 | cursor.directory | Coding | Community | no | — | Setting up AI coding tools: ready rule files per tech stack (Next.js, Python, React) for Cursor and Windsurf. | https://cursor.directory |
-| p11 | Anthropic Prompt Engineering Tutorial | Coding | Official | no | — | Learning prompt engineering hands-on: 9 chapters of exercises with bad vs. good prompt examples. | https://github.com/anthropics/prompt-eng-interactive-tutorial |
-| p12 | PromptDen | Coding | Free | no | — | Developer tasks: debugging, architecture and DevOps, with prompts shown next to sample code. | https://promptden.com |
+| p10 | cursor.directory | Coding | Community | no | copy failed | Setting up AI coding tools: ready rule files per tech stack (Next.js, Python, React) for Cursor and Windsurf. | https://cursor.directory |
+| p11 | Anthropic Prompt Engineering Tutorial | Coding | Official | no | copy failed | Learning prompt engineering hands-on: 9 chapters of exercises with bad vs. good prompt examples. | https://github.com/anthropics/prompt-eng-interactive-tutorial |
+| p12 | PromptDen | Coding | Free | no | copying… | Developer tasks: debugging, architecture and DevOps, with prompts shown next to sample code. | https://promptden.com |
 | p33 | Lovable Israel prompts (פרומפטים \| Lovable Israel) | Coding | Community | no | — | Building apps in Lovable: ready-made prompts, including a detailed accessibility-toolbar prompt (Hebrew). | https://lovable-ai.co.il/prompts |
 | p37 | OpenClaw security hardening prompt | Coding | Community | no | — | Protecting an OpenClaw agent: a system prompt that refuses to leak secrets and resists manipulation. | https://facebook.com/100002717045940/posts/pfbid02jwe8ahZx9zBd9HCPAi35agyCPWzwDPH3crgwhuex234QGQceW5WdtZQWH3p6ukvil/ |
 | p13 | SlideSpeak Slide Design Prompts | Slides, web & app design | Open source | yes | 128 | Making decks look designed: 120+ slide styles (pitch, consulting, finance) with colors, fonts and a ready prompt. | https://slidespeak.co/slide-design-prompts |
