@@ -1,6 +1,6 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-24 04:06 UTC.
+Updated automatically by the app: 2026-11-24 04:12 UTC.
 Tools: 293 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
 Rules: 16. Agents: 20. Automations: 8. Playbooks: 19.
 
@@ -424,7 +424,7 @@ None.
 | b14 | Automate a weekly chore with n8n | automate | Automation, n8n | 1. Learn n8n basics (t:202); 2. Install or sign up (t:249); 3. Start from a template (c:w1, c:w4, c:w5); 4. Adapt and schedule |
 | b6 | Ship a small app | build | Vibe coding | 1. Write a short spec (l:p25); 2. Set the rules (c:r2, c:r3, c:r8); 3. Build it (t:164, l:p40, t:7); 4. Make it look designed (t:8, t:198, t:155); 5. Pick a database (t:108) |
 | b9 | Landing page that doesn't look AI-made | build | Web design | 1. Choose a look (c:r10, l:p17); 2. Install design skills (t:144, t:198, t:155, t:197); 3. Build and polish (t:223, t:199) |
-| b19 | GitHub App UI De-Slopping & Visual Overhaul | build | Coding, Web design, Automation | 1. Map app architecture and isolate workspace (t:269, t:24); 2. Audit AI tropes and browse visual design systems (t:267, l:p14); 3. Generate 5 visual design previews and approve spec (t:197, c:r10); 4. Execute non-destructive UI refactor with design checks (t:212, t:155); 5. Verify interactions visually and push to GitHub (t:28) |
+| b19 | GitHub App UI De-Slopping & Visual Overhaul | build | Coding, Web design, Automation | 1. Map app architecture and isolate workspace (t:269, t:24); 2. Audit AI tropes and section-level disorganization (t:267, l:p14); 3. Generate 5 visual design previews and approve spec (t:197, c:r10); 4. Execute non-destructive UI refactor with design checks (t:212, t:155); 5. Verify interactions visually and push to GitHub (t:28) |
 | b3 | Prepare for a PM interview | career | Product management, Interviews | 1. Research the company (t:3, t:5); 2. Mock interview (l:p25, l:p3); 3. Record and review (t:247, l:p26); 4. Explore the role (t:10) |
 | b12 | Job application pack | career | Job hunt | 1. Set up the job-search system (t:141); 2. Tailor the CV; 3. Write in your voice (l:p27, t:59, t:239); 4. Grade it (l:p26) |
 | b18 | AI Portfolio Project Sprint | career | Product management, Startups, Web design | 1. Discover and validate a specific user friction (c:a2, t:171); 2. Specify the AI solution and user flow (c:a5, t:162); 3. Build the clickable prototype (t:90, t:199); 4. Audit usability and eliminate interface flaws (t:223); 5. Write and publish the 1-page case study (t:12, t:59) |
