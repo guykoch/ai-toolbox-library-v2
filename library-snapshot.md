@@ -1,8 +1,8 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-24 02:29 UTC.
+Updated automatically by the app: 2026-11-24 02:40 UTC.
 Tools: 293 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
-Rules: 16. Agents: 20. Automations: 8. Playbooks: 17.
+Rules: 16. Agents: 20. Automations: 8. Playbooks: 18.
 
 ## Tools (active)
 
@@ -426,6 +426,7 @@ None.
 | b9 | Landing page that doesn't look AI-made | build | Web design | 1. Choose a look (c:r10, l:p17); 2. Install design skills (t:144, t:198, t:155, t:197); 3. Build and polish (t:223, t:199) |
 | b3 | Prepare for a PM interview | career | Product management, Interviews | 1. Research the company (t:3, t:5); 2. Mock interview (l:p25, l:p3); 3. Record and review (t:247, l:p26); 4. Explore the role (t:10) |
 | b12 | Job application pack | career | Job hunt | 1. Set up the job-search system (t:141); 2. Tailor the CV; 3. Write in your voice (l:p27, t:59, t:239); 4. Grade it (l:p26) |
+| b18 | AI Portfolio Project Sprint | career | Product management, Startups, Web design | 1. Discover and validate a specific user friction (c:a2, t:171); 2. Specify the AI solution and user flow (c:a5, t:162); 3. Build the clickable prototype (t:90, t:199); 4. Audit usability and eliminate interface flaws (t:223); 5. Write and publish the 1-page case study (t:12, t:59) |
 | b1 | Write a PRD | create | Product management | 1. Let the AI interview you (l:p25); 2. Research the market (t:3); 3. Draft the PRD (c:a9, t:88); 4. Stress-test it (l:p23, l:p42); 5. Polish the writing (l:p27, t:59) |
 | b2 | Build a pitch deck | create | Startups, Slides | 1. Check the idea first (t:102, t:64); 2. Write the story; 3. Pick a look (l:p13, l:p34); 4. Generate the slides (t:90, t:92, t:99); 5. Prepare for questions (l:p23, l:p43) |
 | b10 | Meeting notes to action items | create | Meetings, Productivity | 1. Prepare (t:5); 2. Record locally (t:116, t:103); 3. Extract decisions and tasks (l:p24) |
