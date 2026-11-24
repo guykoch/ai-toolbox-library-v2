@@ -69,8 +69,9 @@ THE PLAN (JSON)
             "do": "2-4 plain sentences: exactly what to do", "output": "what this step produces",
             "after": ["ids of steps that must be done first (empty for the first)"],
             "items": [{"ref": "t:12", "role": "...", "alts": [{"ref": "...", "role": "..."}, {"ref": "...", "role": "..."}]}],
-            "prompt": "optional ready-to-copy prompt with [brackets] to fill", "tip": "optional short tip"}],
+            "prompt": "ready-to-copy prompt — REQUIRED for every step where the user talks to an AI (see STEP PROMPTS); empty only for steps with no AI in them", "tip": "short tip; for a step with no AI, a one-line how-to (where to click / what to do)"}],
  "caveats": ["2-4 honest risks, limits or things to watch"], "gaps": [{"need": "what's needed but not in the library, in a few words (e.g. a free image editor to remove backgrounds)", "step": "id of the step it's for, or empty"}]}
+STEP PROMPTS: every step in which the user asks an AI to do something (a chat app, a model, an agent, a skill, a prompt from the library, an AI feature inside a tool) MUST have "prompt": a complete, ready-to-paste prompt written for THAT step's tool. It states the role, the task, the input to give it — naming the output of earlier steps it should use (e.g. "paste the outline from step 2") — the exact output format, and any constraints from the chat or defaults. Put details the user must fill in as [BRACKETS]. If the step uses a saved prompt (p:) from the library, the step prompt says to paste that saved prompt first and then adds this plan's specifics. Steps with no AI in them (install, sign up, record, export, review by hand) leave "prompt" empty and use "tip" for a one-line how-to.
 Steps: 3-9, in order. Keep text short and friendly; no jargon unless the user uses it. Write in the user's language.
 
 REPLY (JSON only)
@@ -174,7 +175,7 @@ export const chat = action({
     });
 
     knownTypes = new Set(lib.types.map((t) => t.key));
-    const res = await callGemini({ model: MODELS.advisor(), system: SYSTEM + "\n\nLIBRARY\n" + libText, turns, json: true, thinking: "high", maxTokens: 16000 });
+    const res = await callGemini({ model: MODELS.advisor(), system: SYSTEM + "\n\nLIBRARY\n" + libText, turns, json: true, thinking: "high", maxTokens: 24000 });
     const out = parseJson(res.text) || {};
     const fileNotes = hasFiles ? String(out.fileNotes || "").slice(0, 6000) : "";
     const questions = (Array.isArray(out.questions) ? out.questions : []).slice(0, 3).map((q: any) => ({ q: String(q?.q || "").slice(0, 300), options: (Array.isArray(q?.options) ? q.options : []).map((o: any) => String(o).slice(0, 80)).slice(0, 4) })).filter((q: any) => q.q);
