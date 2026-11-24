@@ -3559,6 +3559,7 @@
       function plFromPlaybook(p) {
         if (pl.plan && pl.dirty && pl.pbId !== p.id && !confirm('Your current plan has unsaved changes. Replace it with “' + p.title + '”?')) return;
         const plan = plPlanOf(p);
+        if (plan.arch) { if (plan.arch.data && plan.arch.sig === paSig(plan)) paCachePut({ title: plan.title, sig: plan.arch.sig, data: plan.arch.data }); delete plan.arch; }
         Object.assign(pl, { plan, pbId: p.id, dirty: false, undo: [], open: null, texts: {}, answers: {}, changed: new Set(), editing: new Set(), adding: null, addQ: '', show: 'plan',
           history: [{ role: 'user', text: 'Open my playbook “' + p.title + '”', note: true }, { role: 'assistant', text: p.plan ? 'Here it is. Tell me what to change, switch any item by tapping its name, or edit steps by hand.' : 'Here it is. Ask me to “explain it and add alternatives” to get the approach, an explanation for each item, 2 alternatives each, phases and the risks — or tell me what to change.' }] });
         plSave(); plOpen();
@@ -3801,7 +3802,7 @@
           const t = document.getElementById('pl-saveas'); t.disabled = true;
           try {
             const linked = pl.pbId && PLAYBOOKS.some(x => x.id === pl.pbId);
-            const r = await call('mutation', 'playbooks:save', { id: linked ? pl.pbId : undefined, playbook: { ...plToPlaybook(pl.plan), plan: pl.plan } });
+            const r = await call('mutation', 'playbooks:save', { id: linked ? pl.pbId : undefined, playbook: { ...plToPlaybook(pl.plan), plan: { ...pl.plan, ...(pl.arch && pl.arch.sig === paSig(pl.plan) ? { arch: { sig: pl.arch.sig, data: pl.arch.data } } : {}) } } });
             pl.pbId = r.id; pl.dirty = false; await loadPlaybooks(); flashCopied(t, 'Saved \u2713');
             pl.history.push({ role: 'user', text: linked ? 'Saved changes to the playbook' : 'Saved as a playbook', note: true }); plSave(); setTimeout(plRender, 2000);
           }
@@ -4016,7 +4017,23 @@
         if (!paMine()) paMake(); else paRender();
       }
       // The saved diagram belongs to this plan if the name or the steps match (so renaming or undo keeps it).
-      function paMine() { return !!(pl.arch && pl.plan && (pl.arch.title === pl.plan.title || pl.arch.sig === paSig(pl.plan))); }
+      // Diagrams are remembered per plan content (its steps and items), so an unchanged plan never needs redrawing —
+      // also after switching plans, reloading, or opening a saved playbook (the diagram is saved with it).
+      const PA_STORE = 'aicm-arch-v1';
+      function paCacheGet(sig) { try { const c = JSON.parse(localStorage.getItem(PA_STORE) || '{}'); return c[sig] || null; } catch (e) { return null; } }
+      function paCachePut(a) {
+        try { const c = JSON.parse(localStorage.getItem(PA_STORE) || '{}'); c[a.sig] = { ...a, at: Date.now() };
+          const keys = Object.keys(c).sort((x, y) => (c[y].at || 0) - (c[x].at || 0)); keys.slice(25).forEach(k => delete c[k]);
+          localStorage.setItem(PA_STORE, JSON.stringify(c)); } catch (e) {}
+      }
+      function paMine() {
+        if (!pl.plan) return false;
+        const sig = paSig(pl.plan);
+        if (pl.arch && pl.arch.sig === sig) return true;
+        const hit = paCacheGet(sig); // the exact same plan was drawn before
+        if (hit) { pl.arch = { title: pl.plan.title, sig, data: hit.data }; plSave(); return true; }
+        return !!(pl.arch && pl.arch.title === pl.plan.title); // same plan, edited since: shown with a "Redraw" note
+      }
       function paClose() { document.getElementById('pa-modal').hidden = true; pa.sel = null; }
       async function paMake() {
         if (pa.busy || !pl.plan) return;
@@ -4026,7 +4043,8 @@
         try {
           const { arch, ...lite } = plan;
           const data = await call('action', 'planAi:arch', { plan: lite });
-          if (pl.plan === plan || (pl.plan && pl.plan.title === plan.title)) { pl.arch = { title: plan.title, sig: paSig(plan), data }; plSave(); }
+          const a = { title: plan.title, sig: paSig(plan), data }; paCachePut(a);
+          if (pl.plan === plan || (pl.plan && pl.plan.title === plan.title)) { pl.arch = a; plSave(); }
         } catch (e) { pa.err = String(e.message || e).replace(/^.*ConvexError:\s*/, ''); }
         clearInterval(tick); pa.busy = false; pa.z = 0; paRender();
       }
