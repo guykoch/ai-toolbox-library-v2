@@ -40,7 +40,8 @@ HOW TO WORK
 0. FIRST decide what the user is doing in THIS message — be a dynamic partner, not a plan machine:
    a) ASKING or CONSULTING (a question, "what do you think", "which is better", "why did you pick X", "how does Y work", "is this realistic", brainstorming, thinking out loud): ANSWER it directly in "reply" — conversational, specific to their situation, the current plan and their library (name the relevant items). Don't make or change a plan ("plan": null). You may end with one short offer like "Want me to turn this into a plan?" or "Want me to swap that into step 3?" when it would help.
    b) ASKING FOR A PLAN or a clear goal to achieve ("help me do X", "I need to…", "plan…", "make it"): follow steps 1-3 below.
-   c) ASKING TO CHANGE the existing plan: change it (step 3).
+   c) ASKING TO CHANGE the existing plan: change it (step 3). This covers any tweak: swap or remove a tool ("use X instead of Y in step 2"), add / delete / merge / split / reorder / rename steps, rewrite a step's instructions, change the time, budget, audience or tone, add a prompt or a tip, make it shorter or more detailed. Questions like "explain step 3", "why this tool?", "what does step 2 produce?" are (a): answer them about the current plan without changing it.
+      If they ask to use a tool that ISN'T in the library: don't invent a ref. Say it isn't in their library yet and that they can tap "+ Add to library" next to it under "Not in your library (yet)" (or paste it in the Add box), then ask again; meanwhile keep or suggest the closest library item. Tools in the plan's "gapTools" (found on the web) count as not in the library until added.
    d) Unclear which: answer briefly and ask what they'd like.
 1. Understand the full context: the whole chat so far, the current plan (if any), earlier answers, and the pinned defaults.
 2. If this is a new plan request and details that would really change the plan are missing (e.g. the audience, the deadline, what they already have, budget, skill level, which platform), ask 1-3 short questions INSTEAD of a plan. Give each question 2-4 short quick-reply options. Don't ask about things you can reasonably assume; never ask twice in a row about the same thing; if the user says "just do it" or similar, make the plan with sensible assumptions and list them in "assumptions".
@@ -53,7 +54,7 @@ PICKING ITEMS
 - Prefer the most specific useful item: a specific prompt (p:) or agent/workflow file (i:) beats its whole library when it fits.
 - Each step gets 1-3 items. Each item gets "role": ONE concise sentence (max ~22 words) saying what it is and exactly how it's used in this step.
 - Each item gets "alts": the 2 next-best alternatives from the library for that same job (different refs, each with its own role). If fewer than 2 good alternatives exist, give what exists.
-- If the job needs something not in the library, say so in "gaps" (name a well-known option) — never invent refs.
+- If the job needs something not in the library, say so in "gaps" with the step it's for (name a well-known option) — never invent refs. The app then searches the web for current tools for each gap.
 
 THE PLAN (JSON)
 {"title": "short name", "goal": "one sentence", "outcome": "what the user ends up with",
@@ -69,7 +70,7 @@ THE PLAN (JSON)
             "after": ["ids of steps that must be done first (empty for the first)"],
             "items": [{"ref": "t:12", "role": "...", "alts": [{"ref": "...", "role": "..."}, {"ref": "...", "role": "..."}]}],
             "prompt": "optional ready-to-copy prompt with [brackets] to fill", "tip": "optional short tip"}],
- "caveats": ["2-4 honest risks, limits or things to watch"], "gaps": ["needed but not in the library: …"]}
+ "caveats": ["2-4 honest risks, limits or things to watch"], "gaps": [{"need": "what's needed but not in the library, in a few words (e.g. a free image editor to remove backgrounds)", "step": "id of the step it's for, or empty"}]}
 Steps: 3-9, in order. Keep text short and friendly; no jargon unless the user uses it. Write in the user's language.
 
 REPLY (JSON only)
@@ -208,6 +209,12 @@ function planType(p: any) {
   return { type: "create" };
 }
 const str = (x: any, n: number) => (typeof x === "string" ? x.trim().slice(0, n) : "");
+// Gaps: a list of needs (strings, as before) plus the step each one is for.
+function cleanGaps(g: any, steps: any[]) {
+  const ids = new Set(steps.map((s: any) => s.id));
+  const rows = (Array.isArray(g) ? g : []).map((x: any) => typeof x === "string" ? { need: str(x, 300), step: "" } : { need: str(x?.need, 300), step: ids.has(String(x?.step || "")) ? String(x.step) : "" }).filter((x: any) => x.need).slice(0, 5);
+  return { gaps: rows.map((x: any) => x.need), gapSteps: rows.map((x: any) => x.step) };
+}
 const list = (x: any, n: number, len = 300) => (Array.isArray(x) ? x.map((y) => str(y, len)).filter(Boolean).slice(0, n) : []);
 
 export function cleanPlan(p: any, refs: Map<string, Ref>) {
@@ -238,7 +245,7 @@ export function cleanPlan(p: any, refs: Map<string, Ref>) {
     topics: list(p.topics, 3, 40),
     title: str(p.title, 100) || "Your plan", goal: str(p.goal, 400), outcome: str(p.outcome, 400), summary: str(p.summary, 1000),
     approach: list(p.approach, 5), assumptions: list(p.assumptions, 5), time: str(p.time, 60), cost: str(p.cost, 120),
-    phases, steps, caveats: list(p.caveats, 6), gaps: list(p.gaps, 5),
+    phases, steps, caveats: list(p.caveats, 6), ...cleanGaps(p.gaps, steps),
   };
 }
 
@@ -377,3 +384,33 @@ async function loadChatFiles(ctx: any, list: { id: string; name: string; kind: s
   const note = [cut.length ? "Only the first part of " + cut.join(", ") + " was read (too long)." : "", missing.length ? "Couldn’t read: " + missing.join(", ") + "." : ""].filter(Boolean).join(" ");
   return { parts, refs, note, text: text ? `ATTACHED FILES (full text — read all of it):\n${text}` : "" };
 }
+
+// ---------- Gaps: search the web for current tools that fill what the library is missing ----------
+export const gapTools = action({
+  args: { key: v.string(), gaps: v.array(v.string()), goal: v.optional(v.string()), modes: v.optional(v.object({ openSource: v.optional(v.boolean()), lowEffort: v.optional(v.boolean()) })) },
+  handler: async (_ctx, { key, gaps, goal, modes }) => {
+    checkKey(key);
+    const needs = gaps.map((g) => String(g).trim().slice(0, 300)).filter(Boolean).slice(0, 5);
+    if (!needs.length) return { results: [] };
+    const rules = [modes?.openSource ? "ONLY open-source or genuinely free tools." : "Prefer free or free-tier tools when they are as good.", modes?.lowEffort ? "ONLY tools usable in minutes: in the browser or a one-click / app-store install; no developer setup." : ""].filter(Boolean).join(" ");
+    const res = await callGemini({
+      model: MODELS.advisor(),
+      system: `Search the web and find the 2 best CURRENT tools for each need below (popular, well-reviewed, actively maintained in ${new Date().getFullYear()}). ${rules}
+Reply with JSON only: {"results": [{"need": "the need, copied exactly", "options": [{"name": "tool name", "url": "its official website (homepage, not an article)", "why": "one short sentence: why it fits this need", "free": "Free | Free plan | Paid", "openSource": true/false, "effort": "ready now | quick install | tech setup"}]}]}
+Never invent tools or links; use only what you found.`,
+      turns: [{ role: "user", text: (goal ? `The user's goal: ${goal.slice(0, 400)}\n\n` : "") + "NEEDS:\n" + needs.map((n, i) => `${i + 1}. ${n}`).join("\n") }],
+      search: true,
+      thinking: "low",
+      maxTokens: 4096,
+    });
+    const out = parseJson(res.text) || {};
+    const s = (x: any, n: number) => String(x || "").trim().slice(0, n);
+    const results = needs.map((need, i) => {
+      const r = (Array.isArray(out.results) ? out.results : []).find((x: any) => s(x?.need, 300) === need) || (Array.isArray(out.results) ? out.results[i] : null) || {};
+      const options = (Array.isArray(r.options) ? r.options : []).map((o: any) => ({ name: s(o?.name, 80), url: /^https?:\/\//.test(s(o?.url, 300)) ? s(o.url, 300) : "", why: s(o?.why, 200), free: s(o?.free, 20), openSource: o?.openSource === true, effort: s(o?.effort, 20) }))
+        .filter((o: any) => o.name && o.url).slice(0, 2);
+      return { need, options };
+    });
+    return { results };
+  },
+});
