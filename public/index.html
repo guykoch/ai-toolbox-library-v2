@@ -4296,6 +4296,8 @@
           ['Sub-agent', 'A specialist agent the main agent hands part of the job to. Each works with its own instructions and memory, which keeps the main task focused.', 'A “reviewer” sub-agent that checks the code'],
           ['Agent mode / Cowork', 'A mode where the AI works through a multi-step task for you — often on your computer or in a browser — and reports back when done.', 'Claude Cowork, ChatGPT agent mode'],
           ['Human-in-the-loop', 'A person approves or corrects the AI at key steps instead of letting it act fully alone. It’s the usual safeguard for anything costly or hard to undo.', 'You confirm before it sends the email or pays'],
+          ['Harness', 'The software wrapped around an AI model that turns it into a working agent: it runs the think\u2013act\u2013check loop, gives the model its tools, files and memory, and enforces permissions. The same model can behave very differently in a different harness.', 'Claude Code, Cursor and Codex are harnesses'],
+          ['Hooks', 'Your own small scripts or commands that an agent tool runs automatically at set moments \u2014 for example before it uses a tool or after it edits a file. Unlike instructions the AI might forget, hooks always run, so they\u2019re used for guardrails and routine checks.', 'Auto-format code after every edit; block deleting files'],
           ['Skill (for an agent)', 'A specific ability added to an agent, usually as a folder of instructions and scripts it can use when needed. Skills let one agent handle many specialised jobs.', 'Making slides, reading PDFs, filling forms'],
         ] },
         { key: 'knowledge', icon: '\u{1F4DA}', name: 'Knowledge & accuracy', sub: 'Making AI answer from your facts.', terms: [
