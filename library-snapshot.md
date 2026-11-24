@@ -1,13 +1,14 @@
 # AI Toolbox — library snapshot
 
-Updated automatically by the app: 2026-11-24 02:09 UTC.
-Tools: 290 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
+Updated automatically by the app: 2026-11-24 02:24 UTC.
+Tools: 291 active, 0 archived. Prompt libraries: 46 (14 open source, 9,142 prompts copied into Find a prompt).
 Rules: 16. Agents: 20. Automations: 8. Playbooks: 17.
 
 ## Tools (active)
 
 | id | Name | Type | Shelf | Open source | Hype | Saved | Link | Alternative for |
 |---|---|---|---|---|---|---|---|---|
+| 290 | imputnet/cobalt: best way to save what you love | Developer tool | Video | yes | 78 | 23 Nov 2026 | https://github.com/imputnet/cobalt | yt-dlp, 4K Video Downloader, SaveFrom |
 | 289 | Graphify-Labs/graphify: Turn any codebase, with its docs, SQL schemas, configs, and PDFs, into a queryable knowledge graph | Developer tool | Coding agents | yes | 95 | 23 Nov 2026 | https://github.com/Graphify-Labs/graphify | Sourcegraph, Greptile, Augment Code |
 | 288 | conorbronsdon/avoid-ai-writing: audit and rewrite content to remove AI writing patterns | Skill | Agent skills | yes | 65 | 23 Nov 2026 | https://github.com/conorbronsdon/avoid-ai-writing | Undetectable AI, QuillBot, Originality.ai |
 | 287 | D3voz/openjutsu: One-click character swap for videos: an open-source, local Higgsfield Genjutsu alternative built on ComfyUI and MiniMax H3, with FLUX.3 Klein relighting | Developer tool | Video | yes | 68 | 23 Nov 2026 | https://github.com/D3voz/openjutsu | Higgsfield, Runway, Krea |
