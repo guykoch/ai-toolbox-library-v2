@@ -271,7 +271,7 @@ The prompt must contain, with clear headings:
 5. Things the AI can't do itself (e.g. install an app, sign up, click in another tool): tell it to give the user short instructions for those parts instead of pretending.
 6. Final deliverables checklist and quality checks; the caveats to watch for.
 Start the prompt by asking the AI to confirm the plan and ask up to 3 questions only if something essential is missing, then proceed step by step.
-Write in the plan's language, plain and direct. Reply with JSON only: {"prompt": "the full prompt, markdown allowed"}`;
+Write in the plan's language, plain and direct. Reply with ONLY the prompt itself (markdown allowed) — no introduction, no comments before or after it.`;
 
 export const buildPrompt = action({
   args: { key: v.string(), plan: v.any(), defaults: v.optional(v.array(v.string())) },
@@ -299,9 +299,11 @@ export const buildPrompt = action({
       }),
       Array.isArray(p.caveats) && p.caveats.length ? `CAVEATS: ${p.caveats.map((x: any) => s(x, 300)).join(" | ")}` : "",
     ].filter(Boolean).join("\n\n");
-    const res = await callGemini({ model: MODELS.advisor(), system: BUILD_SYSTEM, turns: [{ role: "user", text }], json: true, thinking: "medium", maxTokens: 24000 });
-    const out = parseJson(res.text);
-    const prompt = String((out && out.prompt) || "").trim();
+    const res = await callGemini({ model: MODELS.advisor(), system: BUILD_SYSTEM, turns: [{ role: "user", text }], thinking: "medium", maxTokens: 32000 });
+    // Plain text (a JSON wrapper broke on prompts that contain code blocks). Unwrap if the whole answer came fenced.
+    let prompt = res.text.trim();
+    const whole = prompt.match(/^```[\w-]*\n([\s\S]*)\n```$/);
+    if (whole && !/```/.test(whole[1])) prompt = whole[1].trim();
     if (prompt.length < 80) throw new ConvexError("Couldn’t write the prompt — try again.");
     return { prompt };
   },

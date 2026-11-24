@@ -115,6 +115,7 @@ export async function callClaude(system: string, user: string, withSearch: boole
 }
 
 export function parseJson(text: string): any {
+  try { const t = text.trim(); if (t.startsWith("{")) return JSON.parse(t); } catch { /* fall through */ }
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
   const src = fenced ? fenced[1] : text;
   const start = src.indexOf("{");
